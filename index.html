@@ -26,10 +26,9 @@ body{
 header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:20;
   padding:10px 14px 0;padding-top:calc(10px + env(safe-area-inset-top))}
 .tabs{display:flex;gap:6px}
-.tab{flex:1;text-align:center;padding:11px 6px;border-radius:10px 10px 0 0;
-  background:#1e2833;color:#9fb0c2;font-size:13px;font-weight:650;cursor:pointer;
+.tab{flex:1;text-align:center;padding:13px 6px;border-radius:10px 10px 0 0;
+  background:#1e2833;color:#9fb0c2;font-size:14px;font-weight:650;cursor:pointer;
   line-height:1.25}
-.tab small{display:block;font-size:11px;font-weight:500;opacity:.75;margin-top:2px}
 .tab.on{background:var(--bg);color:var(--ink)}
 .tab.on small{opacity:.65}
 .wrap{padding:14px}
@@ -115,8 +114,8 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
 <header>
   <div class="tabs">
-    <div class="tab on" data-view="checklist">1 &middot; Checklist<small>PDF for customer</small></div>
-    <div class="tab" data-view="fcs2">2 &middot; FCS2<small>JPG to upload</small></div>
+    <div class="tab on" data-view="checklist">T-Fiber Checklist</div>
+    <div class="tab" data-view="fcs2">Fiber City FCS2</div>
   </div>
 </header>
 
@@ -148,40 +147,49 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
   <div class="card">
     <h2>Install</h2>
-    <div class="f"><label>Drop type</label><div class="chips" data-check="drop"></div></div>
-    <div class="f"><label>Router placement</label><div class="chips" data-check="placement"></div></div>
+    <div class="f"><label>Router placement</label><div class="chips" data-check="placement"></div>
+      <p class="linked">Remembered</p></div>
     <div class="row">
       <div class="f"><label for="c_wifiname">Wi-Fi name</label>
         <input type="text" id="c_wifiname" autocomplete="off"></div>
       <div class="f"><label for="c_wifipw">Password</label>
         <input type="text" id="c_wifipw" autocomplete="off"></div>
     </div>
-    <div class="row">
-      <div class="f"><label for="c_nidpower">NID optical power</label>
-        <input type="text" id="c_nidpower" autocomplete="off"></div>
-      <div class="f"><label for="c_ontpower">ONT optical power</label>
-        <input type="text" id="c_ontpower" autocomplete="off"></div>
-    </div>
-    <p class="linked" style="margin:-6px 0 12px">ONT power auto-fills &ldquo;GPON at ONT&rdquo; on FCS2</p>
     <div class="f"><label for="c_model">Router Model</label>
       <input type="text" id="c_model" autocomplete="off">
       <p class="linked">Remembered &middot; sets the circled router on FCS2</p></div>
     <div class="f"><label for="c_routerSn">Router Serial #</label>
       <input type="text" id="c_routerSn" autocomplete="off" autocapitalize="characters">
       <p class="linked">Goes to &ldquo;ONT Serial #&rdquo; on FCS2</p></div>
-    <div class="f"><label for="c_routerMac">Router MAC</label>
-      <input type="text" id="c_routerMac" autocomplete="off" autocapitalize="characters">
-      <p class="linked">Goes to &ldquo;ONT MAC Address&rdquo; on FCS2</p></div>
     <div class="f"><label for="c_extender">Extender Serial # &amp; MAC</label>
-      <input type="text" id="c_extender" autocomplete="off" autocapitalize="characters"></div>
+      <input type="text" id="c_extender" autocomplete="off" autocapitalize="characters">
+      <p class="linked">Only if an extender was installed</p></div>
   </div>
 
   <div class="card">
-    <h2>Speed tests</h2>
-    <div class="f"><label for="c_speedhard">Hardwired (3 tests)</label>
-      <input type="text" id="c_speedhard" autocomplete="off"></div>
+    <h2>Speed test</h2>
     <div class="f"><label for="c_speedwifi">Wireless / Wi-Fi (3 tests)</label>
       <input type="text" id="c_speedwifi" autocomplete="off"></div>
+  </div>
+
+  <div class="card">
+    <details><summary>More fields (optional) &#9662;</summary>
+      <div style="margin-top:12px">
+        <div class="f"><label>Drop type</label><div class="chips" data-check="drop"></div></div>
+        <div class="row">
+          <div class="f"><label for="c_nidpower">NID optical power</label>
+            <input type="text" id="c_nidpower" autocomplete="off"></div>
+          <div class="f"><label for="c_ontpower">ONT optical power</label>
+            <input type="text" id="c_ontpower" autocomplete="off"></div>
+        </div>
+        <p class="linked" style="margin:-6px 0 12px">ONT power fills &ldquo;GPON at ONT&rdquo; on FCS2</p>
+        <div class="f"><label for="c_routerMac">Router MAC</label>
+          <input type="text" id="c_routerMac" autocomplete="off" autocapitalize="characters">
+          <p class="linked">Goes to &ldquo;ONT MAC Address&rdquo; on FCS2</p></div>
+        <div class="f"><label for="c_speedhard">Speed test &mdash; hardwired (3 tests)</label>
+          <input type="text" id="c_speedhard" autocomplete="off"></div>
+      </div>
+    </details>
   </div>
 
   <div class="card">
@@ -245,6 +253,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
   <button class="btn btn-magenta" id="shareBtn" style="margin-bottom:9px">Share / Send</button>
   <button class="btn btn-primary" id="saveBtn" style="margin-bottom:9px">Save to device</button>
+  <button class="btn btn-ghost" id="altBtn" style="margin-bottom:9px;display:none">Also save as JPG</button>
   <p class="hint" id="platHint" style="margin:0 0 12px"></p>
   <button class="btn btn-ghost" id="backBtn">&larr; Back to the form</button>
 </div>
@@ -326,7 +335,19 @@ document.addEventListener("click", e => {
   box.querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
   if(already){ delete state.checks[g]; }
   else { c.classList.add("on"); state.checks[g] = c.dataset.v; }
+  if(g === "placement") store("placement", state.checks[g] || "");
 });
+
+function setCheck(group, value){
+  state.checks[group] = value;
+  $$('.chip[data-group="'+group+'"]').forEach(c =>
+    c.classList.toggle("on", c.dataset.v === value));
+}
+function applyCheckDefaults(){
+  const p = recall("placement") || "Table/Surface";
+  if(p) setCheck("placement", p);
+}
+applyCheckDefaults();
 
 /* ---------------- FCS2 single-choice chips ----------------------------- */
 function chipGroup(sel, key, after){
@@ -763,11 +784,15 @@ function makeChecklist(){
   const C = CFG.checklist;
   const url = out.toDataURL("image/jpeg", 0.9);
   const blob = buildPDF(jpegBytesFromDataURL(url), C.W, C.H, C.pdfW, C.pdfH, C.links);
+  const base = slug($("#c_customer").value)+"_T-Fiber_Checklist";
   result = { blob: blob, url: url, type: "application/pdf",
-             name: slug($("#c_customer").value)+"_T-Fiber_Checklist.pdf" };
+             name: base+".pdf",
+             alt: { url: url, type: "image/jpeg", name: base+".jpg" } };
   showResult("Checklist \u2014 PDF for the customer",
-    'Tap <b>Share / Send</b> &rarr; <b>Messages</b> to text the PDF to the customer. '
-    + 'The Apple and Android app links inside the PDF are tappable.');
+    'PDF for the customer &mdash; <b>Share / Send</b> &rarr; <b>Messages</b>. '
+    + 'The Apple and Android links inside the PDF are tappable.<br><br>'
+    + 'Need the same page as an image for the app or Google Drive? '
+    + 'Use <b>Also save as JPG</b>.');
 }
 
 function makeFcs2(){
@@ -782,6 +807,8 @@ function makeFcs2(){
 }
 
 function showResult(title, hint){
+  $("#altBtn").style.display = (result && result.alt) ? "block" : "none";
+  if(result && result.alt) $("#altBtn").textContent = "Also save as JPG";
   $("#resTitle").textContent = title;
   if(IS_IOS) hint += '<br><br>On iPhone always use <b>Share / Send</b> '
                    + '&mdash; that is the reliable way to get the file out.';
@@ -795,9 +822,10 @@ $("#makeBtn").addEventListener("click", () => {
   else makeFcs2();
 });
 
-function saveToDevice(){
-  if(!result) return;
-  const blob = result.blob || dataURLtoBlob(result.url, result.type);
+function saveToDevice(target){
+  const t = target || result;
+  if(!t) return;
+  const blob = t.blob || dataURLtoBlob(t.url, t.type);
   const url = URL.createObjectURL(blob);
   /* inside an iOS home-screen app a normal download silently does nothing,
      so open the file instead - Safari then offers Save / Share */
@@ -806,11 +834,14 @@ function saveToDevice(){
     if(w){ setTimeout(() => URL.revokeObjectURL(url), 60000); return; }
   }
   const a = document.createElement("a");
-  a.href = url; a.download = result.name; a.target = "_blank";
+  a.href = url; a.download = t.name; a.target = "_blank";
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
-$("#saveBtn").addEventListener("click", saveToDevice);
+$("#saveBtn").addEventListener("click", () => saveToDevice(result));
+$("#altBtn").addEventListener("click", () => {
+  if(result && result.alt) saveToDevice(result.alt);
+});
 
 $("#shareBtn").addEventListener("click", async () => {
   if(!result) return;
@@ -868,6 +899,7 @@ $("#clearChk").addEventListener("click", () => {
   $("#c_daytime").value = nowStamp();
   $("#c_tech").value = recall("techName");
   $("#c_model").value = recall("routerModel") || "Nokia";
+  applyCheckDefaults();
 });
 $("#clearFcs").addEventListener("click", () => {
   if(!confirm("Clear the FCS2 form and the signature?")) return;

@@ -2,11 +2,17 @@ T-FIBER INSTALL FORMS - two forms in one app
 ============================================
 
 WHAT IT DOES
-  Tab 1 "Checklist"  -> fills the T-Fiber Home Internet Installation
-                        Checklist and exports a PDF you send to the customer.
-  Tab 2 "FCS2"       -> fills the Fiber City Stage 2 Completion Form,
+  Tab "T-Fiber Checklist" -> fills the T-Fiber Home Internet Installation
+                        Checklist. Exports a PDF for the customer, plus a JPG
+                        for the office app and Google Drive.
+  Tab "Fiber City FCS2"   -> fills the Fiber City Stage 2 Completion Form,
                         captures the customer signature on screen, and
                         exports a JPG you upload to the office.
+
+  Router placement defaults to Table/Surface and Router Model to Nokia; both
+  are remembered. Fields the crew rarely fills - drop type, NID/ONT optical
+  power, router MAC, hardwired speed test - sit under "More fields
+  (optional)" so the everyday screen stays short.
 
   Fields that exist on both forms are typed once. Customer Name, ONT optical
   power, Router Serial # and Router MAC flow from the checklist into FCS2.
@@ -21,7 +27,7 @@ WHY IT HAS TO GO ONLINE
 
 OPTION A - Netlify Drop (easiest, ~3 minutes, free)
   1. On a computer open:  https://app.netlify.com/drop
-  2. Drag this whole Fiber_Forms_site FOLDER onto the page (the folder, not the zip).
+  2. Drag this whole FCS2_site FOLDER onto the page (the folder, not the zip).
   3. In about 20 seconds you get a link like:
         https://something-random-1234.netlify.app
   4. Send that link to every technician.
