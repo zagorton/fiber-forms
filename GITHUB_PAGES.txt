@@ -1,0 +1,60 @@
+PUTTING THIS ON GITHUB PAGES
+============================
+
+Free GitHub Pages only works on a PUBLIC repository. The form is blank -
+no customer data is in these files - so public is fine. Customer data never
+leaves the phone.
+
+1. github.com -> "+" (top right) -> New repository
+     Name: fiber-forms
+     Public
+     Do NOT tick "Add a README file"
+     Create repository
+
+2. On the empty repo page click "uploading an existing file".
+
+3. IMPORTANT: open the Fiber_Forms_site folder and drag the FILES from
+   INSIDE it - not the folder itself. index.html must sit at the top level
+   of the repo, otherwise the address gets an extra folder in it.
+
+   These files:
+     index.html
+     manifest.json
+     sw.js
+     icon-192.png
+     icon-512.png
+     apple-touch-icon.png
+     .nojekyll          <- may be hidden; on Windows tick "Hidden items" in
+                           File Explorer's View menu, on Mac press Cmd+Shift+.
+
+4. "Commit changes".
+
+5. Settings -> Pages (left sidebar)
+     Source: Deploy from a branch
+     Branch: main    Folder: / (root)
+     Save
+
+6. Wait 1-2 minutes, then reload the Pages screen. Your address appears:
+
+     https://YOURNAME.github.io/fiber-forms/
+
+7. Open that link in Safari (iPhone) or Chrome (Android) ->
+   Share / three dots -> Add to Home Screen.
+
+UPDATING LATER
+  Repo -> Add file -> Upload files -> drag the new files in -> Commit.
+  Overwriting index.html is enough for most updates. The address stays the
+  same and phones pick up the change on their next open with signal.
+
+IF THE PAGE IS BLANK OR 404
+  - Wait 2 more minutes; the first publish is the slow one.
+  - Check index.html is at the top level of the repo, not inside a folder.
+  - Check the repo is Public.
+
+GITHUB VS NETLIFY
+  Both are free and both serve over https, which the offline mode needs.
+  Netlify: drag a folder, done, shorter address.
+  GitHub: more steps, but you keep the files in your own account and can
+  see the history of every change.
+  Do not run both for the same crew - one address only, or people end up on
+  different versions.
