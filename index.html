@@ -169,7 +169,8 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   <div class="card">
     <h2>Speed test</h2>
     <div class="f"><label for="c_speedwifi">Wireless / Wi-Fi (3 tests)</label>
-      <input type="text" id="c_speedwifi" autocomplete="off"></div>
+      <input type="text" id="c_speedwifi" autocomplete="off" placeholder="920 740 880">
+      <p class="linked">Type the number, hit space &mdash; becomes 920mb /</p></div>
   </div>
 
   <div class="card">
@@ -187,7 +188,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
           <input type="text" id="c_routerMac" autocomplete="off" autocapitalize="characters">
           <p class="linked">Goes to &ldquo;ONT MAC Address&rdquo; on FCS2</p></div>
         <div class="f"><label for="c_speedhard">Speed test &mdash; hardwired (3 tests)</label>
-          <input type="text" id="c_speedhard" autocomplete="off"></div>
+          <input type="text" id="c_speedhard" autocomplete="off" placeholder="920 740 880"></div>
       </div>
     </details>
   </div>
@@ -387,6 +388,30 @@ $("#c_tech").value    = recall("techName");
 $("#c_tech").addEventListener("input", e => store("techName", e.target.value));
 $("#c_model").value   = recall("routerModel") || "Nokia";
 $("#c_model").addEventListener("input", e => store("routerModel", e.target.value));
+
+/* ---------------- speed test shorthand --------------------------------- */
+/* type 920 then space -> "920mb / "  ... third number just gets "mb" */
+function speedField(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener("input", () => {
+    if(el.selectionStart !== el.value.length) return;
+    const m = el.value.match(/(\d+(?:[.,]\d+)?)\s*[\/ ]\s*$/);
+    if(!m) return;
+    const head = el.value.slice(0, el.value.length - m[0].length);
+    const done = (head.match(/mb/gi) || []).length;
+    el.value = head + m[1].replace(",", ".") + "mb" + (done >= 2 ? "" : " / ");
+  });
+  el.addEventListener("blur", () => {
+    let v = el.value.trim();
+    if(!v) return;
+    v = v.replace(/(\d)\s*$/, "$1mb");
+    v = v.replace(/[\s\/]+$/, "");
+    el.value = v;
+  });
+}
+speedField("c_speedwifi");
+speedField("c_speedhard");
 
 /* ---------------- address paste parser --------------------------------- */
 const ST = {"alabama":"AL","alaska":"AK","arizona":"AZ","arkansas":"AR","california":"CA",

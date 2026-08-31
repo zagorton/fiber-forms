@@ -2,17 +2,11 @@ T-FIBER INSTALL FORMS - two forms in one app
 ============================================
 
 WHAT IT DOES
-  Tab "T-Fiber Checklist" -> fills the T-Fiber Home Internet Installation
-                        Checklist. Exports a PDF for the customer, plus a JPG
-                        for the office app and Google Drive.
-  Tab "Fiber City FCS2"   -> fills the Fiber City Stage 2 Completion Form,
+  Tab 1 "Checklist"  -> fills the T-Fiber Home Internet Installation
+                        Checklist and exports a PDF you send to the customer.
+  Tab 2 "FCS2"       -> fills the Fiber City Stage 2 Completion Form,
                         captures the customer signature on screen, and
                         exports a JPG you upload to the office.
-
-  Router placement defaults to Table/Surface and Router Model to Nokia; both
-  are remembered. Fields the crew rarely fills - drop type, NID/ONT optical
-  power, router MAC, hardwired speed test - sit under "More fields
-  (optional)" so the everyday screen stays short.
 
   Fields that exist on both forms are typed once. Customer Name, ONT optical
   power, Router Serial # and Router MAC flow from the checklist into FCS2.
