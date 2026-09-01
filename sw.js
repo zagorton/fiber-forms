@@ -1,4 +1,4 @@
-const CACHE = "fiber-forms-v19";
+const CACHE = "fiber-forms-v20";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./privacy.html",
                 "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 

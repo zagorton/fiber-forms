@@ -295,7 +295,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
            font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
       <input type="checkbox" id="driveDocs" checked
              style="width:20px;height:20px;accent-color:var(--accent)">
-      Also upload the checklist PDF and FCS2 JPG
+      Also upload the two forms as JPG
     </label>
     <button class="btn btn-ghost" id="pickFolderBtn" style="margin-bottom:9px">
       Choose the Drive folder</button>
@@ -1397,12 +1397,8 @@ function uploadOne(file, parent, token){
 function buildDocs(){
   const base = slug($("#c_customer").value) || slug($("#c_street").value) || "forms";
   const docs = [];
-  const C = CFG.checklist;
   render("checklist");
-  const cu = out.toDataURL("image/jpeg", 0.9);
-  docs.push({blob: buildPDF(jpegBytesFromDataURL(cu), C.W, C.H, C.pdfW, C.pdfH, C.links),
-             name: base + "_T-Fiber_Checklist.pdf"});
-  docs.push({blob: dataURLtoBlob(cu, "image/jpeg"),
+  docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.9), "image/jpeg"),
              name: base + "_T-Fiber_Checklist.jpg"});
   render("fcs2");
   docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.92), "image/jpeg"),
