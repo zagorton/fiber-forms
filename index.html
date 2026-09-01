@@ -13,8 +13,9 @@
 <title>Fiber Install Forms</title>
 <style>
 :root{
-  --ink:#10161d; --muted:#6b7785; --line:#d6dde5; --bg:#eef1f4; --card:#fff;
+  --ink:#10161d; --muted:#69747f; --line:#dde3ea; --bg:#eff2f5; --card:#fff;
   --accent:#0b6fd4; --ok:#127a4b; --magenta:#e20074;
+  --r:16px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -26,20 +27,31 @@ body{
 header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:20;
   padding:10px 14px 0;padding-top:calc(10px + env(safe-area-inset-top))}
 .tabs{display:flex;gap:6px}
-.tab{flex:1;text-align:center;padding:13px 4px;border-radius:10px 10px 0 0;
+.tab{flex:1;text-align:center;padding:13px 4px;border-radius:12px 12px 0 0;
   background:#1e2833;color:#9fb0c2;font-size:13px;font-weight:650;cursor:pointer;
-  line-height:1.25}
+  line-height:1.25;position:relative;transition:background .15s,color .15s}
+.tab.on{box-shadow:0 -2px 0 var(--accent) inset}
+.dot{position:absolute;top:8px;right:calc(50% - 34px);width:7px;height:7px;
+  border-radius:50%;background:transparent;transition:background .2s}
+.dot.done{background:var(--ok)}
+.tab.on .dot.done{background:var(--ok)}
 .tab.on{background:var(--bg);color:var(--ink)}
 .tab.on small{opacity:.65}
 .wrap{padding:14px}
-.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;
-  box-shadow:0 1px 2px rgba(16,22,29,.08)}
-.card h2{margin:0 0 12px;font-size:12px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.7px;color:var(--muted)}
-label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 5px}
-input[type=text]{width:100%;padding:13px 12px;font-size:17px;border:1.5px solid var(--line);
-  border-radius:10px;background:#fbfcfd;color:var(--ink);font-family:inherit}
-input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff}
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;
+  box-shadow:0 1px 2px rgba(16,22,29,.05),0 6px 18px -12px rgba(16,22,29,.35)}
+.card h2{margin:0 0 14px;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.9px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.card h2 svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+label{display:block;font-size:12.5px;font-weight:650;color:var(--muted);margin:0 0 6px;
+  letter-spacing:.15px}
+input[type=text]{width:100%;padding:13px 13px;font-size:17px;border:1.5px solid var(--line);
+  border-radius:12px;background:#f7f9fb;color:var(--ink);font-family:inherit;
+  transition:border-color .15s,background .15s,box-shadow .15s}
+input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff;
+  box-shadow:0 0 0 3px rgba(11,111,212,.13)}
+input[type=text]::placeholder{color:#a9b3bd}
 .f{margin-bottom:13px}.f:last-child{margin-bottom:0}
 .row{display:flex;gap:9px}.row>*{flex:1;min-width:0}
 .row .narrow{flex:0 0 88px}
@@ -49,28 +61,38 @@ input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff}
   color:var(--muted);cursor:pointer;user-select:none;touch-action:manipulation;
   transition:transform .06s ease, filter .06s ease}
 .chip:active{transform:scale(.96);filter:brightness(.93)}
-.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;
+  box-shadow:0 4px 12px -6px rgba(11,111,212,.9)}
 .qrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f3f6}
 .qrow:last-child{border-bottom:none}
 .qrow .qt{flex:1;font-size:14px;font-weight:550;color:var(--ink);line-height:1.3}
 .qrow .chips{flex:0 0 150px}
 .qrow .chip{min-width:0;padding:9px 4px;font-size:14px}
-.btn{display:block;width:100%;padding:15px;border:none;border-radius:12px;
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;padding:15px;border:none;border-radius:13px;
   font-size:16px;font-weight:650;font-family:inherit;cursor:pointer;
   transition:transform .06s ease, filter .06s ease, opacity .15s ease;
   touch-action:manipulation}
 .btn:active{transform:scale(.97);filter:brightness(.88)}
 .btn[disabled]{opacity:.5;pointer-events:none;cursor:default}
 .btn.working{opacity:.75;pointer-events:none}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
 .btn-primary{background:var(--accent);color:#fff}
+.btn-magenta,.btn-dark,.btn-primary{box-shadow:0 6px 16px -8px rgba(16,22,29,.55)}
+.btn-quiet{background:transparent;color:var(--muted);font-size:14px;font-weight:600;
+  padding:12px;box-shadow:none}
 .btn-dark{background:var(--ink);color:#fff}
 .btn-magenta{background:var(--magenta);color:#fff}
 .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
 .btn-link{background:none;color:var(--accent);font-weight:600;font-size:14px;
   padding:8px 0;border:none;cursor:pointer;font-family:inherit}
-.sigslot{border:1.5px dashed var(--line);border-radius:12px;height:110px;background:#fbfcfd;
-  display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;
-  font-size:14px;font-weight:600;cursor:pointer;overflow:hidden;position:relative;padding:8px}
+.sigslot{border:2px dashed var(--line);border-radius:14px;height:120px;background:#f7f9fb;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  color:var(--muted);text-align:center;font-size:13.5px;font-weight:600;cursor:pointer;
+  overflow:hidden;position:relative;padding:10px;transition:border-color .15s,background .15s}
+.sigslot svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
 .sigslot.filled{border-style:solid;border-color:var(--ok);background:#fff}
 .sigslot:active{filter:brightness(.95)}
 .sigslot img{max-width:100%;max-height:100%}
@@ -109,6 +131,24 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 .hint{font-size:13px;color:var(--muted);margin:10px 0 0;line-height:1.5}
 .hint b{color:var(--ink)}
 .linked{font-size:12px;color:var(--ok);font-weight:600;margin:4px 0 0}
+.addtile{aspect-ratio:1;border:2px dashed var(--line);border-radius:12px;display:flex;
+  align-items:center;justify-content:center;color:var(--muted);cursor:pointer;
+  background:#f7f9fb;transition:border-color .15s,background .15s}
+.addtile:active{border-color:var(--accent);background:#eef4fb}
+.addtile svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round}
+.thumb{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#e6eaef}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .x{position:absolute;top:4px;right:4px;background:rgba(16,22,29,.72);color:#fff;
+  border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;
+  font-size:16px;cursor:pointer;backdrop-filter:blur(4px)}
+.thumb .n{position:absolute;left:5px;bottom:4px;background:rgba(16,22,29,.6);color:#fff;
+  font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+  padding:5px 10px;border-radius:99px;background:#eef1f4;color:var(--muted)}
+.pill.ready{background:#e4f4ec;color:var(--ok)}
+.pill b{font-weight:700}
+#stampBox{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -126,16 +166,16 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
 <header>
   <div class="tabs">
-    <div class="tab on" data-view="photos">Photos</div>
-    <div class="tab" data-view="checklist">Checklist</div>
-    <div class="tab" data-view="fcs2">FCS2</div>
+    <div class="tab on" data-view="photos">Photos<i class="dot" id="dot-photos"></i></div>
+    <div class="tab" data-view="checklist">Checklist<i class="dot" id="dot-checklist"></i></div>
+    <div class="tab" data-view="fcs2">FCS2<i class="dot" id="dot-fcs2"></i></div>
   </div>
 </header>
 
 <!-- ============================ CHECKLIST ============================ -->
 <div class="wrap view" id="v-checklist" style="display:none">
   <div class="card">
-    <h2>Job</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M20 7h-4V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>Job</h2>
     <div class="f"><label for="c_daytime">Day &amp; Time</label>
       <input type="text" id="c_daytime" autocomplete="off"></div>
     <div class="f"><label for="c_customer">Customer Name</label>
@@ -161,7 +201,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2>Install</h2>
+    <h2><svg viewBox="0 0 24 24"><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6.5 18h.01M10 18h.01"/><path d="M12 10a4 4 0 0 1 4-4M12 6a8 8 0 0 1 8-8"/></svg>Install</h2>
     <div class="f"><label>Router placement</label><div class="chips" data-check="placement"></div>
 </div>
     <div class="row">
@@ -182,7 +222,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2>Speed test</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 1 9-9"/><path d="M12 12l5-3"/></svg>Speed test</h2>
     <div class="f"><label for="c_speedwifi">Wireless / Wi-Fi (3 tests)</label>
       <input type="text" id="c_speedwifi" autocomplete="off" placeholder="920 740 880">
       <p class="linked">Type the number, hit space &mdash; becomes 920mb /</p></div>
@@ -208,17 +248,17 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2>Circle Yes or No</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Circle Yes or No</h2>
     <div id="qRows"></div>
   </div>
 
-  <button class="btn btn-ghost" id="clearChk">Clear the checklist</button>
+  <button class="btn btn-quiet" id="clearChk"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear the checklist</button>
 </div>
 
 <!-- ============================== FCS2 ============================== -->
 <div class="wrap view" id="v-fcs2" style="display:none">
   <div class="card">
-    <h2>Main</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Main</h2>
     <div class="f"><label for="f_customer">Customer Name</label>
       <input type="text" id="f_customer" autocomplete="off" autocapitalize="words"></div>
     <div class="f"><label for="f_ontSerial">ONT Serial #</label>
@@ -240,12 +280,13 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2>Resident Signoff</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/><path d="M2 2l7.586 7.586"/></svg>Resident Signoff</h2>
     <div class="f"><label for="f_resName">Resident name</label>
       <input type="text" id="f_resName" autocomplete="off" autocapitalize="words">
       <button class="btn-link" id="copyName">&uarr; Copy from Customer Name</button></div>
     <div class="f"><label>Resident Signature</label>
-      <div class="sigslot" id="sigSlot">Tap here &mdash; hand the phone to the customer</div></div>
+      <div class="sigslot" id="sigSlot"><svg viewBox="0 0 24 24"><path d="M3 17c3 0 4-8 7-8s3 8 6 8c2 0 3-2 5-2"/><path d="M2 21h20"/></svg>
+        Tap here &mdash; hand the phone to the customer</div></div>
     <div class="f"><label for="f_resDate">Date</label>
       <input type="text" id="f_resDate" autocomplete="off" inputmode="numeric"></div>
   </div>
@@ -256,13 +297,13 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     </details>
   </div>
 
-  <button class="btn btn-ghost" id="clearFcs">Clear the FCS2 form</button>
+  <button class="btn btn-quiet" id="clearFcs"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear the FCS2 form</button>
 </div>
 
 <!-- ============================= PHOTOS ============================= -->
 <div class="wrap view" id="v-photos">
   <div class="card">
-    <h2>Stamp preview</h2>
+    <h2><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Stamp preview</h2>
     <div id="stampBox" style="background:#2b3340;color:#fff;border-radius:10px;padding:12px 14px;
          text-align:right;font-size:13px;line-height:1.45;white-space:pre-line"></div>
     <p class="hint">Address comes from the Checklist tab.</p>
@@ -271,10 +312,10 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2>Photos <span id="photoCount" style="color:var(--muted)"></span></h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Photos <span id="photoCount" style="color:var(--muted)"></span></h2>
     <div class="row" style="margin-bottom:10px">
-      <button class="btn btn-dark" id="camBtn">Camera</button>
-      <button class="btn btn-ghost" id="galBtn">From gallery</button>
+      <button class="btn btn-dark" id="camBtn"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Camera</button>
+      <button class="btn btn-ghost" id="galBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Gallery</button>
     </div>
     <label style="display:flex;align-items:center;gap:9px;margin:0 0 12px;
            font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
@@ -282,23 +323,22 @@ body.locked{overflow:hidden;position:fixed;width:100%}
              style="width:20px;height:20px;accent-color:var(--accent)">
       Keep the camera open for the next shot
     </label>
-    <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
-    <p class="hint" id="photoEmpty">No photos yet.</p>
+    <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
+    <p class="hint" id="photoEmpty">Tap + to shoot. Photos are stamped when you save.</p>
     <p class="hint" id="photoNote" style="display:none;color:var(--ok);font-weight:600"></p>
   </div>
 
   <div class="card">
-    <h2>Google Drive</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Google Drive</h2>
     <p class="hint" id="driveStatus" style="margin:0 0 12px"></p>
-    <button class="btn btn-magenta" id="driveBtn" style="margin-bottom:9px">Upload to Drive</button>
+    <button class="btn btn-magenta" id="driveBtn" style="margin-bottom:10px"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>Upload to Drive</button>
     <label style="display:flex;align-items:center;gap:9px;margin:0 0 12px;
            font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
       <input type="checkbox" id="driveDocs" checked
              style="width:20px;height:20px;accent-color:var(--accent)">
       Also upload the two forms as JPG
     </label>
-    <button class="btn btn-ghost" id="pickFolderBtn" style="margin-bottom:9px">
-      Choose the Drive folder</button>
+<button class="btn btn-quiet" id="pickFolderBtn"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Choose the Drive folder</button>
     <details>
       <summary>Drive setup (once per phone) &#9662;</summary>
       <div style="margin-top:12px">
@@ -311,9 +351,11 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     </details>
   </div>
 
-  <button class="btn btn-magenta" id="sharePhotos" style="margin-bottom:9px">Share all photos</button>
-  <button class="btn btn-primary" id="savePhotos" style="margin-bottom:9px">Save all to device</button>
-  <button class="btn btn-ghost" id="clearPhotos">Clear photos</button>
+  <div class="row" style="margin-bottom:10px">
+    <button class="btn btn-ghost" id="sharePhotos"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Share</button>
+    <button class="btn btn-ghost" id="savePhotos"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Save</button>
+  </div>
+  <button class="btn btn-quiet" id="clearPhotos"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear photos</button>
 
   <input type="file" id="camInput" accept="image/*" capture="environment"
          multiple style="display:none">
@@ -327,11 +369,11 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     <img id="resultImg" alt="Completed form">
     <p class="hint" id="resHint"></p>
   </div>
-  <button class="btn btn-magenta" id="shareBtn" style="margin-bottom:9px">Share / Send</button>
-  <button class="btn btn-primary" id="saveBtn" style="margin-bottom:9px">Save to device</button>
-  <button class="btn btn-ghost" id="altBtn" style="margin-bottom:9px;display:none">Also save as JPG</button>
+  <button class="btn btn-magenta" id="shareBtn" style="margin-bottom:9px"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Share / Send</button>
+  <button class="btn btn-ghost" id="saveBtn" style="margin-bottom:9px"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Save to device</button>
+  <button class="btn btn-ghost" id="altBtn" style="margin-bottom:9px;display:none"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Also save as JPG</button>
   <p class="hint" id="platHint" style="margin:0 0 12px"></p>
-  <button class="btn btn-ghost" id="backBtn">&larr; Back to the form</button>
+  <button class="btn btn-quiet" id="backBtn">&larr; Back to the form</button>
 </div>
 
 <div class="bar" id="bar">
@@ -625,6 +667,7 @@ $("#copyName").addEventListener("click", () => {
 });
 
 /* ---------------- signature pad ---------------------------------------- */
+const SIG_ICON = '<svg viewBox="0 0 24 24"><path d="M3 17c3 0 4-8 7-8s3 8 6 8c2 0 3-2 5-2"/><path d="M2 21h20"/></svg>';
 const pad = $("#pad"), pctx = pad.getContext("2d");
 let drawing = false, cur = null;
 
@@ -708,7 +751,7 @@ $("#sigDone").addEventListener("click", () => {
     slot.innerHTML = '<img src="'+pad.toDataURL()+'"><span class="badge">&#10003; signed</span>';
   } else {
     slot.classList.remove("filled");
-    slot.textContent = "Tap here \u2014 hand the phone to the customer";
+    slot.innerHTML = SIG_ICON + "Tap here \u2014 hand the phone to the customer";
   }
 });
 function repad(){
@@ -717,6 +760,7 @@ function repad(){
   sizePad();
   setTimeout(function(){ sizePad(); }, 250);
 }
+$("#sigDone").addEventListener("click", () => setTimeout(updateTabs, 0));
 window.addEventListener("resize", repad);
 window.addEventListener("orientationchange", repad);
 if(window.screen && screen.orientation && screen.orientation.addEventListener){
@@ -1165,21 +1209,26 @@ function photoName(i){
 function renderPhotos(){
   const grid = $("#photoGrid");
   grid.innerHTML = "";
+  const add = document.createElement("div");
+  add.className = "addtile";
+  add.id = "addTile";
+  add.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+  grid.appendChild(add);
   photos.forEach((p, i) => {
     const d = document.createElement("div");
-    d.style.cssText = "position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;"
-                    + "background:#e6eaef";
-    d.innerHTML = '<img src="'+p.url+'" style="width:100%;height:100%;object-fit:cover">'
-      + '<span data-i="'+i+'" style="position:absolute;top:2px;right:2px;background:rgba(16,22,29,.75);'
-      + 'color:#fff;border-radius:50%;width:22px;height:22px;line-height:22px;text-align:center;'
-      + 'font-size:15px;cursor:pointer">&times;</span>';
+    d.className = "thumb";
+    d.innerHTML = '<img src="'+p.url+'" alt="">'
+      + '<span class="n">'+(i+1)+'</span>'
+      + '<span class="x" data-i="'+i+'">&times;</span>';
     grid.appendChild(d);
   });
   $("#photoCount").textContent = photos.length ? "(" + photos.length + ")" : "";
   $("#photoEmpty").style.display = photos.length ? "none" : "block";
+  if(typeof updateTabs === "function") updateTabs();
   }
 
 $("#photoGrid").addEventListener("click", e => {
+  if(e.target.closest("#addTile")){ $("#camInput").click(); return; }
   const t = e.target.closest("[data-i]");
   if(!t) return;
   const i = +t.dataset.i;
@@ -1299,14 +1348,14 @@ function driveStatus(msg){
   const el = $("#driveStatus");
   if(msg){ el.innerHTML = msg; return; }
   if(!GD.clientId || !GD.apiKey){
-    el.innerHTML = "<b>Not set up.</b> Open <b>Drive setup</b> below and paste the "
-                 + "two values from your lead.";
+    el.innerHTML = '<span class="pill">Not set up</span><br>'
+                 + 'Open <b>Drive setup</b> and paste the two values from your lead.';
   } else if(!GD.folderId){
-    el.innerHTML = "<b>No folder chosen.</b> Tap <b>Choose the Drive folder</b> and pick "
-                 + "your shared jobs folder. Asked once, then remembered.";
+    el.innerHTML = '<span class="pill">No folder yet</span><br>'
+                 + 'Tap <b>Choose the Drive folder</b> &mdash; asked once, then remembered.';
   } else {
-    el.innerHTML = "Uploads into <b>" + GD.folderName + "</b> &rarr; a new subfolder "
-                 + "named after the address.";
+    el.innerHTML = '<span class="pill ready">&#10003; ' + GD.folderName + '</span><br>'
+                 + 'A subfolder named after the address is created for each job.';
   }
 }
 driveStatus();
@@ -1483,8 +1532,19 @@ function saveState(){
     }));
   }catch(e){}
 }
+function updateTabs(){
+  const chk = ($("#c_customer").value || "").trim() && ($("#c_street").value || "").trim();
+  $("#dot-photos").classList.toggle("done", photos.length > 0);
+  $("#dot-checklist").classList.toggle("done", !!chk);
+  $("#dot-fcs2").classList.toggle("done", state.strokes.length > 0);
+}
+
 let saveTimer = null;
-function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 400); }
+function queueSave(){
+  clearTimeout(saveTimer);
+  updateTabs();
+  saveTimer = setTimeout(saveState, 400);
+}
 document.addEventListener("input", queueSave);
 document.addEventListener("click", e => { if(e.target.closest(".chip")) queueSave(); });
 
@@ -1534,6 +1594,7 @@ function loadState(){
   refreshStamp();
 }
 loadState();
+updateTabs();
 
 /* ---------------- views ------------------------------------------------ */
 function setView(v){
@@ -1589,7 +1650,7 @@ $("#clearFcs").addEventListener("click", () => {
   $("#f_date").value = today(); $("#f_resDate").value = today();
   const slot = $("#sigSlot");
   slot.classList.remove("filled");
-  slot.textContent = "Tap here \u2014 hand the phone to the customer";
+  slot.innerHTML = SIG_ICON + "Tap here \u2014 hand the phone to the customer";
   saveState();
 });
 
