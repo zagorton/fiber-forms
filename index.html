@@ -26,8 +26,8 @@ body{
 header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:20;
   padding:10px 14px 0;padding-top:calc(10px + env(safe-area-inset-top))}
 .tabs{display:flex;gap:6px}
-.tab{flex:1;text-align:center;padding:13px 6px;border-radius:10px 10px 0 0;
-  background:#1e2833;color:#9fb0c2;font-size:14px;font-weight:650;cursor:pointer;
+.tab{flex:1;text-align:center;padding:13px 4px;border-radius:10px 10px 0 0;
+  background:#1e2833;color:#9fb0c2;font-size:13px;font-weight:650;cursor:pointer;
   line-height:1.25}
 .tab.on{background:var(--bg);color:var(--ink)}
 .tab.on small{opacity:.65}
@@ -105,22 +105,27 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 </head>
 <body>
 
-<div id="fileWarn" style="display:none;background:#b3541e;color:#fff;padding:12px 14px;
-     font-size:14px;line-height:1.45;padding-top:calc(12px + env(safe-area-inset-top))">
+<div id="fileWarn" style="display:none;background:#b3541e;color:#fff;padding:12px 40px 12px 14px;
+     font-size:14px;line-height:1.45;position:relative;
+     padding-top:calc(12px + env(safe-area-inset-top))">
   <b>Opened as a local file.</b><br>
   On iPhone this will not work properly &mdash; iOS only previews the file.
   Open the web link your team shared instead, then Share &rarr; Add to Home Screen.
+  <span id="fileWarnX" style="position:absolute;right:10px;font-size:24px;line-height:1;
+        cursor:pointer;padding:4px 8px;opacity:.85;
+        top:calc(10px + env(safe-area-inset-top))">&times;</span>
 </div>
 
 <header>
   <div class="tabs">
-    <div class="tab on" data-view="checklist">T-Fiber Checklist</div>
-    <div class="tab" data-view="fcs2">Fiber City FCS2</div>
+    <div class="tab on" data-view="photos">Photos</div>
+    <div class="tab" data-view="checklist">Checklist</div>
+    <div class="tab" data-view="fcs2">FCS2</div>
   </div>
 </header>
 
 <!-- ============================ CHECKLIST ============================ -->
-<div class="wrap view" id="v-checklist">
+<div class="wrap view" id="v-checklist" style="display:none">
   <div class="card">
     <h2>Job</h2>
     <div class="f"><label for="c_daytime">Day &amp; Time</label>
@@ -143,6 +148,9 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <div class="f narrow"><label for="c_zip">Zip</label>
         <input type="text" id="c_zip" autocomplete="off" inputmode="numeric"></div>
     </div>
+    <div class="f"><label for="c_county">County <span style="font-weight:500">(photo stamp only)</span></label>
+      <input type="text" id="c_county" autocomplete="off" autocapitalize="words">
+      <p class="linked">Remembered &middot; not printed on either form</p></div>
   </div>
 
   <div class="card">
@@ -243,6 +251,71 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <button class="btn btn-ghost" id="clearFcs">Clear the FCS2 form</button>
+</div>
+
+<!-- ============================= PHOTOS ============================= -->
+<div class="wrap view" id="v-photos">
+  <div class="card">
+    <h2>Stamp preview</h2>
+    <div id="stampBox" style="background:#2b3340;color:#fff;border-radius:10px;padding:12px 14px;
+         text-align:right;font-size:13px;line-height:1.45;white-space:pre-line"></div>
+    <p class="hint">Goes in the top right corner of every photo. The address comes
+      from the <b>Checklist</b> tab &mdash; fill it whenever, the stamp is applied
+      at save time.</p>
+    <p class="hint" id="addrWarn" style="display:none;color:#b3541e">
+      <b>Address still empty.</b> Keep shooting &mdash; just fill it on the Checklist
+      tab before you save these.</p>
+  </div>
+
+  <div class="card">
+    <h2>Photos <span id="photoCount" style="color:var(--muted)"></span></h2>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn btn-dark" id="camBtn">Camera</button>
+      <button class="btn btn-ghost" id="galBtn">From gallery</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:9px;margin:0 0 12px;
+           font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
+      <input type="checkbox" id="keepCam" checked
+             style="width:20px;height:20px;accent-color:var(--accent)">
+      Keep the camera open for the next shot
+    </label>
+    <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+    <p class="hint" id="photoEmpty">No photos yet. Tap Camera &mdash; each shot is stamped
+      and kept here until you save or clear them.</p>
+  </div>
+
+  <div class="card">
+    <h2>Google Drive</h2>
+    <p class="hint" id="driveStatus" style="margin:0 0 12px"></p>
+    <button class="btn btn-magenta" id="driveBtn" style="margin-bottom:9px">Upload to Drive</button>
+    <label style="display:flex;align-items:center;gap:9px;margin:0 0 12px;
+           font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
+      <input type="checkbox" id="driveDocs" checked
+             style="width:20px;height:20px;accent-color:var(--accent)">
+      Also upload the checklist PDF and FCS2 JPG
+    </label>
+    <button class="btn btn-ghost" id="pickFolderBtn" style="margin-bottom:9px">
+      Choose the Drive folder</button>
+    <details>
+      <summary>Drive setup (once per phone) &#9662;</summary>
+      <div style="margin-top:12px">
+        <div class="f"><label for="g_client">OAuth Client ID</label>
+          <input type="text" id="g_client" autocomplete="off"
+                 placeholder="1234-abcd.apps.googleusercontent.com"></div>
+        <div class="f"><label for="g_key">API key</label>
+          <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
+        <p class="linked">Same two values for every technician. Ask your lead for them.</p>
+      </div>
+    </details>
+  </div>
+
+  <button class="btn btn-magenta" id="sharePhotos" style="margin-bottom:9px">Share all photos</button>
+  <button class="btn btn-primary" id="savePhotos" style="margin-bottom:9px">Save all to device</button>
+  <button class="btn btn-ghost" id="clearPhotos">Clear photos</button>
+
+  <input type="file" id="camInput" accept="image/*" capture="environment"
+         multiple style="display:none">
+  <input type="file" id="galInput" accept="image/*" multiple style="display:none">
 </div>
 
 <!-- ============================= RESULT ============================= -->
@@ -795,9 +868,14 @@ const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent)
 const STANDALONE = (window.navigator.standalone === true)
   || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
 
-if(location.protocol === "file:"){
+/* only iPhones actually break on a local file - Android runs it fine */
+if(location.protocol === "file:" && IS_IOS){
   const w = document.getElementById("fileWarn");
-  if(w) w.style.display = "block";
+  if(w){
+    w.style.display = "block";
+    const x = document.getElementById("fileWarnX");
+    if(x) x.addEventListener("click", () => { w.style.display = "none"; });
+  }
 }
 
 function slug(s){
@@ -887,17 +965,548 @@ function dataURLtoBlob(url, type){
   return new Blob([jpegBytesFromDataURL(url)], {type: type || "image/jpeg"});
 }
 
+/* ---------------- stamped photos --------------------------------------- */
+const ST_NAME = {};
+Object.keys(ST).forEach(n => {
+  ST_NAME[ST[n]] = n.replace(/\b\w/g, c => c.toUpperCase());
+});
+
+$("#c_county").value = recall("county") || "Los Angeles County";
+$("#c_county").addEventListener("input", e => store("county", e.target.value));
+
+function stampLines(when){
+  const d = (when instanceof Date && !isNaN(when)) ? when : new Date();
+  const date = d.toLocaleDateString("en-US",
+    {month:"short", day:"numeric", year:"numeric"});
+  const time = d.toLocaleTimeString("en-US",
+    {hour:"numeric", minute:"2-digit", second:"2-digit"});
+  const out = [date + " " + time];
+  const push = v => { v = (v||"").trim(); if(v) out.push(v); };
+  push($("#c_street").value);
+  push($("#c_city").value);
+  push($("#c_county").value);
+  const st = ($("#c_state").value || "").trim().toUpperCase();
+  if(st) out.push(ST_NAME[st] || st);
+  return out;
+}
+
+/* "38056 Trilport Ave, Palmdale, CA 93552" - matches the Drive folder naming */
+function composedAddress(){
+  const st = ($("#c_street").value || "").trim();
+  const ci = ($("#c_city").value   || "").trim();
+  const s2 = ($("#c_state").value  || "").trim().toUpperCase();
+  const zp = ($("#c_zip").value    || "").trim();
+  let v = st;
+  if(ci) v += (v ? ", " : "") + ci;
+  if(s2) v += (v ? ", " : "") + s2;
+  if(zp) v += (v ? " "  : "") + zp;
+  return v.replace(/[\\/]/g, "-").trim();
+}
+
+function refreshStamp(){
+  $("#stampBox").textContent = stampLines(new Date()).join("\n");
+  const has = ($("#c_street").value || "").trim() || ($("#c_city").value || "").trim();
+  $("#addrWarn").style.display = has ? "none" : "block";
+}
+["c_street","c_city","c_county","c_state"].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener("input", refreshStamp);
+});
+
+function loadBitmap(file){
+  if(window.createImageBitmap){
+    return createImageBitmap(file, {imageOrientation:"from-image"})
+      .catch(() => createImageBitmap(file))
+      .catch(() => loadViaImg(file));
+  }
+  return loadViaImg(file);
+}
+function loadViaImg(file){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => { res(im); setTimeout(() => URL.revokeObjectURL(url), 5000); };
+    im.onerror = rej;
+    im.src = url;
+  });
+}
+
+/* photos survive the app being closed - kept in IndexedDB, not memory */
+function idb(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open("fiberForms", 1);
+    r.onupgradeneeded = () => {
+      const db = r.result;
+      if(!db.objectStoreNames.contains("photos"))
+        db.createObjectStore("photos", {keyPath:"id", autoIncrement:true});
+    };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function idbRun(mode, fn){
+  return idb().then(db => new Promise((res, rej) => {
+    const t = db.transaction("photos", mode);
+    const q = fn(t.objectStore("photos"));
+    q.onsuccess = () => res(q.result);
+    q.onerror = () => rej(q.error);
+  }));
+}
+const idbAdd   = rec => idbRun("readwrite", st => st.add(rec));
+const idbAll   = ()  => idbRun("readonly",  st => st.getAll());
+const idbDel   = id  => idbRun("readwrite", st => st.delete(id));
+const idbClear = ()  => idbRun("readwrite", st => st.clear());
+
+const photos = [];
+
+function restorePhotos(){
+  return idbAll().then(rows => {
+    (rows || []).sort((a,b) => a.id - b.id).forEach(r => {
+      photos.push({ id: r.id, file: r.blob, when: new Date(r.when),
+                    url: URL.createObjectURL(r.blob) });
+    });
+    renderPhotos();
+  }).catch(err => console.error("photo restore failed", err));
+}
+
+function stampPhoto(file, when){
+  return loadBitmap(file).then(bmp => {
+    const MAX = 2560;
+    const iw = bmp.width, ih = bmp.height;
+    const k = Math.min(1, MAX / Math.max(iw, ih));
+    const w = Math.round(iw * k), h = Math.round(ih * k);
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const g = c.getContext("2d");
+    g.drawImage(bmp, 0, 0, w, h);
+    if(bmp.close) bmp.close();
+
+    const lines = stampLines(when);
+    let fs = Math.max(16, Math.round(Math.min(w, h) * 0.042));
+    const pad = Math.round(fs * 0.65);
+    /* shrink until the longest line fits the frame */
+    const fits = size => {
+      g.font = "600 " + size + "px Helvetica, Arial, sans-serif";
+      return lines.every(L => g.measureText(L).width <= w - pad * 2);
+    };
+    while(fs > 12 && !fits(fs)) fs -= 1;
+    g.font = "600 " + fs + "px Helvetica, Arial, sans-serif";
+    g.textAlign = "right";
+    g.textBaseline = "top";
+    /* soft drop shadow keeps it readable on a white wall */
+    g.shadowColor = "rgba(0,0,0,0.55)";
+    g.shadowBlur = Math.max(3, fs * 0.30);
+    g.shadowOffsetX = Math.max(1, fs * 0.05);
+    g.shadowOffsetY = Math.max(1, fs * 0.06);
+    g.fillStyle = "#ffffff";
+    const x = w - pad;
+    let y = Math.round(fs * 0.6);
+    lines.forEach(L => {
+      g.fillText(L, x, y);
+      y += Math.round(fs * 1.18);
+    });
+    g.shadowColor = "transparent";
+    g.shadowBlur = 0; g.shadowOffsetX = 0; g.shadowOffsetY = 0;
+    return new Promise(res => c.toBlob(res, "image/jpeg", 0.9));
+  });
+}
+
+function photoName(i){
+  const base = slug($("#c_street").value) || "photo";
+  return base + "_" + ("00" + i).slice(-2) + ".jpg";
+}
+
+function renderPhotos(){
+  const grid = $("#photoGrid");
+  grid.innerHTML = "";
+  photos.forEach((p, i) => {
+    const d = document.createElement("div");
+    d.style.cssText = "position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;"
+                    + "background:#e6eaef";
+    d.innerHTML = '<img src="'+p.url+'" style="width:100%;height:100%;object-fit:cover">'
+      + '<span data-i="'+i+'" style="position:absolute;top:2px;right:2px;background:rgba(16,22,29,.75);'
+      + 'color:#fff;border-radius:50%;width:22px;height:22px;line-height:22px;text-align:center;'
+      + 'font-size:15px;cursor:pointer">&times;</span>';
+    grid.appendChild(d);
+  });
+  $("#photoCount").textContent = photos.length ? "(" + photos.length + ")" : "";
+  $("#photoEmpty").style.display = photos.length ? "none" : "block";
+}
+
+$("#photoGrid").addEventListener("click", e => {
+  const t = e.target.closest("[data-i]");
+  if(!t) return;
+  const i = +t.dataset.i;
+  URL.revokeObjectURL(photos[i].url);
+  if(photos[i].id != null) idbDel(photos[i].id).catch(() => {});
+  photos.splice(i, 1);
+  renderPhotos();
+});
+
+/* photos are kept raw and stamped only on the way out, so the camera
+   button is instant and the address can be typed later */
+function addFiles(files){
+  const list = Array.prototype.slice.call(files || []);
+  if(!list.length) return;
+  list.forEach(f => {
+    const when = f.lastModified ? new Date(f.lastModified) : new Date();
+    const item = { file: f, when: when, url: URL.createObjectURL(f), id: null };
+    photos.push(item);
+    idbAdd({ blob: f, when: when.getTime() })
+      .then(id => { item.id = id; })
+      .catch(err => console.error("photo save failed", err));
+  });
+  renderPhotos();
+}
+
+function exportPhotos(label){
+  const btn = $(label);
+  const old = btn.textContent;
+  const out = [];
+  let chain = Promise.resolve();
+  photos.forEach((p, i) => {
+    chain = chain.then(() => {
+      btn.textContent = "Stamping " + (i + 1) + " of " + photos.length + "...";
+      return stampPhoto(p.file, p.when);
+    }).then(blob => {
+      if(blob) out.push({ blob: blob, name: photoName(i + 1), type: "image/jpeg" });
+    }).catch(err => console.error("stamp failed", err));
+  });
+  return chain.then(() => { btn.textContent = old; return out; });
+}
+
+$("#camBtn").addEventListener("click", () => $("#camInput").click());
+$("#galBtn").addEventListener("click", () => $("#galInput").click());
+$("#keepCam").checked = recall("keepCam") !== "0";
+$("#keepCam").addEventListener("change", e => store("keepCam", e.target.checked ? "1" : "0"));
+
+$("#camInput").addEventListener("change", e => {
+  const got = e.target.files && e.target.files.length;
+  addFiles(e.target.files);
+  e.target.value = "";
+  /* straight back into the camera - cancelling there ends the run */
+  if(got && $("#keepCam").checked){
+    setTimeout(() => { try { $("#camInput").click(); } catch(err){} }, 300);
+  }
+});
+$("#galInput").addEventListener("change", e => { addFiles(e.target.files); e.target.value = ""; });
+
+$("#clearPhotos").addEventListener("click", () => {
+  if(!photos.length) return;
+  if(!confirm("Remove all " + photos.length + " photos?")) return;
+  photos.forEach(p => URL.revokeObjectURL(p.url));
+  photos.length = 0;
+  idbClear().catch(() => {});
+  renderPhotos();
+});
+
+$("#savePhotos").addEventListener("click", () => {
+  if(!photos.length) return;
+  exportPhotos("#savePhotos").then(list => {
+    list.forEach((f, i) => setTimeout(() => saveToDevice(f), i * 700));
+  });
+});
+
+$("#sharePhotos").addEventListener("click", () => {
+  if(!photos.length) return;
+  exportPhotos("#sharePhotos").then(async list => {
+    try{
+      const files = list.map(f => new File([f.blob], f.name, {type:"image/jpeg"}));
+      if(navigator.canShare && navigator.canShare({files: files})){
+        await navigator.share({files: files, title: $("#c_street").value || "Install photos"});
+        return;
+      }
+    }catch(err){
+      if(err && err.name === "AbortError") return;
+    }
+    list.forEach((f, i) => setTimeout(() => saveToDevice(f), i * 700));
+  });
+});
+
+renderPhotos();
+refreshStamp();
+restorePhotos();
+
+/* ---------------- Google Drive upload ---------------------------------- */
+const GD = {
+  clientId: recall("gClientId"),
+  apiKey:   recall("gApiKey"),
+  folderId: recall("gFolderId"),
+  folderName: recall("gFolderName"),
+  token: null, exp: 0, tokenClient: null
+};
+$("#g_client").value = GD.clientId;
+$("#g_key").value    = GD.apiKey;
+$("#g_client").addEventListener("input", e => {
+  GD.clientId = e.target.value.trim(); store("gClientId", GD.clientId);
+  GD.tokenClient = null; driveStatus();
+});
+$("#g_key").addEventListener("input", e => {
+  GD.apiKey = e.target.value.trim(); store("gApiKey", GD.apiKey); driveStatus();
+});
+$("#driveDocs").checked = recall("driveDocs") !== "0";
+$("#driveDocs").addEventListener("change",
+  e => store("driveDocs", e.target.checked ? "1" : "0"));
+
+function driveStatus(msg){
+  const el = $("#driveStatus");
+  if(msg){ el.innerHTML = msg; return; }
+  if(!GD.clientId || !GD.apiKey){
+    el.innerHTML = "<b>Not set up.</b> Open <b>Drive setup</b> below and paste the "
+                 + "two values from your lead.";
+  } else if(!GD.folderId){
+    el.innerHTML = "<b>No folder chosen.</b> Tap <b>Choose the Drive folder</b> and pick "
+                 + "your shared jobs folder. Asked once, then remembered.";
+  } else {
+    el.innerHTML = "Uploads into <b>" + GD.folderName + "</b> &rarr; a new subfolder "
+                 + "named after the address.";
+  }
+}
+driveStatus();
+
+function loadScript(src){
+  return new Promise((res, rej) => {
+    if(document.querySelector('script[data-s="'+src+'"]')) return res();
+    const el = document.createElement("script");
+    el.src = src; el.async = true; el.dataset.s = src;
+    el.onload = res; el.onerror = () => rej(new Error("offline"));
+    document.head.appendChild(el);
+  });
+}
+
+function gToken(interactive){
+  if(GD.token && Date.now() < GD.exp - 60000) return Promise.resolve(GD.token);
+  return loadScript("https://accounts.google.com/gsi/client").then(() =>
+    new Promise((res, rej) => {
+      if(!GD.tokenClient){
+        GD.tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: GD.clientId,
+          scope: "https://www.googleapis.com/auth/drive.file",
+          callback: () => {}
+        });
+      }
+      GD.tokenClient.callback = r => {
+        if(r.error) return rej(new Error(r.error));
+        GD.token = r.access_token;
+        GD.exp = Date.now() + ((r.expires_in || 3600) * 1000);
+        res(GD.token);
+      };
+      GD.tokenClient.error_callback = e => rej(new Error(e.type || "auth failed"));
+      GD.tokenClient.requestAccessToken({prompt: interactive ? "" : "none"});
+    }));
+}
+
+function pickFolder(){
+  if(!GD.clientId || !GD.apiKey){ alert("Fill in Drive setup first."); return; }
+  driveStatus("Opening Google...");
+  gToken(true)
+    .then(token => loadScript("https://apis.google.com/js/api.js").then(() => token))
+    .then(token => new Promise(res => gapi.load("picker", () => res(token))))
+    .then(token => {
+      const mine = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+        .setSelectFolderEnabled(true).setIncludeFolders(true)
+        .setMimeTypes("application/vnd.google-apps.folder").setEnableDrives(true);
+      const shared = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+        .setSelectFolderEnabled(true).setIncludeFolders(true).setOwnedByMe(false)
+        .setMimeTypes("application/vnd.google-apps.folder").setLabel("Shared with me");
+      new google.picker.PickerBuilder()
+        .setOAuthToken(token).setDeveloperKey(GD.apiKey)
+        .addView(mine).addView(shared)
+        .setTitle("Pick your shared jobs folder")
+        .setCallback(data => {
+          if(data[google.picker.Response.ACTION] !== google.picker.Action.PICKED){
+            driveStatus(); return;
+          }
+          const doc = data[google.picker.Response.DOCUMENTS][0];
+          GD.folderId = doc.id; GD.folderName = doc.name;
+          store("gFolderId", GD.folderId); store("gFolderName", GD.folderName);
+          driveStatus();
+        }).build().setVisible(true);
+    })
+    .catch(err => driveStatus("Could not open Google: " + err.message));
+}
+$("#pickFolderBtn").addEventListener("click", pickFolder);
+
+function gFetch(url, opts, token){
+  opts = opts || {};
+  opts.headers = Object.assign({Authorization: "Bearer " + token}, opts.headers || {});
+  return fetch(url, opts).then(r => r.json().then(j => {
+    if(!r.ok) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
+    return j;
+  }));
+}
+
+function findOrMakeFolder(parent, name, token){
+  const q = "'" + parent + "' in parents and name='" + name.replace(/'/g, "\\'")
+          + "' and mimeType='application/vnd.google-apps.folder' and trashed=false";
+  const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q)
+            + "&fields=files(id,name)&supportsAllDrives=true&includeItemsFromAllDrives=true";
+  return gFetch(url, {}, token).then(r => {
+    if(r.files && r.files.length) return r.files[0].id;
+    return gFetch("https://www.googleapis.com/drive/v3/files?supportsAllDrives=true", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({name: name, parents: [parent],
+                            mimeType: "application/vnd.google-apps.folder"})
+    }, token).then(f => f.id);
+  });
+}
+
+function uploadOne(file, parent, token){
+  const form = new FormData();
+  form.append("metadata", new Blob(
+    [JSON.stringify({name: file.name, parents: [parent]})], {type: "application/json"}));
+  form.append("file", file.blob);
+  return gFetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true",
+    {method: "POST", body: form}, token);
+}
+
+function buildDocs(){
+  const base = slug($("#c_customer").value) || slug($("#c_street").value) || "forms";
+  const docs = [];
+  const C = CFG.checklist;
+  render("checklist");
+  const cu = out.toDataURL("image/jpeg", 0.9);
+  docs.push({blob: buildPDF(jpegBytesFromDataURL(cu), C.W, C.H, C.pdfW, C.pdfH, C.links),
+             name: base + "_T-Fiber_Checklist.pdf"});
+  docs.push({blob: dataURLtoBlob(cu, "image/jpeg"),
+             name: base + "_T-Fiber_Checklist.jpg"});
+  render("fcs2");
+  docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.92), "image/jpeg"),
+             name: base + "_FCS2.jpg"});
+  return docs;
+}
+
+$("#driveBtn").addEventListener("click", () => {
+  if(!GD.clientId || !GD.apiKey){ alert("Fill in Drive setup first."); return; }
+  if(!GD.folderId){ alert("Choose the Drive folder first."); return; }
+  const folderName = composedAddress();
+  if(!folderName){ alert("Fill the address on the Checklist tab first."); return; }
+  if(!photos.length && !$("#driveDocs").checked){ alert("Nothing to upload."); return; }
+  if(navigator.onLine === false){ alert("No connection. Try again when you have signal."); return; }
+
+  const files = [];
+  const btn = $("#driveBtn");
+  btn.disabled = true;
+
+  exportPhotos("#driveBtn").then(list => {
+    list.forEach(f => files.push(f));
+    if($("#driveDocs").checked){
+      try { buildDocs().forEach(d => files.push(d)); }
+      catch(e){ console.error("doc build failed", e); }
+    }
+    if(!confirm("Upload " + files.length + " files into\n\n"
+                + GD.folderName + " / " + folderName + " ?")){
+      throw new Error("cancelled");
+    }
+    driveStatus("Signing in...");
+    return gToken(false).catch(() => gToken(true));
+  }).then(token => {
+    driveStatus("Creating folder...");
+    return findOrMakeFolder(GD.folderId, folderName, token).then(id => ({id: id, token: token}));
+  }).then(ctx => {
+    let chain = Promise.resolve();
+    files.forEach((f, i) => {
+      chain = chain.then(() => {
+        driveStatus("Uploading " + (i + 1) + " of " + files.length + "...");
+        return uploadOne(f, ctx.id, ctx.token);
+      });
+    });
+    return chain;
+  }).then(() => {
+    driveStatus("<b>Done.</b> " + files.length + " files are in <b>" + GD.folderName
+              + " / " + folderName + "</b>.");
+    btn.disabled = false;
+  }).catch(err => {
+    btn.disabled = false;
+    if(err && err.message === "cancelled"){ driveStatus(); return; }
+    driveStatus("<b style='color:#b3541e'>Upload failed:</b> "
+              + ((err && err.message) || "unknown") + ". Files are still on the phone.");
+  });
+});
+
+/* ---------------- autosave the forms too -------------------------------- */
+const SAVE_KEY = "jobState";
+
+function saveState(){
+  try{
+    const v = {};
+    $$("input[type=text]").forEach(i => { if(i.value) v[i.id] = i.value; });
+    store(SAVE_KEY, JSON.stringify({
+      v: v, checks: state.checks, router: state.router, isp: state.isp,
+      strokes: state.strokes, padW: state.padW, padH: state.padH
+    }));
+  }catch(e){}
+}
+let saveTimer = null;
+function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 400); }
+document.addEventListener("input", queueSave);
+document.addEventListener("click", e => { if(e.target.closest(".chip")) queueSave(); });
+
+function sigThumb(){
+  if(!state.strokes.length) return null;
+  const w = state.padW || 340, h = state.padH || 130;
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const g = c.getContext("2d");
+  g.strokeStyle = "#101820"; g.lineWidth = 2.6;
+  g.lineCap = "round"; g.lineJoin = "round";
+  state.strokes.forEach(st => {
+    g.beginPath();
+    st.forEach((p, i) => { const x = p[0]*w, y = p[1]*h; i ? g.lineTo(x,y) : g.moveTo(x,y); });
+    g.stroke();
+  });
+  return c.toDataURL();
+}
+
+function loadState(){
+  let s;
+  try{ s = JSON.parse(recall(SAVE_KEY) || "null"); }catch(e){ return; }
+  if(!s) return;
+  Object.keys(s.v || {}).forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = s.v[id];
+  });
+  if(s.checks){
+    state.checks = s.checks;
+    Object.keys(s.checks).forEach(g => setCheck(g, s.checks[g]));
+  }
+  if(s.router) setRouterChip(s.router);
+  if(s.isp !== undefined){
+    state.isp = s.isp;
+    $$("#ispChips .chip").forEach(c => c.classList.toggle("on", c.dataset.v === s.isp));
+  }
+  if(s.strokes && s.strokes.length){
+    state.strokes = s.strokes;
+    state.padW = s.padW || 0; state.padH = s.padH || 0;
+    const img = sigThumb();
+    const slot = $("#sigSlot");
+    if(img){
+      slot.classList.add("filled");
+      slot.innerHTML = '<img src="'+img+'"><span class="badge">&#10003; signed</span>';
+    }
+  }
+  refreshStamp();
+}
+loadState();
+
 /* ---------------- views ------------------------------------------------ */
 function setView(v){
-  ["checklist","fcs2","result"].forEach(k => {
+  ["photos","checklist","fcs2","result"].forEach(k => {
     $("#v-"+k).style.display = (k === v) ? "block" : "none";
   });
   if(v !== "result"){
     state.view = v;
     $("#bar").style.display = "flex";
-    $("#makeBtn").textContent = (v === "checklist")
-      ? "Create PDF for customer" : "Create JPG to upload";
-    $("#makeBtn").className = "btn " + (v === "checklist" ? "btn-magenta" : "btn-dark");
+    if(v === "photos"){
+      $("#bar").style.display = "none";
+      refreshStamp();
+    } else {
+      $("#makeBtn").textContent = (v === "checklist")
+        ? "Create PDF for customer" : "Create JPG to upload";
+      $("#makeBtn").className = "btn " + (v === "checklist" ? "btn-magenta" : "btn-dark");
+    }
   } else {
     $("#bar").style.display = "none";
   }
@@ -906,7 +1515,7 @@ function setView(v){
 }
 $$(".tab").forEach(t => t.addEventListener("click", () => setView(t.dataset.view)));
 $("#backBtn").addEventListener("click", () => setView(state.view));
-setView("checklist");
+setView("photos");
 
 $("#platHint").innerHTML = IS_IOS
   ? "iPhone: <b>Share / Send</b> hands the file to Messages, Mail or Files."
@@ -925,6 +1534,9 @@ $("#clearChk").addEventListener("click", () => {
   $("#c_tech").value = recall("techName");
   $("#c_model").value = recall("routerModel") || "Nokia";
   applyCheckDefaults();
+  $("#c_county").value = recall("county") || "Los Angeles County";
+  refreshStamp();
+  saveState();
 });
 $("#clearFcs").addEventListener("click", () => {
   if(!confirm("Clear the FCS2 form and the signature?")) return;
@@ -934,6 +1546,7 @@ $("#clearFcs").addEventListener("click", () => {
   const slot = $("#sigSlot");
   slot.classList.remove("filled");
   slot.textContent = "Tap here \u2014 hand the phone to the customer";
+  saveState();
 });
 
 /* offline support - only works when served from a real web address */
