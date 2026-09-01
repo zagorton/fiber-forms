@@ -1,5 +1,5 @@
-const CACHE = "fiber-forms-v16";
-const ASSETS = ["./", "./index.html", "./manifest.json",
+const CACHE = "fiber-forms-v17";
+const ASSETS = ["./", "./index.html", "./manifest.json", "./privacy.html",
                 "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
