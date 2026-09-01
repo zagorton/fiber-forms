@@ -46,7 +46,9 @@ input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{flex:1;min-width:78px;text-align:center;padding:12px 8px;border-radius:10px;
   border:1.5px solid var(--line);background:#fbfcfd;font-size:15px;font-weight:600;
-  color:var(--muted);cursor:pointer;user-select:none}
+  color:var(--muted);cursor:pointer;user-select:none;touch-action:manipulation;
+  transition:transform .06s ease, filter .06s ease}
+.chip:active{transform:scale(.96);filter:brightness(.93)}
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .qrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f3f6}
 .qrow:last-child{border-bottom:none}
@@ -54,7 +56,12 @@ input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff}
 .qrow .chips{flex:0 0 150px}
 .qrow .chip{min-width:0;padding:9px 4px;font-size:14px}
 .btn{display:block;width:100%;padding:15px;border:none;border-radius:12px;
-  font-size:16px;font-weight:650;font-family:inherit;cursor:pointer}
+  font-size:16px;font-weight:650;font-family:inherit;cursor:pointer;
+  transition:transform .06s ease, filter .06s ease, opacity .15s ease;
+  touch-action:manipulation}
+.btn:active{transform:scale(.97);filter:brightness(.88)}
+.btn[disabled]{opacity:.5;pointer-events:none;cursor:default}
+.btn.working{opacity:.75;pointer-events:none}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-dark{background:var(--ink);color:#fff}
 .btn-magenta{background:var(--magenta);color:#fff}
@@ -65,6 +72,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff}
   display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;
   font-size:14px;font-weight:600;cursor:pointer;overflow:hidden;position:relative;padding:8px}
 .sigslot.filled{border-style:solid;border-color:var(--ok);background:#fff}
+.sigslot:active{filter:brightness(.95)}
 .sigslot img{max-width:100%;max-height:100%}
 .badge{position:absolute;top:6px;right:8px;font-size:11px;color:var(--ok);font-weight:700}
 .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);
@@ -132,10 +140,10 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <input type="text" id="c_daytime" autocomplete="off"></div>
     <div class="f"><label for="c_customer">Customer Name</label>
       <input type="text" id="c_customer" autocomplete="off" autocapitalize="words">
-      <p class="linked">Auto-fills the FCS2 form</p></div>
+</div>
     <div class="f"><label for="c_tech">Technician Name</label>
       <input type="text" id="c_tech" autocomplete="off" autocapitalize="words">
-      <p class="linked">Remembered for next time</p></div>
+</div>
     <div class="f"><label for="c_street">Address &mdash; paste the whole thing here</label>
       <input type="text" id="c_street" autocomplete="off" autocapitalize="words"
              placeholder="1420 N Central Ave Apt 7, Glendale, CA 91202">
@@ -148,15 +156,14 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <div class="f narrow"><label for="c_zip">Zip</label>
         <input type="text" id="c_zip" autocomplete="off" inputmode="numeric"></div>
     </div>
-    <div class="f"><label for="c_county">County <span style="font-weight:500">(photo stamp only)</span></label>
-      <input type="text" id="c_county" autocomplete="off" autocapitalize="words">
-      <p class="linked">Remembered &middot; not printed on either form</p></div>
+    <div class="f"><label for="c_county">County</label>
+      <input type="text" id="c_county" autocomplete="off" autocapitalize="words"></div>
   </div>
 
   <div class="card">
     <h2>Install</h2>
     <div class="f"><label>Router placement</label><div class="chips" data-check="placement"></div>
-      <p class="linked">Remembered</p></div>
+</div>
     <div class="row">
       <div class="f"><label for="c_wifiname">Wi-Fi name</label>
         <input type="text" id="c_wifiname" autocomplete="off"></div>
@@ -165,13 +172,13 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     </div>
     <div class="f"><label for="c_model">Router Model</label>
       <input type="text" id="c_model" autocomplete="off">
-      <p class="linked">Remembered &middot; sets the circled router on FCS2</p></div>
+</div>
     <div class="f"><label for="c_routerSn">Router Serial #</label>
       <input type="text" id="c_routerSn" autocomplete="off" autocapitalize="characters">
-      <p class="linked">Goes to &ldquo;ONT Serial #&rdquo; on FCS2</p></div>
+</div>
     <div class="f"><label for="c_extender">Extender Serial # &amp; MAC</label>
       <input type="text" id="c_extender" autocomplete="off" autocapitalize="characters">
-      <p class="linked">Only if an extender was installed</p></div>
+</div>
   </div>
 
   <div class="card">
@@ -191,10 +198,9 @@ body.locked{overflow:hidden;position:fixed;width:100%}
           <div class="f"><label for="c_ontpower">ONT optical power</label>
             <input type="text" id="c_ontpower" autocomplete="off"></div>
         </div>
-        <p class="linked" style="margin:-6px 0 12px">ONT power fills &ldquo;GPON at ONT&rdquo; on FCS2</p>
         <div class="f"><label for="c_routerMac">Router MAC</label>
           <input type="text" id="c_routerMac" autocomplete="off" autocapitalize="characters">
-          <p class="linked">Goes to &ldquo;ONT MAC Address&rdquo; on FCS2</p></div>
+</div>
         <div class="f"><label for="c_speedhard">Speed test &mdash; hardwired (3 tests)</label>
           <input type="text" id="c_speedhard" autocomplete="off" placeholder="920 740 880"></div>
       </div>
@@ -259,12 +265,9 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     <h2>Stamp preview</h2>
     <div id="stampBox" style="background:#2b3340;color:#fff;border-radius:10px;padding:12px 14px;
          text-align:right;font-size:13px;line-height:1.45;white-space:pre-line"></div>
-    <p class="hint">Goes in the top right corner of every photo. The address comes
-      from the <b>Checklist</b> tab &mdash; fill it whenever, the stamp is applied
-      at save time.</p>
+    <p class="hint">Address comes from the Checklist tab.</p>
     <p class="hint" id="addrWarn" style="display:none;color:#b3541e">
-      <b>Address still empty.</b> Keep shooting &mdash; just fill it on the Checklist
-      tab before you save these.</p>
+      Not filled in yet &mdash; you can still shoot, add it before saving.</p>
   </div>
 
   <div class="card">
@@ -280,8 +283,8 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       Keep the camera open for the next shot
     </label>
     <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
-    <p class="hint" id="photoEmpty">No photos yet. Tap Camera &mdash; each shot is stamped
-      and kept here until you save or clear them.</p>
+    <p class="hint" id="photoEmpty">No photos yet.</p>
+    <p class="hint" id="photoNote" style="display:none;color:var(--ok);font-weight:600"></p>
   </div>
 
   <div class="card">
@@ -304,7 +307,6 @@ body.locked{overflow:hidden;position:fixed;width:100%}
                  placeholder="1234-abcd.apps.googleusercontent.com"></div>
         <div class="f"><label for="g_key">API key</label>
           <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
-        <p class="linked">Same two values for every technician. Ask your lead for them.</p>
       </div>
     </details>
   </div>
@@ -863,6 +865,23 @@ function buildPDF(jpeg, iw, ih, pw, ph, links){
 /* ---------------- output --------------------------------------------- */
 let result = null;
 
+/* every long action goes through this: the button locks straight away, so a
+   second tap cannot fire the same job twice */
+function withBusy(sel, label, fn){
+  const btn = $(sel);
+  if(!btn || btn.classList.contains("working")) return Promise.resolve();
+  const old = btn.textContent;
+  btn.classList.add("working");
+  if(label) btn.textContent = label;
+  const done = () => { btn.classList.remove("working"); btn.textContent = old; };
+  let out;
+  try { out = fn(); } catch(e){ done(); throw e; }
+  return Promise.resolve(out).then(
+    v => { done(); return v; },
+    e => { done(); throw e; }
+  );
+}
+
 const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent)
   || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 const STANDALONE = (window.navigator.standalone === true)
@@ -921,8 +940,10 @@ function showResult(title, hint){
 }
 
 $("#makeBtn").addEventListener("click", () => {
-  if(state.view === "checklist") makeChecklist();
-  else makeFcs2();
+  withBusy("#makeBtn", "Building...", () => {
+    if(state.view === "checklist") makeChecklist();
+    else makeFcs2();
+  });
 });
 
 function saveToDevice(target){
@@ -941,12 +962,13 @@ function saveToDevice(target){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
-$("#saveBtn").addEventListener("click", () => saveToDevice(result));
-$("#altBtn").addEventListener("click", () => {
+$("#saveBtn").addEventListener("click",
+  () => withBusy("#saveBtn", "Saving...", () => saveToDevice(result)));
+$("#altBtn").addEventListener("click", () => withBusy("#altBtn", "Saving...", () => {
   if(result && result.alt) saveToDevice(result.alt);
-});
+}));
 
-$("#shareBtn").addEventListener("click", async () => {
+$("#shareBtn").addEventListener("click", () => withBusy("#shareBtn", "Opening...", async () => {
   if(!result) return;
   const blob = result.blob || dataURLtoBlob(result.url, result.type);
   try{
@@ -959,7 +981,7 @@ $("#shareBtn").addEventListener("click", async () => {
     if(err && err.name === "AbortError") return;
   }
   saveToDevice();
-});
+}));
 
 function dataURLtoBlob(url, type){
   return new Blob([jpegBytesFromDataURL(url)], {type: type || "image/jpeg"});
@@ -1059,6 +1081,15 @@ const idbClear = ()  => idbRun("readwrite", st => st.clear());
 
 const photos = [];
 
+let noteTimer2 = null;
+function photoNote(msg){
+  const el = $("#photoNote");
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(noteTimer2);
+  noteTimer2 = setTimeout(() => { el.style.display = "none"; }, 5000);
+}
+
 function restorePhotos(){
   return idbAll().then(rows => {
     (rows || []).sort((a,b) => a.id - b.id).forEach(r => {
@@ -1131,7 +1162,7 @@ function renderPhotos(){
   });
   $("#photoCount").textContent = photos.length ? "(" + photos.length + ")" : "";
   $("#photoEmpty").style.display = photos.length ? "none" : "block";
-}
+  }
 
 $("#photoGrid").addEventListener("click", e => {
   const t = e.target.closest("[data-i]");
@@ -1202,14 +1233,15 @@ $("#clearPhotos").addEventListener("click", () => {
 
 $("#savePhotos").addEventListener("click", () => {
   if(!photos.length) return;
-  exportPhotos("#savePhotos").then(list => {
+  withBusy("#savePhotos", null, () => exportPhotos("#savePhotos").then(list => {
     list.forEach((f, i) => setTimeout(() => saveToDevice(f), i * 700));
-  });
+    photoNote("Saved " + list.length + " photos to the device.");
+  }));
 });
 
 $("#sharePhotos").addEventListener("click", () => {
   if(!photos.length) return;
-  exportPhotos("#sharePhotos").then(async list => {
+  withBusy("#sharePhotos", null, () => exportPhotos("#sharePhotos").then(async list => {
     try{
       const files = list.map(f => new File([f.blob], f.name, {type:"image/jpeg"}));
       if(navigator.canShare && navigator.canShare({files: files})){
@@ -1220,7 +1252,7 @@ $("#sharePhotos").addEventListener("click", () => {
       if(err && err.name === "AbortError") return;
     }
     list.forEach((f, i) => setTimeout(() => saveToDevice(f), i * 700));
-  });
+  }));
 });
 
 renderPhotos();
@@ -1388,7 +1420,8 @@ $("#driveBtn").addEventListener("click", () => {
 
   const files = [];
   const btn = $("#driveBtn");
-  btn.disabled = true;
+  if(btn.classList.contains("working")) return;
+  btn.classList.add("working");
 
   exportPhotos("#driveBtn").then(list => {
     list.forEach(f => files.push(f));
@@ -1417,9 +1450,9 @@ $("#driveBtn").addEventListener("click", () => {
   }).then(() => {
     driveStatus("<b>Done.</b> " + files.length + " files are in <b>" + GD.folderName
               + " / " + folderName + "</b>.");
-    btn.disabled = false;
+    btn.classList.remove("working");
   }).catch(err => {
-    btn.disabled = false;
+    btn.classList.remove("working");
     if(err && err.message === "cancelled"){ driveStatus(); return; }
     driveStatus("<b style='color:#b3541e'>Upload failed:</b> "
               + ((err && err.message) || "unknown") + ". Files are still on the phone.");
