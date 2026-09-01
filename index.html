@@ -784,9 +784,26 @@ const out = $("#out"), octx = out.getContext("2d");
    sizes it again on the next call */
 function freeOut(){ out.width = 1; out.height = 1; }
 const imgs = {};
+let docSig = "";
+let bgLeft = 2;
+const bgWaiters = [];
+
+function whenBg(){
+  return bgLeft === 0 ? Promise.resolve()
+                      : new Promise(res => bgWaiters.push(res));
+}
+
 ["checklist","fcs2"].forEach(k => {
   const im = new Image();
-  im.onload = () => { imgs[k] = im; };
+  im.onload = im.onerror = () => {
+    imgs[k] = im;
+    if(--bgLeft === 0){
+      bgWaiters.splice(0).forEach(fn => fn());
+      /* previews drawn before this point had no form behind them */
+      docSig = "";
+      if(state.view === "photos"){ try { docThumbs(); } catch(e){ console.error(e); } }
+    }
+  };
   im.src = BG[k];
 });
 
@@ -1015,10 +1032,10 @@ function showResult(title, hint){
 }
 
 $("#makeBtn").addEventListener("click", () => {
-  withBusy("#makeBtn", "Building...", () => {
+  withBusy("#makeBtn", "Building...", () => whenBg().then(() => {
     if(state.view === "checklist") makeChecklist();
     else makeFcs2();
-  });
+  }));
 });
 
 function saveToDevice(target){
@@ -1507,7 +1524,6 @@ function uploadOne(file, parent, token){
     {method: "POST", body: form}, token);
 }
 
-let docSig = "";
 function jobSig(){
   let sig = "";
   $$("input[type=text]").forEach(i => { sig += i.value + "\u0001"; });
@@ -1524,6 +1540,7 @@ function docThumbs(){
                || ($("#f_customer").value || "").trim()
                || ($("#f_ontSerial").value || "").trim();
   if(!wanted || (!hasChk && !hasFcs)){ card.style.display = "none"; return; }
+  if(bgLeft > 0){ card.style.display = "none"; return; }   /* forms not decoded yet */
 
   const sig = jobSig();
   if(sig === docSig && host.children.length){ card.style.display = "block"; return; }
@@ -1578,7 +1595,7 @@ $("#driveBtn").addEventListener("click", () => {
   if(btn.classList.contains("working")) return;
   btn.classList.add("working");
 
-  exportPhotos("#driveBtn").then(list => {
+  whenBg().then(() => exportPhotos("#driveBtn")).then(list => {
     list.forEach(f => files.push(f));
     if($("#driveDocs").checked){
       try { buildDocs().forEach(d => files.push(d)); }
