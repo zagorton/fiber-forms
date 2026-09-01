@@ -764,6 +764,9 @@ $("#sigDone").addEventListener("click", () => {
     slot.classList.remove("filled");
     slot.innerHTML = SIG_ICON + "Tap here \u2014 hand the phone to the customer";
   }
+  /* the pad is a canvas, so no input event fires - save it by hand */
+  saveState();
+  updateTabs();
 });
 function repad(){
   if(!overlay.classList.contains("on")) return;
@@ -771,7 +774,6 @@ function repad(){
   sizePad();
   setTimeout(function(){ sizePad(); }, 250);
 }
-$("#sigDone").addEventListener("click", () => setTimeout(updateTabs, 0));
 window.addEventListener("resize", repad);
 window.addEventListener("orientationchange", repad);
 if(window.screen && screen.orientation && screen.orientation.addEventListener){
