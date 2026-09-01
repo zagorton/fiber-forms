@@ -411,7 +411,7 @@ document.addEventListener("click", e => {
   box.querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
   if(already){ delete state.checks[g]; }
   else { c.classList.add("on"); state.checks[g] = c.dataset.v; }
-  if(g === "placement") store("placement", state.checks[g] || "");
+  if(CHECK_DEFAULTS[g] !== undefined) store("chk_" + g, state.checks[g] || "-");
 });
 
 function setCheck(group, value){
@@ -419,9 +419,24 @@ function setCheck(group, value){
   $$('.chip[data-group="'+group+'"]').forEach(c =>
     c.classList.toggle("on", c.dataset.v === value));
 }
+/* answers that are the same on nearly every job - preset, then remembered.
+   q_video and q_wifi are left blank on purpose: they genuinely vary. */
+const CHECK_DEFAULTS = {
+  placement:  "Table/Surface",
+  q_app:      "Yes",
+  q_boxes:    "No",
+  q_devices:  "Yes"
+};
+
 function applyCheckDefaults(){
-  const p = recall("placement") || "Table/Surface";
-  if(p) setCheck("placement", p);
+  Object.keys(CHECK_DEFAULTS).forEach(g => {
+    const saved = recall("chk_" + g);
+    let v;
+    if(saved === "")      v = CHECK_DEFAULTS[g];   // never touched
+    else if(saved === "-") v = "";                 // deliberately cleared
+    else                   v = saved;              // last answer given
+    if(v) setCheck(g, v);
+  });
 }
 applyCheckDefaults();
 
