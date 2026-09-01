@@ -780,6 +780,9 @@ if(window.screen && screen.orientation && screen.orientation.addEventListener){
 
 /* ---------------- rendering -------------------------------------------- */
 const out = $("#out"), octx = out.getContext("2d");
+/* a 1653x2339 canvas holds ~15 MB; drop it the moment we are done, render()
+   sizes it again on the next call */
+function freeOut(){ out.width = 1; out.height = 1; }
 const imgs = {};
 ["checklist","fcs2"].forEach(k => {
   const im = new Image();
@@ -980,6 +983,7 @@ function makeChecklist(){
   result = { blob: blob, url: url, type: "application/pdf",
              name: base+".pdf",
              alt: { url: url, type: "image/jpeg", name: base+".jpg" } };
+  freeOut();
   showResult("Checklist \u2014 PDF for the customer",
     'PDF for the customer &mdash; <b>Share / Send</b> &rarr; <b>Messages</b>. '
     + 'The Apple and Android links inside the PDF are tappable.<br><br>'
@@ -993,6 +997,7 @@ function makeFcs2(){
   result = { blob: null, url: url, type: "image/jpeg",
              name: slug($("#f_customer").value)+"_FCS2_"
                    +$("#f_date").value.replace(/\//g,"-")+".jpg" };
+  freeOut();
   showResult("FCS2 \u2014 JPG to upload",
     'iPhone: <b>press and hold the photo &rarr; "Add to Photos"</b>.<br>'
     + 'Android: <b>press and hold &rarr; "Download image"</b>, or use the buttons below.');
@@ -1163,8 +1168,8 @@ function photoNote(msg){
 function restorePhotos(){
   return idbAll().then(rows => {
     (rows || []).sort((a,b) => a.id - b.id).forEach(r => {
-      photos.push({ id: r.id, file: r.blob, when: new Date(r.when),
-                    url: URL.createObjectURL(r.blob) });
+      photos.push({ id: r.id, blob: r.blob, when: new Date(r.when),
+                    url: URL.createObjectURL(r.thumb || r.blob) });
     });
     renderPhotos();
   }).catch(err => console.error("photo restore failed", err));
@@ -1249,20 +1254,51 @@ $("#photoGrid").addEventListener("click", e => {
   renderPhotos();
 });
 
-/* photos are kept raw and stamped only on the way out, so the camera
-   button is instant and the address can be typed later */
+/* A 12 MP photo costs ~48 MB once the browser decodes it. Showing five of
+   those as grid thumbnails is what ran the phone out of memory, so each shot
+   is shrunk to 2560 px right away and the grid only ever holds a 320 px
+   thumbnail. Stamping still happens later, on the 2560 px copy. */
+function prepPhoto(file){
+  return loadBitmap(file).then(bmp => {
+    const MAX = 2560, THUMB = 320;
+    const k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    c.getContext("2d").drawImage(bmp, 0, 0, w, h);
+    const tk = Math.min(1, THUMB / Math.max(w, h));
+    const t = document.createElement("canvas");
+    t.width = Math.max(1, Math.round(w * tk));
+    t.height = Math.max(1, Math.round(h * tk));
+    t.getContext("2d").drawImage(c, 0, 0, t.width, t.height);
+    if(bmp.close) bmp.close();
+    return new Promise(res => {
+      c.toBlob(full => {
+        t.toBlob(thumb => {
+          c.width = c.height = 1; t.width = t.height = 1;   /* release at once */
+          res({full: full, thumb: thumb});
+        }, "image/jpeg", 0.7);
+      }, "image/jpeg", 0.9);
+    });
+  });
+}
+
 function addFiles(files){
   const list = Array.prototype.slice.call(files || []);
   if(!list.length) return;
+  let chain = Promise.resolve();
   list.forEach(f => {
-    const when = f.lastModified ? new Date(f.lastModified) : new Date();
-    const item = { file: f, when: when, url: URL.createObjectURL(f), id: null };
-    photos.push(item);
-    idbAdd({ blob: f, when: when.getTime() })
-      .then(id => { item.id = id; })
-      .catch(err => console.error("photo save failed", err));
+    chain = chain.then(() => prepPhoto(f)).then(p => {
+      if(!p || !p.full) return;
+      const when = f.lastModified ? new Date(f.lastModified) : new Date();
+      const item = { blob: p.full, when: when,
+                     url: URL.createObjectURL(p.thumb || p.full), id: null };
+      photos.push(item);
+      renderPhotos();
+      return idbAdd({ blob: p.full, thumb: p.thumb, when: when.getTime() })
+        .then(id => { item.id = id; });
+    }).catch(err => console.error("photo add failed", err));
   });
-  renderPhotos();
 }
 
 function exportPhotos(label){
@@ -1273,7 +1309,7 @@ function exportPhotos(label){
   photos.forEach((p, i) => {
     chain = chain.then(() => {
       btn.textContent = "Stamping " + (i + 1) + " of " + photos.length + "...";
-      return stampPhoto(p.file, p.when);
+      return stampPhoto(p.blob, p.when);
     }).then(blob => {
       if(blob) out.push({ blob: blob, name: photoName(i + 1), type: "image/jpeg" });
     }).catch(err => console.error("stamp failed", err));
@@ -1471,6 +1507,14 @@ function uploadOne(file, parent, token){
     {method: "POST", body: form}, token);
 }
 
+let docSig = "";
+function jobSig(){
+  let sig = "";
+  $$("input[type=text]").forEach(i => { sig += i.value + "\u0001"; });
+  return sig + JSON.stringify(state.checks) + state.router + state.isp
+             + "|" + state.strokes.length;
+}
+
 function docThumbs(){
   const card = $("#docCard"), host = $("#docStrip");
   const wanted = $("#driveDocs").checked;
@@ -1481,6 +1525,10 @@ function docThumbs(){
                || ($("#f_ontSerial").value || "").trim();
   if(!wanted || (!hasChk && !hasFcs)){ card.style.display = "none"; return; }
 
+  const sig = jobSig();
+  if(sig === docSig && host.children.length){ card.style.display = "block"; return; }
+  docSig = sig;
+
   host.innerHTML = "";
   const tile = (which, label, warn) => {
     render(which);
@@ -1488,9 +1536,11 @@ function docThumbs(){
     const c = document.createElement("canvas");
     c.width = w; c.height = h;
     c.getContext("2d").drawImage(out, 0, 0, w, h);
+    const src = c.toDataURL("image/jpeg", 0.7);
+    c.width = c.height = 1;
     const d = document.createElement("div");
     d.className = "doctile";
-    d.innerHTML = '<img src="' + c.toDataURL("image/jpeg", 0.7) + '" alt="">'
+    d.innerHTML = '<img src="' + src + '" alt="">'
                 + '<span class="lbl' + (warn ? " warn" : "") + '">' + label + '</span>';
     host.appendChild(d);
   };
@@ -1498,6 +1548,7 @@ function docThumbs(){
   if(hasFcs) tile("fcs2",
                   state.strokes.length ? "FCS2" : "FCS2 \u2014 no signature",
                   !state.strokes.length);
+  freeOut();
   card.style.display = "block";
 }
 
@@ -1510,6 +1561,7 @@ function buildDocs(){
   render("fcs2");
   docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.92), "image/jpeg"),
              name: base + "_FCS2.jpg"});
+  freeOut();
   return docs;
 }
 
