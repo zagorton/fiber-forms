@@ -14,8 +14,25 @@
 <style>
 :root{
   --ink:#10161d; --muted:#69747f; --line:#dde3ea; --bg:#eff2f5; --card:#fff;
-  --accent:#0b6fd4; --ok:#127a4b; --magenta:#e20074;
+  --field:#f7f9fb; --hair:#f0f3f6; --dark:#10161d; --darktxt:#fff;
+  --bar:rgba(255,255,255,.96); --shade:rgba(16,22,29,.06);
+  --accent:#2b86e8; --ok:#1a8d59; --magenta:#e20074;
   --r:16px;
+}
+/* follow the phone until the technician picks a side, then obey that */
+@media (prefers-color-scheme: dark){
+  html:not([data-theme="light"]){
+    --ink:#e9eef4; --muted:#93a0ad; --line:#2c353f; --bg:#0e1216; --card:#171d24;
+    --field:#121820; --hair:#212a33; --dark:#222c38; --darktxt:#eaf0f7;
+    --bar:rgba(14,18,22,.96); --shade:rgba(0,0,0,.35);
+    --accent:#4a9df0; --ok:#3fbb84; --magenta:#ff2d95;
+  }
+}
+html[data-theme="dark"]{
+    --ink:#e9eef4; --muted:#93a0ad; --line:#2c353f; --bg:#0e1216; --card:#171d24;
+    --field:#121820; --hair:#212a33; --dark:#222c38; --darktxt:#eaf0f7;
+    --bar:rgba(14,18,22,.96); --shade:rgba(0,0,0,.35);
+    --accent:#4a9df0; --ok:#3fbb84; --magenta:#ff2d95;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -24,32 +41,51 @@ body{
   font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   padding:0 0 128px;
 }
-header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:20;
+header{background:var(--dark);color:#fff;position:sticky;top:0;z-index:20;
   padding:10px 14px 0;padding-top:calc(10px + env(safe-area-inset-top))}
 .tabs{display:flex;gap:6px}
 .tab{flex:1;text-align:center;padding:13px 4px;border-radius:12px 12px 0 0;
-  background:#1e2833;color:#9fb0c2;font-size:13px;font-weight:650;cursor:pointer;
+  background:rgba(255,255,255,.07);color:#9fb0c2;font-size:13px;font-weight:650;cursor:pointer;
   line-height:1.25;position:relative;transition:background .15s,color .15s}
-.tab.on{box-shadow:0 -2px 0 var(--accent) inset}
+.tab.on{background:var(--bg);color:var(--ink);box-shadow:0 -2px 0 var(--accent) inset}
+#themeBtn{flex:0 0 46px;height:46px;align-self:flex-end;margin-bottom:0;border:none;
+  border-radius:12px 12px 0 0;background:var(--tab,#1b222c);color:#9fb0c2;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  font-family:inherit;touch-action:manipulation}
+#themeBtn:active{filter:brightness(.85)}
+#themeBtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
 .dot{position:absolute;top:8px;right:calc(50% - 34px);width:7px;height:7px;
   border-radius:50%;background:transparent;transition:background .2s}
 .dot.done{background:var(--ok)}
+#jobStrip{background:var(--card);border-bottom:1px solid var(--line);
+  padding:9px 14px;position:sticky;top:0;z-index:19;font-size:13px;line-height:1.35}
+#jobStrip b{color:var(--ink);font-weight:700}
+#jobStrip span{color:var(--muted)}
+#jobBar{display:none;padding:9px 4px 3px;color:#c6d2de;font-size:12.5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#jobBar b{color:#fff;font-weight:650}
+#jobBar span:before{content:" \00B7 ";opacity:.5}
 .tab.on .dot.done{background:var(--ok)}
+#jobStrip{background:var(--card);border-bottom:1px solid var(--line);
+  padding:9px 14px;position:sticky;top:0;z-index:19;font-size:13px;line-height:1.35}
+#jobStrip b{color:var(--ink);font-weight:700}
+#jobStrip span{color:var(--muted)}
 .tab.on{background:var(--bg);color:var(--ink)}
 .tab.on small{opacity:.65}
 .wrap{padding:14px}
 .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;
-  box-shadow:0 1px 2px rgba(16,22,29,.05),0 6px 18px -12px rgba(16,22,29,.35)}
+  box-shadow:0 1px 2px var(--shade),0 6px 18px -12px var(--shade)}
 .card h2{margin:0 0 14px;font-size:11px;font-weight:700;text-transform:uppercase;
   letter-spacing:.9px;color:var(--muted);display:flex;align-items:center;gap:7px}
-.card h2 svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;
+.card h2 svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;opacity:.85}
 label{display:block;font-size:12.5px;font-weight:650;color:var(--muted);margin:0 0 6px;
   letter-spacing:.15px}
 input[type=text]{width:100%;padding:13px 13px;font-size:17px;border:1.5px solid var(--line);
-  border-radius:12px;background:#f7f9fb;color:var(--ink);font-family:inherit;
+  border-radius:12px;background:var(--field);color:var(--ink);font-family:inherit;
   transition:border-color .15s,background .15s,box-shadow .15s}
-input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff;
+input[type=text]:focus{outline:none;border-color:var(--accent);background:var(--card);
   box-shadow:0 0 0 3px rgba(11,111,212,.13)}
 input[type=text]::placeholder{color:#a9b3bd}
 .f{margin-bottom:13px}.f:last-child{margin-bottom:0}
@@ -57,13 +93,13 @@ input[type=text]::placeholder{color:#a9b3bd}
 .row .narrow{flex:0 0 88px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{flex:1;min-width:78px;text-align:center;padding:12px 8px;border-radius:10px;
-  border:1.5px solid var(--line);background:#fbfcfd;font-size:15px;font-weight:600;
+  border:1.5px solid var(--line);background:var(--field);font-size:15px;font-weight:600;
   color:var(--muted);cursor:pointer;user-select:none;touch-action:manipulation;
   transition:transform .06s ease, filter .06s ease}
 .chip:active{transform:scale(.96);filter:brightness(.93)}
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;
   box-shadow:0 4px 12px -6px rgba(11,111,212,.9)}
-.qrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f3f6}
+.qrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--hair)}
 .qrow:last-child{border-bottom:none}
 .qrow .qt{flex:1;font-size:14px;font-weight:550;color:var(--ink);line-height:1.3}
 .qrow .chips{flex:0 0 150px}
@@ -79,15 +115,15 @@ input[type=text]::placeholder{color:#a9b3bd}
 .btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;flex:none}
 .btn-primary{background:var(--accent);color:#fff}
-.btn-magenta,.btn-dark,.btn-primary{box-shadow:0 6px 16px -8px rgba(16,22,29,.55)}
+.btn-magenta,.btn-dark,.btn-primary{box-shadow:0 6px 16px -8px var(--shade)}
 .btn-quiet{background:transparent;color:var(--muted);font-size:14px;font-weight:600;
   padding:12px;box-shadow:none}
-.btn-dark{background:var(--ink);color:#fff}
+.btn-dark{background:var(--dark);color:var(--darktxt)}
 .btn-magenta{background:var(--magenta);color:#fff}
-.btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn-ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
 .btn-link{background:none;color:var(--accent);font-weight:600;font-size:14px;
   padding:8px 0;border:none;cursor:pointer;font-family:inherit}
-.sigslot{border:2px dashed var(--line);border-radius:14px;height:120px;background:#f7f9fb;
+.sigslot{border:2px dashed var(--line);border-radius:14px;height:120px;background:var(--field);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
   color:var(--muted);text-align:center;font-size:13.5px;font-weight:600;cursor:pointer;
   overflow:hidden;position:relative;padding:10px;transition:border-color .15s,background .15s}
@@ -97,7 +133,7 @@ input[type=text]::placeholder{color:#a9b3bd}
 .sigslot:active{filter:brightness(.95)}
 .sigslot img{max-width:100%;max-height:100%}
 .badge{position:absolute;top:6px;right:8px;font-size:11px;color:var(--ok);font-weight:700}
-.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bar);
   backdrop-filter:blur(8px);border-top:1px solid var(--line);
   padding:12px 14px calc(12px + env(safe-area-inset-bottom));z-index:30;display:flex;gap:9px}
 .bar .btn{flex:1}
@@ -133,11 +169,11 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 .linked{font-size:12px;color:var(--ok);font-weight:600;margin:4px 0 0}
 .addtile{aspect-ratio:1;border:2px dashed var(--line);border-radius:12px;display:flex;
   align-items:center;justify-content:center;color:var(--muted);cursor:pointer;
-  background:#f7f9fb;transition:border-color .15s,background .15s}
-.addtile:active{border-color:var(--accent);background:#eef4fb}
+  background:var(--field);transition:border-color .15s,background .15s}
+.addtile:active{border-color:var(--accent);background:var(--hair)}
 .addtile svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;
   stroke-linecap:round}
-.thumb{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#e6eaef}
+.thumb{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--hair)}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb .x{position:absolute;top:4px;right:4px;background:rgba(16,22,29,.72);color:#fff;
   border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;
@@ -145,8 +181,8 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 .thumb .n{position:absolute;left:5px;bottom:4px;background:rgba(16,22,29,.6);color:#fff;
   font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
-  padding:5px 10px;border-radius:99px;background:#eef1f4;color:var(--muted)}
-.pill.ready{background:#e4f4ec;color:var(--ok)}
+  padding:5px 10px;border-radius:99px;background:var(--hair);color:var(--muted)}
+.pill.ready{background:color-mix(in srgb, var(--ok) 16%, transparent);color:var(--ok)}
 .doctile{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;
   background:#fff}
 .doctile img{width:100%;display:block;aspect-ratio:.78;object-fit:cover;object-position:top}
@@ -175,7 +211,9 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     <div class="tab on" data-view="photos">Photos<i class="dot" id="dot-photos"></i></div>
     <div class="tab" data-view="checklist">Checklist<i class="dot" id="dot-checklist"></i></div>
     <div class="tab" data-view="fcs2">FCS2<i class="dot" id="dot-fcs2"></i></div>
+    <button id="themeBtn" aria-label="Switch theme"></button>
   </div>
+  <div id="jobBar"><b id="jobName"></b><span id="jobAddr"></span></div>
 </header>
 
 <!-- ============================ CHECKLIST ============================ -->
@@ -207,7 +245,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2><svg viewBox="0 0 24 24"><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6.5 18h.01M10 18h.01"/><path d="M12 10a4 4 0 0 1 4-4M12 6a8 8 0 0 1 8-8"/></svg>Install</h2>
+    <h2><svg viewBox="0 0 24 24"><rect x="2" y="13" width="20" height="8" rx="2"/><path d="M6.5 17h.01M10 17h.01"/><path d="M12 9V6"/><path d="M8.8 4.2a6 6 0 0 1 6.4 0"/></svg>Install</h2>
     <div class="f"><label>Router placement</label><div class="chips" data-check="placement"></div>
 </div>
     <div class="row">
@@ -228,7 +266,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 1 9-9"/><path d="M12 12l5-3"/></svg>Speed test</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M4 19a8 8 0 1 1 16 0"/><path d="M12 19l4.5-5.5"/></svg>Speed test</h2>
     <div class="f"><label for="c_speedwifi">Wireless / Wi-Fi (3 tests)</label>
       <input type="text" id="c_speedwifi" autocomplete="off" placeholder="920 740 880">
       <p class="linked">Type the number, hit space &mdash; becomes 920mb /</p></div>
@@ -286,20 +324,22 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
-    <h2><svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/><path d="M2 2l7.586 7.586"/></svg>Resident Signoff</h2>
+    <h2><svg viewBox="0 0 24 24"><path d="M3 17c3 0 4-8 7-8s3 8 6 8c2 0 3-2 5-2"/><path d="M2 21h20"/></svg>Resident Signoff</h2>
     <div class="f"><label for="f_resName">Resident name</label>
       <input type="text" id="f_resName" autocomplete="off" autocapitalize="words">
       <button class="btn-link" id="copyName">&uarr; Copy from Customer Name</button></div>
     <div class="f"><label>Resident Signature</label>
       <div class="sigslot" id="sigSlot"><svg viewBox="0 0 24 24"><path d="M3 17c3 0 4-8 7-8s3 8 6 8c2 0 3-2 5-2"/><path d="M2 21h20"/></svg>
         Tap here &mdash; hand the phone to the customer</div></div>
-    <div class="f"><label for="f_resDate">Date</label>
-      <input type="text" id="f_resDate" autocomplete="off" inputmode="numeric"></div>
   </div>
 
   <div class="card">
     <details><summary>More fields (optional) &#9662;</summary>
-      <div id="restFields" style="margin-top:12px"></div>
+      <div style="margin-top:12px">
+        <div class="f"><label for="f_resDate">Signoff date</label>
+          <input type="text" id="f_resDate" autocomplete="off" inputmode="numeric"></div>
+      </div>
+      <div id="restFields"></div>
     </details>
   </div>
 
@@ -308,30 +348,19 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
 <!-- ============================= PHOTOS ============================= -->
 <div class="wrap view" id="v-photos">
-  <div class="card">
-    <h2><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Stamp preview</h2>
-    <div id="stampBox" style="background:#2b3340;color:#fff;border-radius:10px;padding:12px 14px;
-         text-align:right;font-size:13px;line-height:1.45;white-space:pre-line"></div>
-    <p class="hint">Address comes from the Checklist tab.</p>
-    <p class="hint" id="addrWarn" style="display:none;color:#b3541e">
-      Not filled in yet &mdash; you can still shoot, add it before saving.</p>
-  </div>
 
   <div class="card">
     <h2><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Photos <span id="photoCount" style="color:var(--muted)"></span></h2>
-    <div class="row" style="margin-bottom:10px">
-      <button class="btn btn-dark" id="camBtn"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Camera</button>
-      <button class="btn btn-ghost" id="galBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Gallery</button>
-    </div>
-    <label style="display:flex;align-items:center;gap:9px;margin:0 0 12px;
-           font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
-      <input type="checkbox" id="keepCam" checked
-             style="width:20px;height:20px;accent-color:var(--accent)">
-      Keep the camera open for the next shot
-    </label>
     <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
     <p class="hint" id="photoEmpty">Tap + to shoot. Photos are stamped when you save.</p>
     <p class="hint" id="photoNote" style="display:none;color:var(--ok);font-weight:600"></p>
+    <button class="btn btn-quiet" id="galBtn" style="margin-top:10px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Add from gallery</button>
+    <div class="row" id="photoActions" style="display:none;margin-top:12px">
+      <button class="btn btn-ghost" id="sharePhotos"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Share</button>
+      <button class="btn btn-ghost" id="savePhotos"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Save</button>
+    </div>
+    <p class="hint" id="addrWarn" style="display:none;color:#c2691f">
+      Address still empty &mdash; add it on the Checklist tab before saving.</p>
   </div>
 
   <div class="card" id="docCard" style="display:none">
@@ -342,30 +371,36 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   <div class="card">
     <h2><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Google Drive</h2>
     <p class="hint" id="driveStatus" style="margin:0 0 12px"></p>
-    <button class="btn btn-magenta" id="driveBtn" style="margin-bottom:10px"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>Upload to Drive</button>
-    <label style="display:flex;align-items:center;gap:9px;margin:0 0 12px;
+    <button class="btn btn-primary" id="startNext" style="display:none;margin-bottom:10px"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Start next job</button>
+    <label style="display:flex;align-items:center;gap:9px;margin:0 0 4px;
            font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
       <input type="checkbox" id="driveDocs" checked
              style="width:20px;height:20px;accent-color:var(--accent)">
       Also upload the two forms as JPG
     </label>
-<button class="btn btn-quiet" id="pickFolderBtn"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Choose the Drive folder</button>
     <details>
-      <summary>Drive setup (once per phone) &#9662;</summary>
+      <summary>Settings &#9662;</summary>
       <div style="margin-top:12px">
+        <label style="display:flex;align-items:center;gap:9px;margin:0 0 14px;
+               font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
+          <input type="checkbox" id="keepCam" checked
+                 style="width:20px;height:20px;accent-color:var(--accent)">
+          Keep the camera open for the next shot
+        </label>
+        <button class="btn btn-ghost" id="pickFolderBtn" style="margin-bottom:14px"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Choose the Drive folder</button>
         <div class="f"><label for="g_client">OAuth Client ID</label>
           <input type="text" id="g_client" autocomplete="off"
                  placeholder="1234-abcd.apps.googleusercontent.com"></div>
         <div class="f"><label for="g_key">API key</label>
           <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
+        <div class="f"><label>Photo stamp preview</label>
+          <div id="stampBox" style="background:var(--dark);color:#fff;border-radius:10px;
+               padding:11px 13px;text-align:right;font-size:12.5px;line-height:1.45;
+               white-space:pre-line"></div></div>
       </div>
     </details>
   </div>
 
-  <div class="row" style="margin-bottom:10px">
-    <button class="btn btn-ghost" id="sharePhotos"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Share</button>
-    <button class="btn btn-ghost" id="savePhotos"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Save</button>
-  </div>
   <button class="btn btn-quiet" id="clearPhotos"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear photos</button>
 
   <input type="file" id="camInput" accept="image/*" capture="environment"
@@ -422,6 +457,42 @@ const state = {
 /* ---------------- tiny safe storage (remembers technician name) --------- */
 function store(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
 function recall(k){ try{ return localStorage.getItem(k) || ""; }catch(e){ return ""; } }
+
+/* ---------------- light / dark ----------------------------------------- */
+const ICON_SUN = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/>'
+  + '<path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2'
+  + 'M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const ICON_MOON = '<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3'
+  + 'a7 7 0 0 0 9.8 9.8z"/></svg>';
+
+function systemDark(){
+  return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+}
+function isDark(){
+  const t = recall("theme");
+  if(t === "dark")  return true;
+  if(t === "light") return false;
+  return systemDark();
+}
+function applyTheme(){
+  const dark = isDark();
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  /* the icon shows what the next tap gives you */
+  $("#themeBtn").innerHTML = dark ? ICON_SUN : ICON_MOON;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute("content", dark ? "#000000" : "#10161d");
+}
+$("#themeBtn").addEventListener("click", () => {
+  store("theme", isDark() ? "light" : "dark");
+  applyTheme();
+});
+if(window.matchMedia){
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const onSys = () => { if(!recall("theme")) applyTheme(); };
+  if(mq.addEventListener) mq.addEventListener("change", onSys);
+  else if(mq.addListener) mq.addListener(onSys);
+}
+applyTheme();
 
 /* ---------------- build the FCS2 "more fields" inputs ------------------ */
 const restHost = $("#restFields");
@@ -1034,6 +1105,7 @@ function showResult(title, hint){
 }
 
 $("#makeBtn").addEventListener("click", () => {
+  if(state.view === "photos"){ driveUpload(); return; }
   withBusy("#makeBtn", "Building...", () => whenBg().then(() => {
     if(state.view === "checklist") makeChecklist();
     else makeFcs2();
@@ -1259,6 +1331,7 @@ function renderPhotos(){
   });
   $("#photoCount").textContent = photos.length ? "(" + photos.length + ")" : "";
   $("#photoEmpty").style.display = photos.length ? "none" : "block";
+  $("#photoActions").style.display = photos.length ? "flex" : "none";
   if(typeof updateTabs === "function") updateTabs();
   }
 
@@ -1336,7 +1409,6 @@ function exportPhotos(label){
   return chain.then(() => { btn.textContent = old; return out; });
 }
 
-$("#camBtn").addEventListener("click", () => $("#camInput").click());
 $("#galBtn").addEventListener("click", () => $("#galInput").click());
 $("#keepCam").checked = recall("keepCam") !== "0";
 $("#keepCam").addEventListener("change", e => store("keepCam", e.target.checked ? "1" : "0"));
@@ -1584,7 +1656,7 @@ function buildDocs(){
   return docs;
 }
 
-$("#driveBtn").addEventListener("click", () => {
+function driveUpload(){
   if(!GD.clientId || !GD.apiKey){ alert("Fill in Drive setup first."); return; }
   if(!GD.folderId){ alert("Choose the Drive folder first."); return; }
   const folderName = composedAddress();
@@ -1593,11 +1665,13 @@ $("#driveBtn").addEventListener("click", () => {
   if(navigator.onLine === false){ alert("No connection. Try again when you have signal."); return; }
 
   const files = [];
-  const btn = $("#driveBtn");
+  const btn = $("#makeBtn");
   if(btn.classList.contains("working")) return;
+  const label = btn.innerHTML;
   btn.classList.add("working");
+  const release = () => { btn.classList.remove("working"); btn.innerHTML = label; };
 
-  whenBg().then(() => exportPhotos("#driveBtn")).then(list => {
+  whenBg().then(() => exportPhotos("#makeBtn")).then(list => {
     list.forEach(f => files.push(f));
     if($("#driveDocs").checked){
       try { buildDocs().forEach(d => files.push(d)); }
@@ -1622,16 +1696,57 @@ $("#driveBtn").addEventListener("click", () => {
     });
     return chain;
   }).then(() => {
-    driveStatus("<b>Done.</b> " + files.length + " files are in <b>" + GD.folderName
+    driveStatus('<span class="pill ready">&#10003; Uploaded</span><br>'
+              + files.length + " files are in <b>" + GD.folderName
               + " / " + folderName + "</b>.");
-    btn.classList.remove("working");
+    $("#startNext").style.display = "flex";
+    release();
   }).catch(err => {
-    btn.classList.remove("working");
+    release();
     if(err && err.message === "cancelled"){ driveStatus(); return; }
     driveStatus("<b style='color:#b3541e'>Upload failed:</b> "
               + ((err && err.message) || "unknown") + ". Files are still on the phone.");
   });
+}
+
+$("#startNext").addEventListener("click", () => {
+  if(!confirm("Clear photos, checklist and FCS2, and start the next job?")) return;
+  resetJob();
 });
+
+/* wipes everything about this customer, keeps the technician's own settings */
+function resetJob(){
+  photos.forEach(p => URL.revokeObjectURL(p.url));
+  photos.length = 0;
+  idbClear().catch(() => {});
+  renderPhotos();
+
+  clearIds(CFG.checklist.fields.map(f => f.id)
+           .concat(["c_routerSn", "c_routerMac"])
+           .concat(CFG.fcs2.fields.map(f => f.id)));
+  state.strokes = []; state.touched = {}; state.checks = {};
+  $$(".chip[data-group]").forEach(c => c.classList.remove("on"));
+  applyCheckDefaults();
+
+  $("#c_daytime").value = nowStamp();
+  $("#c_tech").value    = recall("techName");
+  $("#c_model").value   = recall("routerModel") || "Nokia";
+  $("#c_county").value  = recall("county") || "Los Angeles County";
+  $("#f_date").value    = today();
+  $("#f_resDate").value = today();
+
+  const slot = $("#sigSlot");
+  slot.classList.remove("filled");
+  slot.innerHTML = SIG_ICON + "Tap here \u2014 hand the phone to the customer";
+
+  $("#startNext").style.display = "none";
+  docSig = "";
+  driveStatus();
+  refreshStamp();
+  saveState();
+  updateTabs();
+  setView("photos");
+}
 
 /* ---------------- autosave the forms too -------------------------------- */
 const SAVE_KEY = "jobState";
@@ -1647,7 +1762,16 @@ function saveState(){
   }catch(e){}
 }
 function updateTabs(){
-  const chk = ($("#c_customer").value || "").trim() && ($("#c_street").value || "").trim();
+  const name = ($("#c_customer").value || "").trim();
+  const addr = ($("#c_street").value || "").trim();
+  const bar = $("#jobBar");
+  if(name || addr){
+    $("#jobName").textContent = name;
+    $("#jobAddr").textContent = addr;
+    $("#jobAddr").style.display = (name && addr) ? "" : "none";
+    bar.style.display = "block";
+  } else bar.style.display = "none";
+  const chk = name && addr;
   $("#dot-photos").classList.toggle("done", photos.length > 0);
   $("#dot-checklist").classList.toggle("done", !!chk);
   $("#dot-fcs2").classList.toggle("done", state.strokes.length > 0);
@@ -1710,6 +1834,10 @@ function loadState(){
 loadState();
 updateTabs();
 
+const ICON_UP  = '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>';
+const ICON_DOC = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+const ICON_IMG = '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+
 /* ---------------- views ------------------------------------------------ */
 function setView(v){
   ["photos","checklist","fcs2","result"].forEach(k => {
@@ -1719,13 +1847,16 @@ function setView(v){
     state.view = v;
     $("#bar").style.display = "flex";
     if(v === "photos"){
-      $("#bar").style.display = "none";
       refreshStamp();
       try { docThumbs(); } catch(e){ console.error(e); }
+      $("#makeBtn").innerHTML = ICON_UP + "Upload to Drive";
+      $("#makeBtn").className = "btn btn-magenta";
+    } else if(v === "checklist"){
+      $("#makeBtn").innerHTML = ICON_DOC + "Create PDF for customer";
+      $("#makeBtn").className = "btn btn-magenta";
     } else {
-      $("#makeBtn").textContent = (v === "checklist")
-        ? "Create PDF for customer" : "Create JPG to upload";
-      $("#makeBtn").className = "btn " + (v === "checklist" ? "btn-magenta" : "btn-dark");
+      $("#makeBtn").innerHTML = ICON_IMG + "Create JPG to upload";
+      $("#makeBtn").className = "btn btn-dark";
     }
   } else {
     $("#bar").style.display = "none";
