@@ -1248,9 +1248,10 @@ const idbClear = ()  => idbRun("readwrite", st => st.clear());
 const photos = [];
 
 let noteTimer2 = null;
-function photoNote(msg){
+function photoNote(msg, warn){
   const el = $("#photoNote");
   el.textContent = msg;
+  el.style.color = warn ? "#c2691f" : "var(--ok)";
   el.style.display = "block";
   clearTimeout(noteTimer2);
   noteTimer2 = setTimeout(() => { el.style.display = "none"; }, 5000);
@@ -1329,7 +1330,7 @@ function renderPhotos(){
       + '<span class="x" data-i="'+i+'">&times;</span>';
     grid.appendChild(d);
   });
-  $("#photoCount").textContent = photos.length ? "(" + photos.length + ")" : "";
+  if(typeof queueStatus === "function") queueStatus();
   $("#photoEmpty").style.display = photos.length ? "none" : "block";
   $("#photoActions").style.display = photos.length ? "flex" : "none";
   if(typeof updateTabs === "function") updateTabs();
@@ -1375,21 +1376,62 @@ function prepPhoto(file){
   });
 }
 
+/* Shooting fast used to start a fresh processing chain per shot, so several
+   12 MP images were decoded at the same time and the phone quietly dropped
+   some. One shared queue now handles every photo, one at a time, and nothing
+   fails silently. */
+let photoQueue = Promise.resolve();
+let pending = 0, failed = 0;
+
+function queueStatus(){
+  const c = $("#photoCount");
+  if(!c) return;
+  let txt = photos.length ? "(" + photos.length + ")" : "";
+  if(pending) txt += (txt ? " " : "") + "\u00b7 " + pending + " processing";
+  c.textContent = txt;
+  const tile = $("#addTile");
+  if(tile) tile.style.opacity = pending ? ".5" : "";
+}
+
+function storePhoto(f, p){
+  const when = f.lastModified ? new Date(f.lastModified) : new Date();
+  const item = { blob: p.full, when: when,
+                 url: URL.createObjectURL(p.thumb || p.full), id: null };
+  photos.push(item);
+  renderPhotos();
+  return idbAdd({ blob: p.full, thumb: p.thumb, when: when.getTime() })
+    .then(id => { item.id = id; });
+}
+
 function addFiles(files){
   const list = Array.prototype.slice.call(files || []);
   if(!list.length) return;
-  let chain = Promise.resolve();
   list.forEach(f => {
-    chain = chain.then(() => prepPhoto(f)).then(p => {
-      if(!p || !p.full) return;
-      const when = f.lastModified ? new Date(f.lastModified) : new Date();
-      const item = { blob: p.full, when: when,
-                     url: URL.createObjectURL(p.thumb || p.full), id: null };
-      photos.push(item);
-      renderPhotos();
-      return idbAdd({ blob: p.full, thumb: p.thumb, when: when.getTime() })
-        .then(id => { item.id = id; });
-    }).catch(err => console.error("photo add failed", err));
+    pending++;
+    queueStatus();
+    photoQueue = photoQueue
+      .then(() => prepPhoto(f))
+      .catch(err => {                       /* low memory - breathe, try once more */
+        console.error("prep failed, retrying", err);
+        return new Promise(r => setTimeout(r, 600)).then(() => prepPhoto(f));
+      })
+      .then(p => {
+        if(!p || !p.full) throw new Error("empty result");
+        return storePhoto(f, p);
+      })
+      .catch(err => {
+        console.error("photo add failed", err);
+        failed++;
+      })
+      .then(() => {
+        pending--;
+        queueStatus();
+        if(!pending && failed){
+          photoNote(failed + (failed === 1 ? " photo" : " photos")
+                    + " could not be saved \u2014 take again", true);
+          failed = 0;
+        }
+      });
   });
 }
 
