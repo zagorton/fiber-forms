@@ -602,6 +602,11 @@ $("#c_tech").value    = recall("techName");
 $("#c_tech").addEventListener("input", e => store("techName", e.target.value));
 $("#c_model").value   = recall("routerModel") || "Nokia";
 $("#c_model").addEventListener("input", e => store("routerModel", e.target.value));
+["c_wifiname","c_wifipw"].forEach(id => {
+  const el = $("#" + id);
+  el.value = recall(id);
+  el.addEventListener("input", e => store(id, e.target.value));
+});
 
 /* ---------------- speed test shorthand --------------------------------- */
 /* type 920 then space -> "920mb / "  ... third number just gets "mb" */
@@ -1033,10 +1038,10 @@ let result = null;
 function withBusy(sel, label, fn){
   const btn = $(sel);
   if(!btn || btn.classList.contains("working")) return Promise.resolve();
-  const old = btn.textContent;
+  const old = btn.innerHTML;                 /* innerHTML, or the icon is lost */
   btn.classList.add("working");
   if(label) btn.textContent = label;
-  const done = () => { btn.classList.remove("working"); btn.textContent = old; };
+  const done = () => { btn.classList.remove("working"); btn.innerHTML = old; };
   let out;
   try { out = fn(); } catch(e){ done(); throw e; }
   return Promise.resolve(out).then(
@@ -1437,7 +1442,7 @@ function addFiles(files){
 
 function exportPhotos(label){
   const btn = $(label);
-  const old = btn.textContent;
+  const old = btn.innerHTML;
   const out = [];
   let chain = Promise.resolve();
   photos.forEach((p, i) => {
@@ -1448,7 +1453,7 @@ function exportPhotos(label){
       if(blob) out.push({ blob: blob, name: photoName(i + 1), type: "image/jpeg" });
     }).catch(err => console.error("stamp failed", err));
   });
-  return chain.then(() => { btn.textContent = old; return out; });
+  return chain.then(() => { btn.innerHTML = old; return out; });
 }
 
 $("#galBtn").addEventListener("click", () => $("#galInput").click());
@@ -1742,6 +1747,7 @@ function driveUpload(){
               + files.length + " files are in <b>" + GD.folderName
               + " / " + folderName + "</b>.");
     $("#startNext").style.display = "flex";
+    $("#startNext").scrollIntoView({behavior:"smooth", block:"center"});
     release();
   }).catch(err => {
     release();
@@ -1774,6 +1780,8 @@ function resetJob(){
   $("#c_tech").value    = recall("techName");
   $("#c_model").value   = recall("routerModel") || "Nokia";
   $("#c_county").value  = recall("county") || "Los Angeles County";
+  $("#c_wifiname").value = recall("c_wifiname");
+  $("#c_wifipw").value   = recall("c_wifipw");
   $("#f_date").value    = today();
   $("#f_resDate").value = today();
 
@@ -1881,6 +1889,10 @@ const ICON_DOC = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2
 const ICON_IMG = '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
 
 /* ---------------- views ------------------------------------------------ */
+function setTabs(v){
+  $$(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === v));
+}
+
 function setView(v){
   ["photos","checklist","fcs2","result"].forEach(k => {
     $("#v-"+k).style.display = (k === v) ? "block" : "none";
@@ -1888,6 +1900,7 @@ function setView(v){
   if(v !== "result"){
     state.view = v;
     $("#bar").style.display = "flex";
+    if($("#makeBtn").classList.contains("working")) { setTabs(v); return; }
     if(v === "photos"){
       refreshStamp();
       try { docThumbs(); } catch(e){ console.error(e); }
@@ -1903,7 +1916,7 @@ function setView(v){
   } else {
     $("#bar").style.display = "none";
   }
-  $$(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === state.view));
+  setTabs(state.view);
   window.scrollTo(0,0);
 }
 $$(".tab").forEach(t => t.addEventListener("click", () => setView(t.dataset.view)));
@@ -1926,6 +1939,8 @@ $("#clearChk").addEventListener("click", () => {
   $("#c_daytime").value = nowStamp();
   $("#c_tech").value = recall("techName");
   $("#c_model").value = recall("routerModel") || "Nokia";
+  $("#c_wifiname").value = recall("c_wifiname");
+  $("#c_wifipw").value   = recall("c_wifipw");
   applyCheckDefaults();
   $("#c_county").value = recall("county") || "Los Angeles County";
   refreshStamp();

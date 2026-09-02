@@ -1,0 +1,97 @@
+GOOGLE DRIVE UPLOAD - ONE-TIME SETUP
+====================================
+
+You only do this once, on a computer, and it costs nothing. At the end you
+get two values that every technician pastes into the app once.
+
+WHAT THE APP WILL BE ABLE TO DO
+  Create one folder per job inside the shared folder you pick, and put the
+  photos and forms in it. That is all. It uses the "drive.file" permission,
+  which means it can only touch files IT created. It cannot read, list or
+  delete anything else on your Drive or on the shared folder.
+
+STEP 1 - CREATE A PROJECT
+  1. Open  https://console.cloud.google.com
+  2. Top left, click the project dropdown -> New project
+  3. Name: Fiber Forms  -> Create. Wait, then make sure it is selected.
+
+STEP 2 - TURN ON THE TWO APIS
+  1. Left menu: APIs & Services -> Library
+  2. Search "Google Drive API"  -> Enable
+  3. Search "Google Picker API" -> Enable
+
+STEP 3 - OAUTH CONSENT SCREEN
+  1. APIs & Services -> OAuth consent screen
+  2. User type: External -> Create
+  3. App name: Fiber Forms
+     User support email: your email
+     Developer contact email: your email
+     -> Save and continue
+  4. Scopes: Add or remove scopes -> filter for
+        .../auth/drive.file
+     tick it -> Update -> Save and continue
+  5. Google also demands a home page and a privacy policy before it will let
+     you publish. On the Branding page fill in:
+        Application home page:
+            https://zagorton.github.io/fiber-forms/
+        Application privacy policy link:
+            https://zagorton.github.io/fiber-forms/privacy.html
+        Authorized domains -> Add domain:
+            zagorton.github.io
+     (NOT "github.io" - Google rejects it as a public suffix.)
+     Save.
+  6. Audience page -> PUBLISH APP -> Confirm.
+
+     Publish it. If you leave it in "Testing", every technician gets signed
+     out after 7 days and has to log in again. drive.file is a non-sensitive
+     scope, so publishing does NOT require Google verification or a security
+     review.
+
+STEP 4 - OAUTH CLIENT ID  (value #1)
+  1. APIs & Services -> Credentials -> Create credentials -> OAuth client ID
+  2. Application type: Web application
+     Name: Fiber Forms web
+  3. Authorised JavaScript origins -> ADD URI:
+        https://zagorton.github.io
+     (exactly that - no path, no trailing slash)
+  4. Create. Copy the Client ID. It looks like:
+        1234567890-abcdefg.apps.googleusercontent.com
+
+STEP 5 - API KEY  (value #2)
+  1. Credentials -> Create credentials -> API key
+  2. Copy the key (starts with AIza...)
+  3. Click the key to edit it:
+       Application restrictions: Websites -> Add:
+           https://zagorton.github.io/*
+       API restrictions: Restrict key -> tick Google Picker API
+       -> Save
+  The API key is not a password. It is safe in the app, and the restrictions
+  above mean it only works from your own site.
+
+STEP 6 - PUT IT IN THE APP  (each phone, once)
+  1. Open the app -> Photos tab -> Google Drive -> "Drive setup"
+  2. Paste the Client ID and the API key.
+  3. Tap "Choose the Drive folder", sign in with the Google account that has
+     access to the shared jobs folder, and pick that folder. Look under
+     "Shared with me" if it is not in My Drive.
+  Both values and the folder are remembered. Send the two values to your
+  technicians by text - they are not secrets.
+
+DAILY USE
+  Shoot photos, fill the checklist and FCS2, then Photos tab -> Upload to
+  Drive. It shows you the folder name and file count, you confirm, and it
+  creates:
+        <shared folder> / 38056 Trilport Ave, Palmdale, CA 93552 /
+  with the stamped photos, the checklist PDF, the checklist JPG and the
+  FCS2 JPG. Running it twice on the same address reuses the same folder.
+
+IF SOMETHING GOES WRONG
+  "idpiframe_initialization_failed" or a blank sign-in
+        -> the origin in Step 4 does not match your site address exactly.
+  "The API developer key is invalid"
+        -> the API key restrictions in Step 5 do not match, or the Picker
+           API was not enabled.
+  "Upload failed: File not found"
+        -> the folder was picked with a different Google account than the
+           one signed in now. Tap "Choose the Drive folder" again.
+  Nothing happens offline. Files stay on the phone; upload later.
