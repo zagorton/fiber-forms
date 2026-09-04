@@ -393,6 +393,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
                  placeholder="1234-abcd.apps.googleusercontent.com"></div>
         <div class="f"><label for="g_key">API key</label>
           <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
+        <p class="hint" id="storageNote" style="margin:0 0 12px"></p>
         <div class="f"><label>Photo stamp preview</label>
           <div id="stampBox" style="background:var(--dark);color:#fff;border-radius:10px;
                padding:11px 13px;text-align:right;font-size:12.5px;line-height:1.45;
@@ -453,6 +454,30 @@ const state = {
   strokes: [], padW: 0, padH: 0,
   touched: {}, last: null
 };
+
+/* Android wipes a site's storage when the phone runs low - that is why the
+   Drive keys and folder kept disappearing. Persistent storage is exempt. */
+let storageOK = null;
+if(navigator.storage && navigator.storage.persist){
+  navigator.storage.persisted().then(p => p ? true : navigator.storage.persist())
+    .then(ok => { storageOK = ok; showStorage(); })
+    .catch(() => {});
+}
+function showStorage(){
+  const el = document.getElementById("storageNote");
+  if(!el) return;
+  const say = txt => { el.innerHTML = txt; };
+  if(navigator.storage && navigator.storage.estimate){
+    navigator.storage.estimate().then(e => {
+      const used = Math.round((e.usage || 0) / 1048576);
+      say((storageOK ? "Storage protected" : "<b>Storage not protected</b> \u2014 "
+           + "the phone may clear the Drive keys when it runs low")
+          + " \u00b7 " + used + " MB used by this app");
+    }).catch(() => say(storageOK ? "Storage protected" : ""));
+  } else {
+    say(storageOK ? "Storage protected" : "");
+  }
+}
 
 /* ---------------- tiny safe storage (remembers technician name) --------- */
 function store(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
@@ -602,11 +627,11 @@ $("#c_tech").value    = recall("techName");
 $("#c_tech").addEventListener("input", e => store("techName", e.target.value));
 $("#c_model").value   = recall("routerModel") || "Nokia";
 $("#c_model").addEventListener("input", e => store("routerModel", e.target.value));
-["c_wifiname","c_wifipw"].forEach(id => {
-  const el = $("#" + id);
-  el.value = recall(id);
-  el.addEventListener("input", e => store(id, e.target.value));
-});
+/* nearly always the same - prefilled fresh each job, overwrite when there
+   really is a customer password */
+const WIFI_DEFAULT = "N/A (Customer Managed WiFi)";
+$("#c_wifiname").value = WIFI_DEFAULT;
+$("#c_wifipw").value   = WIFI_DEFAULT;
 
 /* ---------------- speed test shorthand --------------------------------- */
 /* type 920 then space -> "920mb / "  ... third number just gets "mb" */
@@ -1356,9 +1381,65 @@ $("#photoGrid").addEventListener("click", e => {
    those as grid thumbnails is what ran the phone out of memory, so each shot
    is shrunk to 2560 px right away and the grid only ever holds a 320 px
    thumbnail. Stamping still happens later, on the 2560 px copy. */
+/* Reading the JPEG header lets the browser decode at the final size instead
+   of unpacking all 12 MP first - that is what ran the phone out of memory. */
+function exifOrientation(v, start){
+  try{
+    if(v.getUint32(start) !== 0x45786966) return 0;
+    const tiff = start + 6;
+    const le = v.getUint16(tiff) === 0x4949;
+    if(v.getUint16(tiff + 2, le) !== 0x002A) return 0;
+    const ifd = tiff + v.getUint32(tiff + 4, le);
+    const cnt = v.getUint16(ifd, le);
+    for(let i = 0; i < cnt; i++){
+      const e = ifd + 2 + i * 12;
+      if(v.getUint16(e, le) === 0x0112) return v.getUint16(e + 8, le);
+    }
+  }catch(e){}
+  return 0;
+}
+
+function jpegSize(buf){
+  try{
+    const v = new DataView(buf);
+    if(v.getUint16(0) !== 0xFFD8) return null;
+    let off = 2, orient = 1;
+    while(off < v.byteLength - 8){
+      if(v.getUint8(off) !== 0xFF){ off++; continue; }
+      const m = v.getUint8(off + 1);
+      if(m === 0x01 || (m >= 0xD0 && m <= 0xD9)){ off += 2; continue; }
+      const size = v.getUint16(off + 2);
+      if(m === 0xE1) orient = exifOrientation(v, off + 4) || orient;
+      if(m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC){
+        let h = v.getUint16(off + 5), w = v.getUint16(off + 7);
+        if(orient >= 5){ const t = w; w = h; h = t; }
+        return {w: w, h: h};
+      }
+      off += 2 + size;
+    }
+  }catch(e){}
+  return null;
+}
+
+function smallBitmap(file, max){
+  if(!window.createImageBitmap) return loadBitmap(file);
+  return file.slice(0, 131072).arrayBuffer()
+    .then(head => {
+      const d = jpegSize(head);
+      if(!d || !d.w || !d.h) throw new Error("no header");
+      const k = Math.min(1, max / Math.max(d.w, d.h));
+      return createImageBitmap(file, {
+        imageOrientation: "from-image", resizeQuality: "medium",
+        resizeWidth: Math.max(1, Math.round(d.w * k)),
+        resizeHeight: Math.max(1, Math.round(d.h * k))
+      });
+    })
+    .catch(() => loadBitmap(file));
+}
+
 function prepPhoto(file){
-  return loadBitmap(file).then(bmp => {
-    const MAX = 2560, THUMB = 320;
+  const MAX = 2560, THUMB = 320;
+  return smallBitmap(file, MAX).then(bmp => {
     const k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
     const w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);
     const c = document.createElement("canvas");
@@ -1386,7 +1467,7 @@ function prepPhoto(file){
    some. One shared queue now handles every photo, one at a time, and nothing
    fails silently. */
 let photoQueue = Promise.resolve();
-let pending = 0, failed = 0;
+let pending = 0, failed = 0, uploadedOnce = false;
 
 function queueStatus(){
   const c = $("#photoCount");
@@ -1414,11 +1495,19 @@ function addFiles(files){
   list.forEach(f => {
     pending++;
     queueStatus();
+    /* grab the bytes now - the input is cleared straight after this returns
+       and Android drops the underlying file, which used to lose queued shots */
+    const held = f.arrayBuffer()
+      .then(buf => { const b = new Blob([buf], {type: f.type || "image/jpeg"});
+                     b.lastModified = f.lastModified; return b; })
+      .catch(() => f);
     photoQueue = photoQueue
-      .then(() => prepPhoto(f))
+      .then(() => held)
+      .then(g => prepPhoto(g))
       .catch(err => {                       /* low memory - breathe, try once more */
         console.error("prep failed, retrying", err);
-        return new Promise(r => setTimeout(r, 600)).then(() => prepPhoto(f));
+        return new Promise(r => setTimeout(r, 700))
+          .then(() => held).then(g => prepPhoto(g));
       })
       .then(p => {
         if(!p || !p.full) throw new Error("empty result");
@@ -1473,7 +1562,11 @@ $("#galInput").addEventListener("change", e => { addFiles(e.target.files); e.tar
 
 $("#clearPhotos").addEventListener("click", () => {
   if(!photos.length) return;
-  if(!confirm("Remove all " + photos.length + " photos?")) return;
+  const msg = uploadedOnce
+    ? "Remove all " + photos.length + " photos?"
+    : photos.length + " photos have NOT been uploaded to Drive yet.\n"
+      + "There is no other copy on the phone. Delete them anyway?";
+  if(!confirm(msg)) return;
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
   idbClear().catch(() => {});
@@ -1746,6 +1839,7 @@ function driveUpload(){
     driveStatus('<span class="pill ready">&#10003; Uploaded</span><br>'
               + files.length + " files are in <b>" + GD.folderName
               + " / " + folderName + "</b>.");
+    uploadedOnce = true;
     $("#startNext").style.display = "flex";
     $("#startNext").scrollIntoView({behavior:"smooth", block:"center"});
     release();
@@ -1766,6 +1860,7 @@ $("#startNext").addEventListener("click", () => {
 function resetJob(){
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
+  uploadedOnce = false;
   idbClear().catch(() => {});
   renderPhotos();
 
@@ -1780,8 +1875,8 @@ function resetJob(){
   $("#c_tech").value    = recall("techName");
   $("#c_model").value   = recall("routerModel") || "Nokia";
   $("#c_county").value  = recall("county") || "Los Angeles County";
-  $("#c_wifiname").value = recall("c_wifiname");
-  $("#c_wifipw").value   = recall("c_wifipw");
+  $("#c_wifiname").value = WIFI_DEFAULT;
+  $("#c_wifipw").value   = WIFI_DEFAULT;
   $("#f_date").value    = today();
   $("#f_resDate").value = today();
 
@@ -1939,8 +2034,8 @@ $("#clearChk").addEventListener("click", () => {
   $("#c_daytime").value = nowStamp();
   $("#c_tech").value = recall("techName");
   $("#c_model").value = recall("routerModel") || "Nokia";
-  $("#c_wifiname").value = recall("c_wifiname");
-  $("#c_wifipw").value   = recall("c_wifipw");
+  $("#c_wifiname").value = WIFI_DEFAULT;
+  $("#c_wifipw").value   = WIFI_DEFAULT;
   applyCheckDefaults();
   $("#c_county").value = recall("county") || "Los Angeles County";
   refreshStamp();
