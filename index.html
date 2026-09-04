@@ -886,29 +886,28 @@ const out = $("#out"), octx = out.getContext("2d");
 /* a 1653x2339 canvas holds ~15 MB; drop it the moment we are done, render()
    sizes it again on the next call */
 function freeOut(){ out.width = 1; out.height = 1; }
-const imgs = {};
 let docSig = "";
-let bgLeft = 2;
-const bgWaiters = [];
 
-function whenBg(){
-  return bgLeft === 0 ? Promise.resolve()
-                      : new Promise(res => bgWaiters.push(res));
+/* Keeping both blank forms decoded cost ~30 MB of RAM for the whole session.
+   They are now unpacked only while a form is being drawn and dropped again
+   straight after. */
+const formBlobs = {};
+function formBlob(k){
+  if(formBlobs[k]) return Promise.resolve(formBlobs[k]);
+  return fetch(BG[k]).then(r => r.blob()).then(b => { formBlobs[k] = b; return b; });
 }
-
-["checklist","fcs2"].forEach(k => {
-  const im = new Image();
-  im.onload = im.onerror = () => {
-    imgs[k] = im;
-    if(--bgLeft === 0){
-      bgWaiters.splice(0).forEach(fn => fn());
-      /* previews drawn before this point had no form behind them */
-      docSig = "";
-      if(state.view === "photos"){ try { docThumbs(); } catch(e){ console.error(e); } }
-    }
-  };
-  im.src = BG[k];
-});
+function formBitmap(k){
+  return formBlob(k).then(b => {
+    if(window.createImageBitmap) return createImageBitmap(b);
+    return new Promise((res, rej) => {
+      const u = URL.createObjectURL(b), im = new Image();
+      im.onload = () => { res(im); setTimeout(() => URL.revokeObjectURL(u), 3000); };
+      im.onerror = rej; im.src = u;
+    });
+  });
+}
+/* kept so existing call sites read the same */
+function whenBg(){ return Promise.resolve(); }
 
 function fitFont(text, box, maxSize){
   let size = Math.min(maxSize || 30, box.h - 4);
@@ -928,11 +927,19 @@ function tick(cx, cy, scale){
   octx.stroke();
 }
 
-function render(which){
+function renderForm(which, fn){
+  return formBitmap(which).then(bmp => {
+    render(which, bmp);
+    if(bmp && bmp.close) bmp.close();      /* free the pixels immediately */
+    return fn ? fn() : undefined;
+  });
+}
+
+function render(which, bmp){
   const C = CFG[which];
   out.width = C.W; out.height = C.H;
   octx.fillStyle = "#fff"; octx.fillRect(0,0,C.W,C.H);
-  if(imgs[which]) octx.drawImage(imgs[which], 0, 0, C.W, C.H);
+  if(bmp) octx.drawImage(bmp, 0, 0, C.W, C.H);
 
   if(C.boxes){
     octx.fillStyle = C.fieldFill || "#ccd7ff";
@@ -1095,8 +1102,8 @@ function slug(s){
 }
 
 function makeChecklist(){
-  render("checklist");
   const C = CFG.checklist;
+  return renderForm("checklist", () => {
   const url = out.toDataURL("image/jpeg", 0.9);
   const blob = buildPDF(jpegBytesFromDataURL(url), C.W, C.H, C.pdfW, C.pdfH, C.links);
   const base = slug($("#c_customer").value)+"_T-Fiber_Checklist";
@@ -1109,10 +1116,11 @@ function makeChecklist(){
     + 'The Apple and Android links inside the PDF are tappable.<br><br>'
     + 'Need the same page as an image for the app or Google Drive? '
     + 'Use <b>Also save as JPG</b>.');
+  });
 }
 
 function makeFcs2(){
-  render("fcs2");
+  return renderForm("fcs2", () => {
   const url = out.toDataURL("image/jpeg", 0.92);
   result = { blob: null, url: url, type: "image/jpeg",
              name: slug($("#f_customer").value)+"_FCS2_"
@@ -1121,6 +1129,7 @@ function makeFcs2(){
   showResult("FCS2 \u2014 JPG to upload",
     'iPhone: <b>press and hold the photo &rarr; "Add to Photos"</b>.<br>'
     + 'Android: <b>press and hold &rarr; "Download image"</b>, or use the buttons below.');
+  });
 }
 
 function showResult(title, hint){
@@ -1438,7 +1447,7 @@ function smallBitmap(file, max){
 }
 
 function prepPhoto(file){
-  const MAX = 2560, THUMB = 320;
+  const MAX = 2048, THUMB = 300;
   return smallBitmap(file, MAX).then(bmp => {
     const k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
     const w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);
@@ -1761,8 +1770,7 @@ function docThumbs(){
   docSig = sig;
 
   host.innerHTML = "";
-  const tile = (which, label, warn) => {
-    render(which);
+  const tile = (which, label, warn) => renderForm(which, () => {
     const w = 300, h = Math.round(out.height * w / out.width);
     const c = document.createElement("canvas");
     c.width = w; c.height = h;
@@ -1774,26 +1782,26 @@ function docThumbs(){
     d.innerHTML = '<img src="' + src + '" alt="">'
                 + '<span class="lbl' + (warn ? " warn" : "") + '">' + label + '</span>';
     host.appendChild(d);
-  };
-  if(hasChk) tile("checklist", "Checklist");
-  if(hasFcs) tile("fcs2",
+  });
+  let chain = Promise.resolve();
+  if(hasChk) chain = chain.then(() => tile("checklist", "Checklist"));
+  if(hasFcs) chain = chain.then(() => tile("fcs2",
                   state.strokes.length ? "FCS2" : "FCS2 \u2014 no signature",
-                  !state.strokes.length);
-  freeOut();
+                  !state.strokes.length));
+  chain.then(freeOut).catch(e => console.error(e));
   card.style.display = "block";
 }
 
 function buildDocs(){
   const base = slug($("#c_customer").value) || slug($("#c_street").value) || "forms";
   const docs = [];
-  render("checklist");
-  docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.9), "image/jpeg"),
-             name: base + "_T-Fiber_Checklist.jpg"});
-  render("fcs2");
-  docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.92), "image/jpeg"),
-             name: base + "_FCS2.jpg"});
-  freeOut();
-  return docs;
+  return renderForm("checklist", () => {
+    docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.9), "image/jpeg"),
+               name: base + "_T-Fiber_Checklist.jpg"});
+  }).then(() => renderForm("fcs2", () => {
+    docs.push({blob: dataURLtoBlob(out.toDataURL("image/jpeg", 0.92), "image/jpeg"),
+               name: base + "_FCS2.jpg"});
+  })).then(() => { freeOut(); return docs; });
 }
 
 function driveUpload(){
@@ -1813,10 +1821,11 @@ function driveUpload(){
 
   whenBg().then(() => exportPhotos("#makeBtn")).then(list => {
     list.forEach(f => files.push(f));
-    if($("#driveDocs").checked){
-      try { buildDocs().forEach(d => files.push(d)); }
-      catch(e){ console.error("doc build failed", e); }
-    }
+    return ($("#driveDocs").checked
+              ? buildDocs().then(ds => ds.forEach(d => files.push(d)))
+                           .catch(e => console.error("doc build failed", e))
+              : Promise.resolve());
+  }).then(() => {
     if(!confirm("Upload " + files.length + " files into\n\n"
                 + GD.folderName + " / " + folderName + " ?")){
       throw new Error("cancelled");
