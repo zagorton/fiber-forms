@@ -225,6 +225,9 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     <div class="f"><label for="c_customer">Customer Name</label>
       <input type="text" id="c_customer" autocomplete="off" autocapitalize="words">
 </div>
+    <div class="f"><label for="c_email">Customer email</label>
+      <input type="text" id="c_email" autocomplete="off" inputmode="email"
+             placeholder="name@example.com"></div>
     <div class="f"><label for="c_tech">Technician Name</label>
       <input type="text" id="c_tech" autocomplete="off" autocapitalize="words">
 </div>
@@ -1101,6 +1104,42 @@ function slug(s){
   return (s || "").replace(/[^\w ]+/g,"").trim().replace(/\s+/g,"_") || "form";
 }
 
+
+/* Text for the email. A share sheet cannot fill in the recipient - browsers
+   block that - so the address is copied to the clipboard instead. */
+const WIFI_NA = "N/A (Customer Managed WiFi)";
+
+function mailSubject(){
+  const a = ($("#c_street").value || "").trim();
+  return "Your T-Fiber installation" + (a ? " \u2014 " + a : "");
+}
+
+function mailBody(){
+  const first = ($("#c_customer").value || "").trim().split(" ")[0];
+  const name  = ($("#c_wifiname").value || "").trim();
+  const pw    = ($("#c_wifipw").value || "").trim();
+  const lines = [];
+  lines.push(first ? "Hi " + first + "," : "Hi,");
+  lines.push("");
+  lines.push("Your T-Fiber internet installation is complete. "
+           + "The installation checklist is attached for your records.");
+  if(name && name !== WIFI_NA){
+    lines.push("");
+    lines.push("Once your service is active, connect your devices using:");
+    lines.push("  Wi-Fi network: " + name);
+    if(pw && pw !== WIFI_NA) lines.push("  Wi-Fi password: " + pw);
+    lines.push("You can change both at any time in the Nokia WiFi app.");
+  }
+  lines.push("");
+  lines.push("For anything about your service - billing, speeds, equipment or "
+           + "support - please contact T-Mobile Fiber at 844-783-4237 (option 2) "
+           + "or visit Fiber.T-Mobile.com/support/faq.");
+  lines.push("");
+  lines.push("Thank you,");
+  lines.push(($("#c_tech").value || "").trim() || "T-Fiber Installation");
+  return lines.join("\n");
+}
+
 function makeChecklist(){
   const C = CFG.checklist;
   return renderForm("checklist", () => {
@@ -1109,10 +1148,11 @@ function makeChecklist(){
   const base = slug($("#c_customer").value)+"_T-Fiber_Checklist";
   result = { blob: blob, url: url, type: "application/pdf",
              name: base+".pdf",
+             subject: mailSubject(), body: mailBody(),
              alt: { url: url, type: "image/jpeg", name: base+".jpg" } };
   freeOut();
   showResult("Checklist \u2014 PDF for the customer",
-    'PDF for the customer &mdash; <b>Share / Send</b> &rarr; <b>Messages</b>. '
+    'PDF for the customer &mdash; <b>Share / Send</b> &rarr; <b>Gmail</b>. '
     + 'The Apple and Android links inside the PDF are tappable.<br><br>'
     + 'Need the same page as an image for the app or Google Drive? '
     + 'Use <b>Also save as JPG</b>.');
@@ -1179,7 +1219,13 @@ $("#shareBtn").addEventListener("click", () => withBusy("#shareBtn", "Opening...
   try{
     const file = new File([blob], result.name, {type: result.type});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], title: result.name});
+      const payload = {files:[file], title: result.subject || result.name};
+      if(result.body) payload.text = result.body;
+      const to = ($("#c_email").value || "").trim();
+      if(to && navigator.clipboard){
+        try { await navigator.clipboard.writeText(to); } catch(e){}
+      }
+      await navigator.share(payload);
       return;
     }
   }catch(err){
@@ -1874,7 +1920,7 @@ function resetJob(){
   renderPhotos();
 
   clearIds(CFG.checklist.fields.map(f => f.id)
-           .concat(["c_routerSn", "c_routerMac"])
+           .concat(["c_routerSn", "c_routerMac", "c_email"])
            .concat(CFG.fcs2.fields.map(f => f.id)));
   state.strokes = []; state.touched = {}; state.checks = {};
   $$(".chip[data-group]").forEach(c => c.classList.remove("on"));
@@ -2037,7 +2083,7 @@ function clearIds(ids){
 }
 $("#clearChk").addEventListener("click", () => {
   if(!confirm("Clear the checklist?")) return;
-  clearIds(CFG.checklist.fields.map(f => f.id).concat(["c_routerSn","c_routerMac"]));
+  clearIds(CFG.checklist.fields.map(f => f.id).concat(["c_routerSn","c_routerMac","c_email"]));
   state.checks = {};
   $$(".chip[data-group]").forEach(c => c.classList.remove("on"));
   $("#c_daytime").value = nowStamp();
