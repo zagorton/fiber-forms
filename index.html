@@ -375,7 +375,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   <div class="card">
     <h2><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Photos <span id="photoCount" style="color:var(--muted)"></span></h2>
     <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
-    <p class="hint" id="photoEmpty">Tap + to shoot. Photos are stamped when you save.</p>
+    <p class="hint" id="photoEmpty" style="display:none"></p>
     <p class="hint" id="photoNote" style="display:none;color:var(--ok);font-weight:600"></p>
     <button class="btn btn-quiet" id="galBtn" style="margin-top:10px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Add from gallery</button>
     <div class="row" id="photoActions" style="display:none;margin-top:12px">
@@ -383,7 +383,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <button class="btn btn-ghost" id="savePhotos"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Save</button>
     </div>
     <p class="hint" id="addrWarn" style="display:none;color:#c2691f">
-      Address still empty &mdash; add it on the Checklist tab before saving.</p>
+      No address &mdash; fill in Checklist</p>
   </div>
 
   <div class="card" id="docCard" style="display:none">
@@ -395,21 +395,12 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     <h2><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Google Drive</h2>
     <p class="hint" id="driveStatus" style="margin:0 0 12px"></p>
     <button class="btn btn-primary" id="startNext" style="display:none;margin-bottom:10px"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Start next job</button>
-    <label style="display:flex;align-items:center;gap:9px;margin:0 0 4px;
-           font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
-      <input type="checkbox" id="driveDocs" checked
-             style="width:20px;height:20px;accent-color:var(--accent)">
-      Also upload the two forms as JPG
-    </label>
+    <div class="chips" style="margin:0 0 4px">
+      <div class="chip on" id="formsBtn" role="button" style="flex:0 0 auto;padding:9px 16px">+ Forms</div>
+    </div>
     <details>
       <summary>Settings &#9662;</summary>
       <div style="margin-top:12px">
-        <label style="display:flex;align-items:center;gap:9px;margin:0 0 14px;
-               font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">
-          <input type="checkbox" id="keepCam" checked
-                 style="width:20px;height:20px;accent-color:var(--accent)">
-          Keep the camera open for the next shot
-        </label>
         <button class="btn btn-ghost" id="pickFolderBtn" style="margin-bottom:14px"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Choose the Drive folder</button>
         <div class="f"><label for="g_client">OAuth Client ID</label>
           <input type="text" id="g_client" autocomplete="off"
@@ -1129,38 +1120,36 @@ function mailBody(){
   const first = ($("#c_customer").value || "").trim().split(" ")[0];
   const name  = ($("#c_wifiname").value || "").trim();
   const pw    = ($("#c_wifipw").value || "").trim();
-  const lines = [];
-  lines.push(first ? "Hi " + first + "," : "Hi,");
-  lines.push("");
-  lines.push("Your T-Fiber internet installation is complete. "
-           + "The installation checklist is attached for your records.");
-  if(name && name !== WIFI_NA){
-    lines.push("");
-    lines.push("Once your service is active, connect your devices using:");
-    lines.push("  Wi-Fi network: " + name);
-    if(pw && pw !== WIFI_NA) lines.push("  Wi-Fi password: " + pw);
-    lines.push("You can change both at any time in the Nokia WiFi app.");
-  }
   const waiting = state.checks.svc === "Waiting";
-  lines.push("");
+  const L = [];
+  L.push(first ? "Hi " + first + "," : "Hi,");
+  L.push("");
+  L.push(waiting
+    ? "Your T-Fiber equipment is installed. The checklist is attached."
+    : "Your T-Fiber installation is complete. The checklist is attached.");
   if(waiting){
-    lines.push("One last step is still needed on our side: the fiber line has to "
-             + "be connected at the street by another crew, so there is no "
-             + "internet yet. Nothing is needed from you \u2014 just leave the "
-             + "modem plugged in and we'll turn your service on remotely as soon "
-             + "as that's done.");
-  } else {
-    lines.push("Please leave the modem plugged in for the next few hours in case "
-             + "anything still needs to finish activating remotely.");
+    L.push("");
+    L.push("Your internet isn't active yet. The fiber line still needs to be "
+         + "connected at the street. Please keep the modem plugged in, and "
+         + "service will be activated remotely once that's done.");
   }
-  lines.push("");
-  lines.push("Questions about billing, speeds or equipment? Contact T-Mobile "
-           + "Fiber support at 844-783-4237 (option 2) or "
-           + "Fiber.T-Mobile.com/support/faq.");
-  lines.push("");
-  lines.push("Thank you,");
-  lines.push(($("#c_tech").value || "").trim() || "T-Fiber Installation");
-  return lines.join("\n");
+  if(name && name !== WIFI_NA){
+    L.push("");
+    L.push("Wi-Fi network: " + name);
+    if(pw && pw !== WIFI_NA) L.push("Wi-Fi password: " + pw);
+  }
+  if(!waiting){
+    L.push("");
+    L.push("The connection may drop for a few minutes to a few hours after "
+         + "activation. This is normal, just leave the modem plugged in.");
+  }
+  L.push("");
+  L.push("Questions about billing, speeds or equipment? Contact T-Mobile Fiber "
+       + "support at 844-783-4237 (option 2) or Fiber.T-Mobile.com/support/faq.");
+  L.push("");
+  L.push("Thanks,");
+  L.push("T-Fiber Installation");
+  return L.join("\n");
 }
 
 function makeChecklist(){
@@ -1441,8 +1430,7 @@ function renderPhotos(){
     grid.appendChild(d);
   });
   if(typeof queueStatus === "function") queueStatus();
-  $("#photoEmpty").style.display = photos.length ? "none" : "block";
-  $("#photoActions").style.display = photos.length ? "flex" : "none";
+    $("#photoActions").style.display = photos.length ? "flex" : "none";
   if(typeof updateTabs === "function") updateTabs();
   }
 
@@ -1626,17 +1614,10 @@ function exportPhotos(label){
 }
 
 $("#galBtn").addEventListener("click", () => $("#galInput").click());
-$("#keepCam").checked = recall("keepCam") !== "0";
-$("#keepCam").addEventListener("change", e => store("keepCam", e.target.checked ? "1" : "0"));
 
 $("#camInput").addEventListener("change", e => {
-  const got = e.target.files && e.target.files.length;
   addFiles(e.target.files);
   e.target.value = "";
-  /* straight back into the camera - cancelling there ends the run */
-  if(got && $("#keepCam").checked){
-    setTimeout(() => { try { $("#camInput").click(); } catch(err){} }, 300);
-  }
 });
 $("#galInput").addEventListener("change", e => { addFiles(e.target.files); e.target.value = ""; });
 
@@ -1687,6 +1668,7 @@ const GD = {
   apiKey:   recall("gApiKey"),
   folderId: recall("gFolderId"),
   folderName: recall("gFolderName"),
+  email: recall("gEmail"),
   token: null, exp: 0, tokenClient: null
 };
 $("#g_client").value = GD.clientId;
@@ -1698,9 +1680,18 @@ $("#g_client").addEventListener("input", e => {
 $("#g_key").addEventListener("input", e => {
   GD.apiKey = e.target.value.trim(); store("gApiKey", GD.apiKey); driveStatus();
 });
-$("#driveDocs").checked = recall("driveDocs") !== "0";
-$("#driveDocs").addEventListener("change", e => {
-  store("driveDocs", e.target.checked ? "1" : "0");
+/* "+ Forms" on = the two forms go up as JPG with the photos; off = photos only */
+let formsOn = recall("driveDocs") !== "0";
+function paintForms(){
+  const b = $("#formsBtn");
+  b.classList.toggle("on", formsOn);
+  b.textContent = formsOn ? "\u2713 + Forms" : "+ Forms";
+}
+paintForms();
+$("#formsBtn").addEventListener("click", () => {
+  formsOn = !formsOn;
+  store("driveDocs", formsOn ? "1" : "0");
+  paintForms();
   docThumbs();
 });
 
@@ -1714,20 +1705,26 @@ function driveStatus(msg){
     el.innerHTML = '<span class="pill">No folder yet</span><br>'
                  + 'Tap <b>Choose the Drive folder</b> &mdash; asked once, then remembered.';
   } else {
-    el.innerHTML = '<span class="pill ready">&#10003; ' + GD.folderName + '</span><br>'
-                 + 'A subfolder named after the address is created for each job.';
+    el.innerHTML = '<span class="pill ready">&#10003; ' + GD.folderName + '</span>';
   }
 }
 driveStatus();
+setTimeout(() => { try { preloadGoogle(); } catch(e){} }, 1500);
+window.addEventListener("online", () => { try { preloadGoogle(); } catch(e){} });
 
+/* one promise per script: a second caller waits for the same load instead of
+   assuming it is ready; a failed load (no signal) can be retried later */
+const SCRIPTS = {};
 function loadScript(src){
-  return new Promise((res, rej) => {
-    if(document.querySelector('script[data-s="'+src+'"]')) return res();
+  if(SCRIPTS[src]) return SCRIPTS[src];
+  SCRIPTS[src] = new Promise((res, rej) => {
     const el = document.createElement("script");
     el.src = src; el.async = true; el.dataset.s = src;
-    el.onload = res; el.onerror = () => rej(new Error("offline"));
+    el.onload = res;
+    el.onerror = () => { delete SCRIPTS[src]; el.remove(); rej(new Error("offline")); };
     document.head.appendChild(el);
   });
+  return SCRIPTS[src];
 }
 
 function gToken(interactive){
@@ -1735,21 +1732,42 @@ function gToken(interactive){
   return loadScript("https://accounts.google.com/gsi/client").then(() =>
     new Promise((res, rej) => {
       if(!GD.tokenClient){
-        GD.tokenClient = google.accounts.oauth2.initTokenClient({
+        const cfg = {
           client_id: GD.clientId,
           scope: "https://www.googleapis.com/auth/drive.file",
           callback: () => {}
-        });
+        };
+        /* remembered account - Google skips the "choose an account" screen */
+        if(GD.email) cfg.login_hint = GD.email;
+        GD.tokenClient = google.accounts.oauth2.initTokenClient(cfg);
       }
       GD.tokenClient.callback = r => {
         if(r.error) return rej(new Error(r.error));
         GD.token = r.access_token;
         GD.exp = Date.now() + ((r.expires_in || 3600) * 1000);
+        if(!GD.email) rememberEmail(GD.token);
         res(GD.token);
       };
       GD.tokenClient.error_callback = e => rej(new Error(e.type || "auth failed"));
-      GD.tokenClient.requestAccessToken({prompt: interactive ? "" : "none"});
+      GD.tokenClient.requestAccessToken({prompt: ""});
     }));
+}
+
+function rememberEmail(token){
+  fetch("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)",
+        {headers: {Authorization: "Bearer " + token}})
+    .then(r => r.ok ? r.json() : null)
+    .then(j => {
+      const e = j && j.user && j.user.emailAddress;
+      if(e){ GD.email = e; store("gEmail", e); GD.tokenClient = null; }
+    }).catch(() => {});
+}
+
+/* load Google's sign-in script ahead of time, so tapping Upload can open
+   the sign-in window straight away (Chrome blocks it if it comes late) */
+function preloadGoogle(){
+  if(GD.clientId && navigator.onLine !== false)
+    loadScript("https://accounts.google.com/gsi/client").catch(() => {});
 }
 
 function pickFolder(){
@@ -1827,7 +1845,7 @@ function jobSig(){
 
 function docThumbs(){
   const card = $("#docCard"), host = $("#docStrip");
-  const wanted = $("#driveDocs").checked;
+  const wanted = formsOn;
   const hasChk = (($("#c_customer").value || "").trim()
                || ($("#c_street").value || "").trim());
   const hasFcs = state.strokes.length
@@ -1880,7 +1898,7 @@ function driveUpload(){
   if(!GD.folderId){ alert("Choose the Drive folder first."); return; }
   const folderName = composedAddress();
   if(!folderName){ alert("Fill the address on the Checklist tab first."); return; }
-  if(!photos.length && !$("#driveDocs").checked){ alert("Nothing to upload."); return; }
+  if(!photos.length && !formsOn){ alert("Nothing to upload."); return; }
   if(navigator.onLine === false){ alert("No connection. Try again when you have signal."); return; }
 
   const files = [];
@@ -1890,9 +1908,17 @@ function driveUpload(){
   btn.classList.add("working");
   const release = () => { btn.classList.remove("working"); btn.innerHTML = label; };
 
-  whenBg().then(() => exportPhotos("#makeBtn")).then(list => {
+  /* sign in FIRST, while the tap is fresh - otherwise Chrome blocks the
+     Google window and the upload fails */
+  let token = null;
+  driveStatus("Signing in...");
+  gToken(true).then(t => {
+    token = t;
+    driveStatus("Preparing files...");
+    return whenBg().then(() => exportPhotos("#makeBtn"));
+  }).then(list => {
     list.forEach(f => files.push(f));
-    return ($("#driveDocs").checked
+    return (formsOn
               ? buildDocs().then(ds => ds.forEach(d => files.push(d)))
                            .catch(e => console.error("doc build failed", e))
               : Promise.resolve());
@@ -1901,8 +1927,7 @@ function driveUpload(){
                 + GD.folderName + " / " + folderName + " ?")){
       throw new Error("cancelled");
     }
-    driveStatus("Signing in...");
-    return gToken(false).catch(() => gToken(true));
+    return token;
   }).then(token => {
     driveStatus("Creating folder...");
     return findOrMakeFolder(GD.folderId, folderName, token).then(id => ({id: id, token: token}));
