@@ -88,6 +88,11 @@ input[type=text]{width:100%;padding:13px 13px;font-size:17px;border:1.5px solid 
 input[type=text]:focus{outline:none;border-color:var(--accent);background:var(--card);
   box-shadow:0 0 0 3px rgba(11,111,212,.13)}
 input[type=text]::placeholder{color:#a9b3bd}
+textarea{width:100%;padding:13px;font-size:15px;border:1.5px solid var(--line);
+  border-radius:12px;background:var(--field);color:var(--ink);font-family:inherit;
+  line-height:1.5;resize:vertical}
+textarea:focus{outline:none;border-color:var(--accent);background:var(--card);
+  box-shadow:0 0 0 3px rgba(11,111,212,.13)}
 .f{margin-bottom:13px}.f:last-child{margin-bottom:0}
 .row{display:flex;gap:9px}.row>*{flex:1;min-width:0}
 .row .narrow{flex:0 0 88px}
@@ -269,6 +274,44 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
 
   <div class="card">
+    <h2><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>Work done</h2>
+    <div class="row">
+      <div class="f"><label for="w_ft">Line extension (ft)</label>
+        <input type="text" id="w_ft" autocomplete="off" inputmode="numeric" placeholder="0"></div>
+      <div class="f"><label for="w_ch">Chamber #</label>
+        <input type="text" id="w_ch" autocomplete="off" placeholder="CH-413"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label for="w_spl">Splices</label>
+        <input type="text" id="w_spl" autocomplete="off" inputmode="numeric"></div>
+      <div class="f"><label for="w_ext">Extenders given</label>
+        <input type="text" id="w_ext" autocomplete="off" inputmode="numeric"></div>
+    </div>
+    <div class="f"><label>Flags</label>
+      <div class="chips">
+        <div class="chip" data-group="w_second" data-v="yes">2nd visit</div>
+        <div class="chip" data-group="w_nox" data-v="yes">No extender in stock</div>
+      </div>
+    </div>
+    <div class="f"><label for="w_notes">Notes for Skedulo</label>
+      <textarea id="w_notes" rows="6"></textarea></div>
+    <button class="btn btn-ghost" id="copyNotes"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy notes</button>
+    <p class="hint" id="payLine" style="margin:12px 0 0;font-weight:700;color:var(--ink)"></p>
+    <button class="btn btn-quiet" id="openHistory" style="margin-top:6px"><svg viewBox="0 0 24 24"><path d="M3 3v6h6"/><path d="M3.5 13a9 9 0 1 0 2.6-6.4L3 9"/><path d="M12 8v5l3 2"/></svg>History &amp; pay</button>
+  </div>
+
+  <div class="card">
+    <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>Service status</h2>
+    <div class="chips" data-check="svc">
+      <div class="chip" data-v="Active">Working now</div>
+      <div class="chip" data-v="Activating">Activating</div>
+      <div class="chip" data-v="Waiting">Waiting on fiber</div>
+    </div>
+    <p class="hint" style="margin:10px 0 0">Only changes the wording of the customer
+      email. Not printed on either form.</p>
+  </div>
+
+  <div class="card">
     <h2><svg viewBox="0 0 24 24"><path d="M4 19a8 8 0 1 1 16 0"/><path d="M12 19l4.5-5.5"/></svg>Speed test</h2>
     <div class="f"><label for="c_speedwifi">Wireless / Wi-Fi (3 tests)</label>
       <input type="text" id="c_speedwifi" autocomplete="off" placeholder="920 740 880">
@@ -430,6 +473,21 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   <button class="btn btn-dark" id="makeBtn">Create PDF for customer</button>
 </div>
 
+<div class="overlay" id="histOverlay" style="overflow:auto">
+  <h3>History &amp; pay</h3>
+  <div class="row" style="margin:0 0 10px">
+    <button class="btn btn-ghost" id="histPrev">&larr; Prev</button>
+    <button class="btn btn-ghost" id="histNext">Next &rarr;</button>
+  </div>
+  <p id="histRange" style="color:#fff;font-weight:700;margin:0 0 10px"></p>
+  <div id="histList" style="flex:1;overflow:auto;background:var(--card);
+       border-radius:14px;padding:6px 12px;margin-bottom:12px"></div>
+  <div class="ov-actions">
+    <button class="btn btn-primary" id="histExport">Export week to Excel</button>
+    <button class="btn btn-ghost" id="histClose">Close</button>
+  </div>
+</div>
+
 <div class="overlay" id="sigOverlay">
   <h3>Please sign below</h3>
   <p>Sign with your finger, then tap Done</p>
@@ -533,6 +591,10 @@ CFG.fcs2.fields.filter(f => f.group === "rest").forEach(f => {
 });
 
 /* ---------------- checklist checkbox chips ----------------------------- */
+function applySvcDefault(){
+  if(!state.checks.svc) setCheck("svc", "Activating");
+}
+
 CFG.checklist.checks.forEach(c => {
   const host = document.querySelector('[data-check="'+c.id+'"]');
   if(host){
@@ -604,6 +666,9 @@ function chipGroup(sel, key, after){
     if(after) after(c.dataset.v);
   });
 }
+document.querySelectorAll('[data-check="svc"] .chip').forEach(c => {
+  c.dataset.group = "svc";
+});
 chipGroup("#routerChips", "router");
 chipGroup("#ispChips", "isp");
 
@@ -1130,10 +1195,35 @@ function mailBody(){
     if(pw && pw !== WIFI_NA) lines.push("  Wi-Fi password: " + pw);
     lines.push("You can change both at any time in the Nokia WiFi app.");
   }
+  const svc = state.checks.svc || "Activating";
   lines.push("");
-  lines.push("For anything about your service - billing, speeds, equipment or "
-           + "support - please contact T-Mobile Fiber at 844-783-4237 (option 2) "
-           + "or visit Fiber.T-Mobile.com/support/faq.");
+  if(svc === "Active"){
+    lines.push("Your internet is live and I tested the speeds before leaving.");
+  } else if(svc === "Waiting"){
+    lines.push("One last step is still being finished on our side: the fiber line "
+             + "has to be connected at the street by another crew. Until that is "
+             + "done the round PON light on the small white box will stay red or "
+             + "off, and there will be no internet yet.");
+    lines.push("");
+    lines.push("Nothing is needed from you. Please leave all the equipment "
+             + "plugged in. When the PON light turns solid green, your service "
+             + "is live and you can connect your devices.");
+  } else {
+    lines.push("Your service has been set up and is finishing activation. The "
+             + "round PON light on the small white box will turn solid green "
+             + "when it is ready.");
+    lines.push("");
+    lines.push("This usually takes a few minutes, but it can take up to a few "
+             + "hours. During that time the Wi-Fi may appear and then drop again, "
+             + "or say \"no internet\" - that is normal while the line comes up. "
+             + "Please leave everything powered on and give it time.");
+  }
+  lines.push("");
+  lines.push("If the PON light is still not solid green after that, or you have "
+           + "any question about billing, speeds or equipment, please contact "
+           + "T-Mobile Fiber support directly at 844-783-4237 (option 2) or "
+           + "Fiber.T-Mobile.com/support/faq. They can check the line remotely "
+           + "and will get it sorted faster than anyone on site.");
   lines.push("");
   lines.push("Thank you,");
   lines.push(($("#c_tech").value || "").trim() || "T-Fiber Installation");
@@ -1307,11 +1397,13 @@ function loadViaImg(file){
 /* photos survive the app being closed - kept in IndexedDB, not memory */
 function idb(){
   return new Promise((res, rej) => {
-    const r = indexedDB.open("fiberForms", 1);
+    const r = indexedDB.open("fiberForms", 2);
     r.onupgradeneeded = () => {
       const db = r.result;
       if(!db.objectStoreNames.contains("photos"))
         db.createObjectStore("photos", {keyPath:"id", autoIncrement:true});
+      if(!db.objectStoreNames.contains("jobs"))
+        db.createObjectStore("jobs", {keyPath:"id", autoIncrement:true});
     };
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -1913,6 +2005,7 @@ $("#startNext").addEventListener("click", () => {
 
 /* wipes everything about this customer, keeps the technician's own settings */
 function resetJob(){
+  saveJob(uploadedOnce, photos.length);
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
   uploadedOnce = false;
@@ -1920,7 +2013,7 @@ function resetJob(){
   renderPhotos();
 
   clearIds(CFG.checklist.fields.map(f => f.id)
-           .concat(["c_routerSn", "c_routerMac", "c_email"])
+           .concat(["c_routerSn", "c_routerMac", "c_email", "w_ft", "w_ch", "w_spl", "w_ext"])
            .concat(CFG.fcs2.fields.map(f => f.id)));
   state.strokes = []; state.touched = {}; state.checks = {};
   $$(".chip[data-group]").forEach(c => c.classList.remove("on"));
@@ -2031,12 +2124,323 @@ function loadState(){
   }
   refreshStamp();
 }
-loadState();
-updateTabs();
 
 const ICON_UP  = '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>';
 const ICON_DOC = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
 const ICON_IMG = '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+
+/* Minimal .xlsx writer: a zip of XML parts, stored uncompressed. */
+const CRC = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+
+function crc32(u8) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function utf8(str) {
+  const out = [];
+  for (let i = 0; i < str.length; i++) {
+    let c = str.codePointAt(i);
+    if (c > 0xFFFF) i++;
+    if (c < 0x80) out.push(c);
+    else if (c < 0x800) out.push(0xC0 | (c >> 6), 0x80 | (c & 63));
+    else if (c < 0x10000) out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    else out.push(0xF0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+  }
+  return new Uint8Array(out);
+}
+
+function zipStore(files) {
+  const chunks = [], central = [];
+  let offset = 0;
+  const num = (n, b) => {
+    const a = new Uint8Array(b);
+    for (let i = 0; i < b; i++) a[i] = (n >>> (i * 8)) & 0xFF;
+    return a;
+  };
+  const push = (arr, u8) => { arr.push(u8); return u8.length; };
+
+  files.forEach(f => {
+    const name = utf8(f.name), data = f.data, c = crc32(data);
+    const local = [];
+    push(local, num(0x04034B50, 4)); push(local, num(20, 2)); push(local, num(0, 2));
+    push(local, num(0, 2)); push(local, num(0, 2)); push(local, num(0, 2));
+    push(local, num(c, 4)); push(local, num(data.length, 4)); push(local, num(data.length, 4));
+    push(local, num(name.length, 2)); push(local, num(0, 2));
+    local.push(name, data);
+    let size = 0; local.forEach(u => size += u.length);
+    chunks.push(...local);
+
+    const cen = [];
+    push(cen, num(0x02014B50, 4)); push(cen, num(20, 2)); push(cen, num(20, 2));
+    push(cen, num(0, 2)); push(cen, num(0, 2)); push(cen, num(0, 2)); push(cen, num(0, 2));
+    push(cen, num(c, 4)); push(cen, num(data.length, 4)); push(cen, num(data.length, 4));
+    push(cen, num(name.length, 2)); push(cen, num(0, 2)); push(cen, num(0, 2));
+    push(cen, num(0, 2)); push(cen, num(0, 2)); push(cen, num(0, 4)); push(cen, num(offset, 4));
+    cen.push(name);
+    central.push(...cen);
+    offset += size;
+  });
+
+  let cenSize = 0; central.forEach(u => cenSize += u.length);
+  const end = [];
+  push(end, num(0x06054B50, 4)); push(end, num(0, 2)); push(end, num(0, 2));
+  push(end, num(files.length, 2)); push(end, num(files.length, 2));
+  push(end, num(cenSize, 4)); push(end, num(offset, 4)); push(end, num(0, 2));
+
+  const all = chunks.concat(central, end);
+  let total = 0; all.forEach(u => total += u.length);
+  const out = new Uint8Array(total);
+  let p = 0; all.forEach(u => { out.set(u, p); p += u.length; });
+  return out;
+}
+
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                          .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+function sheetXML(rows) {
+  const col = i => {
+    let s = "", n = i + 1;
+    while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = ((n - r) / 26) | 0; }
+    return s;
+  };
+  let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    + '<cols><col min="1" max="1" width="12"/><col min="2" max="2" width="42"/>'
+    + '<col min="3" max="8" width="15"/></cols><sheetData>';
+  rows.forEach((row, r) => {
+    xml += '<row r="' + (r + 1) + '">';
+    row.forEach((v, c) => {
+      if (v === "" || v === null || v === undefined) return;
+      const ref = col(c) + (r + 1);
+      if (typeof v === "number") xml += '<c r="' + ref + '"><v>' + v + '</v></c>';
+      else xml += '<c r="' + ref + '" t="inlineStr"><is><t>' + esc(v) + '</t></is></c>';
+    });
+    xml += '</row>';
+  });
+  return xml + '</sheetData></worksheet>';
+}
+
+function buildXLSX(rows, sheetName) {
+  const F = (name, str) => ({ name: name, data: utf8(str) });
+  const parts = [
+    F("[Content_Types].xml",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+      + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+      + '<Default Extension="xml" ContentType="application/xml"/>'
+      + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+      + '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+      + '</Types>'),
+    F("_rels/.rels",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+      + '</Relationships>'),
+    F("xl/workbook.xml",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+      + 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+      + '<sheets><sheet name="' + esc(sheetName || "Week") + '" sheetId="1" r:id="rId1"/></sheets></workbook>'),
+    F("xl/_rels/workbook.xml.rels",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+      + '</Relationships>'),
+    F("xl/worksheets/sheet1.xml", sheetXML(rows))
+  ];
+  return zipStore(parts);
+}
+
+
+/* ---------------- job history & pay ------------------------------------ */
+const PAY = { install: 85, per30ft: 20, splice: 10, extender: 10, secondVisit: 50 };
+const num = id => { const v = parseFloat(($("#"+id).value||"").replace(/[^\d.]/g,"")); 
+                    return isNaN(v) ? 0 : v; };
+
+function jobFigures(){
+  const second = state.checks.w_second === "yes";
+  const ft  = num("w_ft"), spl = num("w_spl"), ext = num("w_ext");
+  const f = {
+    install:  second ? 0 : PAY.install,
+    line:     Math.ceil(ft / 30) * PAY.per30ft,
+    extender: ext * PAY.extender,
+    splice:   spl * PAY.splice,
+    second:   second ? PAY.secondVisit : 0
+  };
+  f.total = f.install + f.line + f.extender + f.splice + f.second;
+  f.ft = ft; f.splices = spl; f.extenders = ext; f.isSecond = second;
+  return f;
+}
+
+function buildNotes(){
+  const f = jobFigures();
+  const ch = ($("#w_ch").value || "").trim();
+  const L = ["Notes:", ""];
+  L.push("Line extension - " + (f.ft > 100 ? "extra" : f.ft + " ft"));
+  if(ch) L.push(ch + " drop re-entry + splice");
+  L.push("Splice at the house - inside+outside " + f.splices);
+  L.push("WiFi extender - " + f.extenders
+         + (state.checks.w_nox === "yes" ? "  X" : ""));
+  return L.join("\n");
+}
+
+let notesEdited = false;
+function refreshWork(){
+  const f = jobFigures();
+  if(!notesEdited) $("#w_notes").value = buildNotes();
+  const bits = [];
+  if(f.install)  bits.push("install $" + f.install);
+  if(f.line)     bits.push("line $" + f.line);
+  if(f.splice)   bits.push("splice $" + f.splice);
+  if(f.extender) bits.push("extender $" + f.extender);
+  if(f.second)   bits.push("2nd visit $" + f.second);
+  $("#payLine").textContent = "$" + f.total + (bits.length ? "  \u00b7  " + bits.join(" + ") : "");
+}
+["w_ft","w_ch","w_spl","w_ext"].forEach(id =>
+  $("#"+id).addEventListener("input", refreshWork));
+$("#w_notes").addEventListener("input", () => { notesEdited = true; });
+document.addEventListener("click", e => {
+  if(e.target.closest('.chip[data-group="w_second"], .chip[data-group="w_nox"]')){
+    notesEdited = false; setTimeout(refreshWork, 0);
+  }
+});
+$("#copyNotes").addEventListener("click", () => {
+  const t = $("#w_notes").value;
+  if(navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
+  withBusy("#copyNotes", "Copied", () => new Promise(r => setTimeout(r, 900)));
+});
+
+/* --- stored jobs --- */
+function jobsRun(mode, fn){
+  return idb().then(db => new Promise((res, rej) => {
+    if(!db.objectStoreNames.contains("jobs")) return res(mode === "readonly" ? [] : null);
+    const t = db.transaction("jobs", mode);
+    const q = fn(t.objectStore("jobs"));
+    q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error);
+  }));
+}
+const jobsAll = () => jobsRun("readonly",  st => st.getAll());
+const jobsAdd = j  => jobsRun("readwrite", st => st.add(j));
+const jobsDel = id => jobsRun("readwrite", st => st.delete(id));
+
+function saveJob(uploaded, fileCount){
+  const addr = composedAddress();
+  if(!addr) return Promise.resolve();
+  const f = jobFigures();
+  return jobsAdd({
+    when: Date.now(), address: addr,
+    customer: ($("#c_customer").value || "").trim(),
+    notes: $("#w_notes").value,
+    ft: f.ft, splices: f.splices, extenders: f.extenders, isSecond: f.isSecond,
+    install: f.install, line: f.line, splice: f.splice,
+    extender: f.extender, second: f.second, total: f.total,
+    uploaded: !!uploaded, files: fileCount || 0
+  }).catch(e => console.error("job save failed", e));
+}
+
+/* --- week helpers --- */
+let weekOffset = 0;
+function weekBounds(off){
+  const d = new Date(); d.setHours(0,0,0,0);
+  const dow = (d.getDay() + 6) % 7;                 /* Monday = 0 */
+  const mon = new Date(d); mon.setDate(d.getDate() - dow + off*7);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  sun.setHours(23,59,59,999);
+  return [mon, sun];
+}
+const fmtDay = d => d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+const fmtCell = d => {
+  const p = n => String(n).padStart(2,"0");
+  return p(d.getMonth()+1)+"/"+p(d.getDate())+"/"+d.getFullYear();
+};
+
+function renderHistory(){
+  const [a,b] = weekBounds(weekOffset);
+  $("#histRange").textContent = fmtDay(a) + " \u2013 " + fmtDay(b)
+                              + (weekOffset === 0 ? "  (this week)" : "");
+  const host = $("#histList");
+  host.innerHTML = "<p style='color:var(--muted);padding:10px 0'>Loading\u2026</p>";
+  jobsAll().then(list => {
+    const rows = (list||[]).filter(j => j.when >= a.getTime() && j.when <= b.getTime())
+                           .sort((x,y) => x.when - y.when);
+    if(!rows.length){
+      host.innerHTML = "<p style='color:var(--muted);padding:12px 0'>No jobs this week.</p>";
+      return;
+    }
+    let total = 0;
+    host.innerHTML = rows.map(j => {
+      total += j.total;
+      const d = new Date(j.when);
+      return '<div style="padding:11px 0;border-bottom:1px solid var(--line)">'
+        + '<div style="display:flex;gap:8px;align-items:baseline">'
+        + '<b style="flex:1;font-size:14px">' + (j.address||"") + '</b>'
+        + '<b style="color:var(--ok)">$' + j.total + '</b></div>'
+        + '<div style="font-size:12px;color:var(--muted);margin-top:2px">'
+        + fmtDay(d) + (j.customer ? " \u00b7 " + j.customer : "")
+        + (j.isSecond ? " \u00b7 2nd visit" : "")
+        + " \u00b7 " + (j.uploaded ? j.files + " files on Drive" : "not uploaded")
+        + '</div>'
+        + '<button class="btn-link" data-del="' + j.id + '" '
+        + 'style="font-size:12px;padding:2px 0">Delete</button></div>';
+    }).join("")
+      + '<div style="padding:12px 0;display:flex;justify-content:space-between">'
+      + '<b>Week total</b><b style="color:var(--ok);font-size:18px">$' + total + '</b></div>';
+  }).catch(e => { host.innerHTML = "<p style='color:#c2691f'>Could not read history.</p>";
+                  console.error(e); });
+}
+
+$("#histList").addEventListener("click", e => {
+  const b = e.target.closest("[data-del]");
+  if(!b) return;
+  if(!confirm("Remove this job from the history?")) return;
+  jobsDel(+b.dataset.del).then(renderHistory);
+});
+$("#openHistory").addEventListener("click", () => {
+  weekOffset = 0;
+  $("#histOverlay").classList.add("on");
+  document.body.classList.add("locked");
+  renderHistory();
+});
+$("#histClose").addEventListener("click", () => {
+  $("#histOverlay").classList.remove("on");
+  document.body.classList.remove("locked");
+});
+$("#histPrev").addEventListener("click", () => { weekOffset--; renderHistory(); });
+$("#histNext").addEventListener("click", () => { weekOffset++; renderHistory(); });
+
+$("#histExport").addEventListener("click", () => {
+  const [a,b] = weekBounds(weekOffset);
+  jobsAll().then(list => {
+    const rows = (list||[]).filter(j => j.when >= a.getTime() && j.when <= b.getTime())
+                           .sort((x,y) => x.when - y.when);
+    if(!rows.length){ alert("No jobs in this week."); return; }
+    const out = [["DATE","ADDRESS","INSTALL","LINE EXTENSION","WIFI EXTENDER",
+                  "SPLICE","2ND VISIT","TOTAL"]];
+    let sum = 0;
+    rows.forEach(j => {
+      sum += j.total;
+      out.push([fmtCell(new Date(j.when)), j.address,
+                j.install || "", j.line || "", j.extender || "",
+                j.splice || "", j.second || "", j.total]);
+    });
+    out.push(["","","","","","","TOTAL",sum]);
+    const name = "Week_" + fmtCell(a).replace(/\//g,"-") + "_to_"
+               + fmtCell(b).replace(/\//g,"-") + ".xlsx";
+    const blob = new Blob([buildXLSX(out, "Week")],
+      {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    saveToDevice({blob: blob, name: name, type: blob.type});
+  });
+});
 
 /* ---------------- views ------------------------------------------------ */
 function setTabs(v){
@@ -2083,7 +2487,7 @@ function clearIds(ids){
 }
 $("#clearChk").addEventListener("click", () => {
   if(!confirm("Clear the checklist?")) return;
-  clearIds(CFG.checklist.fields.map(f => f.id).concat(["c_routerSn","c_routerMac","c_email"]));
+  clearIds(CFG.checklist.fields.map(f => f.id).concat(["c_routerSn","c_routerMac","c_email","w_ft","w_ch","w_spl","w_ext"]));
   state.checks = {};
   $$(".chip[data-group]").forEach(c => c.classList.remove("on"));
   $("#c_daytime").value = nowStamp();
@@ -2092,6 +2496,11 @@ $("#clearChk").addEventListener("click", () => {
   $("#c_wifiname").value = WIFI_DEFAULT;
   $("#c_wifipw").value   = WIFI_DEFAULT;
   applyCheckDefaults();
+  applySvcDefault();
+  notesEdited = false;
+  $("#w_notes").value = "";
+  refreshWork();
+  applySvcDefault();
   $("#c_county").value = recall("county") || "Los Angeles County";
   refreshStamp();
   saveState();
@@ -2106,6 +2515,15 @@ $("#clearFcs").addEventListener("click", () => {
   slot.innerHTML = SIG_ICON + "Tap here \u2014 hand the phone to the customer";
   saveState();
 });
+
+/* run startup init here, after every const/let/function above it has been
+   evaluated - jobFigures()/refreshWork() etc reference things declared
+   further down the file, so calling them too early throws a TDZ error
+   that used to kill the whole script (and silently disabled every button) */
+loadState();
+applySvcDefault();
+refreshWork();
+updateTabs();
 
 /* offline support - only works when served from a real web address */
 if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
