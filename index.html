@@ -236,6 +236,8 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 .jrow .s{font-size:13px;color:var(--muted);margin-top:2px}
 .jrow .s .tag{color:var(--warn)}
 .jrow .p{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.jrow[data-edit]{cursor:pointer}
+.jrow[data-edit]:active{background:#f2f2f7}
 .jrow .del{border:none;background:none;color:#c7c7cc;padding:6px;cursor:pointer;display:flex}
 .jrow .del svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9}
 .jrow .del:active{color:#e0352b}
@@ -439,7 +441,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <div class="f"><label for="w_ft">Line extension, ft</label>
         <input type="text" id="w_ft" autocomplete="off" inputmode="numeric" placeholder="0"></div>
       <div class="f"><label for="w_ch">Chamber #</label>
-        <input type="text" id="w_ch" autocomplete="off" placeholder="CH-413"></div>
+        <input type="text" id="w_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
     </div>
     <div class="row">
       <div class="f"><label for="w_spl">Splices</label>
@@ -559,6 +561,41 @@ body.locked{overflow:hidden;position:fixed;width:100%}
   </div>
   <div class="sheet-foot">
     <button class="btn btn-magenta" id="histExport"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export week to Excel</button>
+  </div>
+</div>
+
+<div class="overlay sheet" id="editOverlay">
+  <div class="sheet-head"><button class="done" id="editCancel" style="justify-self:start">Cancel</button><h3>Edit job</h3><button class="done" id="editSave">Save</button></div>
+  <div class="sheet-body">
+    <div class="total"><small>You earn</small><b id="editTotal">$0</b><div class="pchips" id="editLine"></div></div>
+    <div class="sec" id="editAddr"></div>
+    <div class="card">
+      <div class="row">
+        <div class="f"><label for="e_ft">Line extension, ft</label>
+          <input type="text" id="e_ft" autocomplete="off" inputmode="numeric" placeholder="0"></div>
+        <div class="f"><label for="e_ch">Chamber #</label>
+          <input type="text" id="e_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="e_spl">Splices</label>
+          <input type="text" id="e_spl" autocomplete="off" inputmode="numeric" placeholder="0"></div>
+        <div class="f"><label for="e_ext">Extenders given</label>
+          <input type="text" id="e_ext" autocomplete="off" inputmode="numeric" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="swrow" data-e="second">
+        <div class="t">2nd visit<small>$50 instead of the install</small></div>
+        <div class="chips swbox"><div class="chip sw" id="e_second"></div></div>
+      </div>
+      <div class="swrow" data-e="nox">
+        <div class="t">No extender in stock</div>
+        <div class="chips swbox"><div class="chip sw" id="e_nox"></div></div>
+      </div>
+    </div>
+    <div class="sec">Notes for Skedulo</div>
+    <div class="card" style="padding:4px"><textarea id="e_notes" rows="6" style="background:#fff"></textarea></div>
+    <p class="foot-note">Changes the history and the Excel export. Files already on Drive stay as they were.</p>
   </div>
 </div>
 
@@ -2541,6 +2578,8 @@ function jobsRun(mode, fn){
 const jobsAll = () => jobsRun("readonly",  st => st.getAll());
 const jobsAdd = j  => jobsRun("readwrite", st => st.add(j));
 const jobsDel = id => jobsRun("readwrite", st => st.delete(id));
+const jobsPut = j  => jobsRun("readwrite", st => st.put(j));
+const jobsGet = id => jobsRun("readonly",  st => st.get(id));
 
 function saveJob(uploaded, fileCount){
   const addr = composedAddress();
@@ -2550,6 +2589,7 @@ function saveJob(uploaded, fileCount){
     when: Date.now(), address: addr,
     customer: ($("#c_customer").value || "").trim(),
     notes: $("#w_notes").value,
+    ch: ($("#w_ch").value || "").trim(), nox: state.checks.w_nox === "yes",
     ft: f.ft, splices: f.splices, extenders: f.extenders, isSecond: f.isSecond,
     install: f.install, line: f.line, splice: f.splice,
     extender: f.extender, second: f.second, total: f.total,
@@ -2614,7 +2654,7 @@ function renderHistory(){
       if(j.customer) meta.push(esc(j.customer));
       if(j.isSecond) meta.push("2nd visit");
       meta.push(j.uploaded ? j.files + " files on Drive" : '<span class="tag">not uploaded</span>');
-      html += '<div class="jrow"><div class="m"><div class="a">' + esc(j.address || "") + '</div>'
+      html += '<div class="jrow" data-edit="' + j.id + '"><div class="m"><div class="a">' + esc(j.address || "") + '</div>'
             + '<div class="s">' + meta.join(" \u00b7 ") + '</div></div>'
             + '<div class="p">$' + j.total + '</div>'
             + '<button class="del" data-del="' + j.id + '" aria-label="Delete">' + ICON_TRASH + '</button></div>';
@@ -2636,9 +2676,104 @@ function paintWeekMini(){
 
 $("#histList").addEventListener("click", e => {
   const b = e.target.closest("[data-del]");
-  if(!b) return;
-  if(!confirm("Remove this job from the history?")) return;
-  jobsDel(+b.dataset.del).then(() => { renderHistory(); paintWeekMini(); });
+  if(b){
+    if(!confirm("Remove this job from the history?")) return;
+    jobsDel(+b.dataset.del).then(() => { renderHistory(); paintWeekMini(); });
+    return;
+  }
+  const r = e.target.closest("[data-edit]");
+  if(r) openEdit(+r.dataset.edit);
+});
+
+/* --- edit a saved job --- */
+let editJob = null, editNotesTouched = false, editSecond = false, editNox = false;
+const enumv = id => { const v = parseFloat(($("#"+id).value||"").replace(/[^\d.]/g,""));
+                      return isNaN(v) ? 0 : v; };
+function editFigures(){
+  const ft = enumv("e_ft"), spl = enumv("e_spl"), ext = enumv("e_ext");
+  const f = {
+    install: editSecond ? 0 : PAY.install,
+    line: Math.ceil(ft / 30) * PAY.per30ft,
+    extender: ext * PAY.extender, splice: spl * PAY.splice,
+    second: editSecond ? PAY.secondVisit : 0
+  };
+  f.total = f.install + f.line + f.extender + f.splice + f.second;
+  f.ft = ft; f.splices = spl; f.extenders = ext;
+  return f;
+}
+function editNotesText(f){
+  const ch = ($("#e_ch").value || "").trim();
+  const L = ["Notes:", ""];
+  L.push("Line extension - " + (f.ft > 100 ? "extra" : f.ft + " ft"));
+  if(ch) L.push(ch + " drop re-entry + splice");
+  L.push("Splice at the house - inside+outside " + f.splices);
+  L.push("WiFi extender - " + f.extenders + (editNox ? "  X" : ""));
+  return L.join("\n");
+}
+function refreshEdit(){
+  const f = editFigures();
+  if(!editNotesTouched) $("#e_notes").value = editNotesText(f);
+  const bits = [];
+  if(f.install)  bits.push(["Install", f.install]);
+  if(f.line)     bits.push(["Line " + f.ft + " ft", f.line]);
+  if(f.splice)   bits.push(["Splices \u00d7" + f.splices, f.splice]);
+  if(f.extender) bits.push(["Extenders \u00d7" + f.extenders, f.extender]);
+  if(f.second)   bits.push(["2nd visit", f.second]);
+  $("#editTotal").textContent = "$" + f.total;
+  $("#editLine").innerHTML = bits.map(b => "<span><i>" + b[0] + "</i> $" + b[1] + "</span>").join("");
+}
+function paintEditSwitches(){
+  $("#e_second").classList.toggle("on", editSecond);
+  $("#e_nox").classList.toggle("on", editNox);
+}
+function openEdit(id){
+  jobsGet(id).then(j => {
+    if(!j) return;
+    editJob = j;
+    const notes = j.notes || "";
+    const m = notes.match(/(CH-\S+)\s+drop/i);
+    $("#e_ft").value  = j.ft ? j.ft : "";
+    $("#e_spl").value = j.splices ? j.splices : "";
+    $("#e_ext").value = j.extenders ? j.extenders : "";
+    $("#e_ch").value  = j.ch != null ? j.ch : (m ? m[1] : "");
+    editSecond = !!j.isSecond;
+    editNox = j.nox != null ? !!j.nox : /WiFi extender - \d+\s+X/.test(notes);
+    $("#e_notes").value = notes;
+    editNotesTouched = true;      /* keep the stored notes until a figure changes */
+    $("#editAddr").textContent = j.address || "";
+    paintEditSwitches();
+    refreshEdit();
+    $("#editOverlay").classList.add("on");
+  });
+}
+["e_ft","e_ch","e_spl","e_ext"].forEach(id =>
+  $("#"+id).addEventListener("input", () => { editNotesTouched = false; refreshEdit(); }));
+$("#e_notes").addEventListener("input", () => { editNotesTouched = true; });
+$("#e_ch").addEventListener("blur", () => {
+  const el = $("#e_ch"), after = normalizeChamber(el.value);
+  if(after !== el.value){ el.value = after; el.dispatchEvent(new Event("input", {bubbles:true})); }
+});
+$("#editOverlay").addEventListener("click", e => {
+  const r = e.target.closest(".swrow");
+  if(!r) return;
+  if(r.dataset.e === "second") editSecond = !editSecond; else editNox = !editNox;
+  editNotesTouched = false;
+  paintEditSwitches(); refreshEdit();
+});
+$("#editCancel").addEventListener("click", () => $("#editOverlay").classList.remove("on"));
+$("#editSave").addEventListener("click", () => {
+  if(!editJob) return;
+  const f = editFigures();
+  Object.assign(editJob, {
+    ft: f.ft, splices: f.splices, extenders: f.extenders, isSecond: editSecond,
+    install: f.install, line: f.line, splice: f.splice, extender: f.extender,
+    second: f.second, total: f.total,
+    ch: ($("#e_ch").value || "").trim(), nox: editNox, notes: $("#e_notes").value
+  });
+  jobsPut(editJob).then(() => {
+    $("#editOverlay").classList.remove("on");
+    renderHistory(); paintWeekMini();
+  }).catch(err => alert("Could not save: " + (err && err.message || err)));
 });
 $("#openHistory").addEventListener("click", () => {
   weekOffset = 0;
