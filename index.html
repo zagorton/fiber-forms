@@ -213,6 +213,15 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 }
 
 /* history */
+.bars{display:flex;gap:6px;background:#fff;border-radius:var(--r);padding:12px 10px 8px;margin-top:10px}
+.bars button{flex:1;border:none;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:inherit;color:var(--muted)}
+.bars .v{font-size:11px;min-height:14px;color:#1c1c1e}
+.bars .col{width:100%;height:56px;display:flex;align-items:flex-end}
+.bars .col i{display:block;width:100%;min-height:3px;border-radius:6px;background:#d9dbe1}
+.bars button.has .col i{background:var(--ok)}
+.bars button.sel .col i{background:#d6006c}
+.bars .d{font-size:12px}
+.bars button.sel .d{color:#d6006c;font-weight:700}
 .weeknav{display:flex;align-items:center;gap:8px;margin:14px 0 12px}
 .weeknav button{width:40px;height:40px;border-radius:50%;border:none;background:#fff;
   color:var(--accent);font-size:24px;line-height:1;cursor:pointer;flex:none;
@@ -559,6 +568,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <div><small>Week total</small><b class="money" id="histTotal">$0</b></div>
       <div><small>Jobs</small><b id="histCount">0</b></div>
     </div>
+    <div class="bars" id="histBars"></div>
     <div id="histList"></div>
   </div>
   <div class="sheet-foot">
@@ -2658,6 +2668,7 @@ function saveJob(uploaded, fileCount, addrOverride, final){
 
 /* --- week helpers --- */
 let weekOffset = 0;
+let histDay = -1;   /* -1 = whole week, 1..6 = Monday..Saturday */
 function weekBounds(off){
   /* work week is Monday - Saturday, Excel goes out on Saturday. Sunday is
      off, so anything saved on a Sunday counts toward the coming week. */
@@ -2697,8 +2708,22 @@ function renderHistory(){
     $("#histTotal").textContent = "$" + total;
     $("#histCount").textContent = rows.length;
     $("#histExport").disabled = !rows.length;
+    /* day bars, Monday - Saturday; tap one to show only that day */
+    const sums = [0,0,0,0,0,0,0], cnt = [0,0,0,0,0,0,0];
+    rows.forEach(j => { const w = new Date(j.when).getDay(); sums[w] += (j.total || 0); cnt[w]++; });
+    const top = Math.max(1, sums[1], sums[2], sums[3], sums[4], sums[5], sums[6]);
+    const names = ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    let bh = "";
+    for(let w = 1; w <= 6; w++){
+      bh += '<button data-day="' + w + '" class="' + (cnt[w] ? "has " : "") + (histDay === w ? "sel" : "") + '" aria-label="' + names[w] + ' $' + sums[w] + '">'
+          + '<span class="v">' + (cnt[w] ? "$" + sums[w] : "") + '</span>'
+          + '<span class="col"><i style="height:' + Math.round(sums[w] / top * 100) + '%"></i></span>'
+          + '<span class="d">' + names[w] + '</span></button>';
+    }
+    $("#histBars").innerHTML = bh;
+    if(histDay > 0) rows = rows.filter(j => new Date(j.when).getDay() === histDay);
     if(!rows.length){
-      host.innerHTML = '<div class="sec">&nbsp;</div><div class="empty">No jobs this week</div>';
+      host.innerHTML = '<div class="sec">&nbsp;</div><div class="empty">' + (histDay > 0 ? "No jobs this day" : "No jobs this week") + '</div>';
       return;
     }
     let html = "", day = "";
@@ -2865,7 +2890,7 @@ $("#editSave").addEventListener("click", () => {
     .catch(err => alert("Could not save: " + (err && err.message || err)));
 });
 $("#openHistory").addEventListener("click", () => {
-  weekOffset = 0;
+  weekOffset = 0; histDay = -1;
   $("#histOverlay").classList.add("on");
   document.body.classList.add("locked");
   renderHistory();
@@ -2876,8 +2901,12 @@ $("#histClose").addEventListener("click", () => {
   document.body.classList.remove("locked");
 });
 $("#histAdd").addEventListener("click", openAdd);
-$("#histPrev").addEventListener("click", () => { weekOffset--; renderHistory(); });
-$("#histNext").addEventListener("click", () => { weekOffset++; renderHistory(); });
+$("#histBars").addEventListener("click", e => {
+  const b = e.target.closest("[data-day]"); if(!b) return;
+  const w = +b.dataset.day; histDay = (histDay === w) ? -1 : w; renderHistory();
+});
+$("#histPrev").addEventListener("click", () => { weekOffset--; histDay = -1; renderHistory(); });
+$("#histNext").addEventListener("click", () => { weekOffset++; histDay = -1; renderHistory(); });
 
 $("#histExport").addEventListener("click", () => {
   const [, b, a] = weekBounds(weekOffset);
