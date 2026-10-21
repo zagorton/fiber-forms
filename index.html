@@ -399,6 +399,17 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
 body.onweek #tabbar{z-index:120}
 body.onweek #histOverlay{bottom:calc(64px + env(safe-area-inset-bottom))}
 body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
+
+/* ---- v60 flow: three steps, jump anywhere ---- */
+#stepStrip{display:flex;gap:6px;padding:2px 0 10px}
+#stepStrip button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:none;background:var(--seg);color:var(--muted);
+  font:600 13.5px inherit;font-family:inherit;border-radius:12px;min-height:40px;padding:0 6px;cursor:pointer;white-space:nowrap}
+#stepStrip i{font-style:normal;width:20px;height:20px;border-radius:50%;background:#fff;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+#stepStrip button.on{background:var(--ink);color:#fff}
+#stepStrip button.on i{background:#fff;color:var(--ink)}
+#stepStrip button.done i{background:var(--ok);color:#fff}
+#navNext{display:none}
+.addtile{background:#fdeaf4;color:var(--magenta)}
 </style>
 </head>
 <body>
@@ -416,6 +427,11 @@ body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
 
 <header>
   <div id="navTop"><button id="navBack"></button><b id="navTitle"></b><button id="navNext"></button></div>
+  <div id="stepStrip">
+    <button data-go="checklist"><i>1</i>Checklist</button>
+    <button data-go="fcs2"><i>2</i>Customer signs</button>
+    <button data-go="close"><i>3</i>Close the job</button>
+  </div>
   <div class="tabs">
     <div class="tab on" data-view="today">Today</div>
     <div class="tab" data-view="photos">Photos<i class="dot" id="dot-photos"></i></div>
@@ -511,7 +527,8 @@ body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
     <div class="rv"><span>Customer</span><b id="rvCust"></b></div>
     <div class="rv"><span>Router</span><b id="rvRouter"></b></div>
     <div class="rv"><span>ONT serial</span><b id="rvOnt"></b></div>
-    <button class="btn btn-magenta" id="rvSign" style="margin-top:14px">Sign</button>
+    <div style="margin-top:14px"><div class="sigslot" id="sigSlot"><svg viewBox="0 0 24 24"><path d="M3 17c3 0 4-8 7-8s3 8 6 8c2 0 3-2 5-2"/><path d="M2 21h20"/></svg>
+        Tap here &mdash; hand the phone to the customer</div></div>
   </div>
   <div class="sec">Job</div>
   <div class="card">
@@ -537,68 +554,20 @@ body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
       </div></div>
   </div>
 
-  <div class="sec">Resident sign-off</div>
+  <div class="sec">Resident</div>
   <div class="card">
     <div class="f"><label for="f_resName" style="display:flex;justify-content:space-between;align-items:baseline">Resident name
         <button class="btn-link" id="copyName" style="padding:0;font-size:13px">Same as customer</button></label>
       <input type="text" id="f_resName" autocomplete="off" autocapitalize="words"></div>
-    <div class="f"><label>Signature</label>
-      <div class="sigslot" id="sigSlot"><svg viewBox="0 0 24 24"><path d="M3 17c3 0 4-8 7-8s3 8 6 8c2 0 3-2 5-2"/><path d="M2 21h20"/></svg>
-        Tap here &mdash; hand the phone to the customer</div></div>
+
   </div>
 
   <div class="links"><button class="danger" id="clearFcs"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear FCS2</button></div>
 </div>
 
 <!-- ============================== PAY =============================== -->
-<div class="wrap view" id="v-work" style="display:none">
-  <div class="sec">This job <button class="eye hmEye aside" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
-  <div class="total">
-    <small>You earn</small>
-    <b id="payTotal">$0</b>
-    <div class="pchips" id="payLine"></div>
-  </div>
-
-  <div class="sec">Work done</div>
-  <div class="card">
-    <div class="row">
-      <div class="f"><label for="w_ft">Line extension, ft</label>
-        <input type="text" id="w_ft" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-      <div class="f"><label for="w_ch">Chamber #</label>
-        <input type="text" id="w_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
-    </div>
-    <div class="row">
-      <div class="f"><label for="w_spl">Splices</label>
-        <input type="text" id="w_spl" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-      <div class="f"><label for="w_ext">Extenders given</label>
-        <input type="text" id="w_ext" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="swrow">
-      <div class="t">2nd visit<small>$50 instead of the install</small></div>
-      <div class="chips swbox"><div class="chip sw" data-group="w_second" data-v="yes"></div></div>
-    </div>
-  </div>
-
-  <div class="sec">Notes for Skedulo
-    <button class="btn btn-ghost btn-sm aside" id="copyNotes" style="margin-left:auto"><svg viewBox="0 0 24 24" style="width:15px;height:15px"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy</button></div>
-  <div class="card" style="padding:4px">
-    <textarea id="w_notes" rows="6" style="background:#fff"></textarea>
-  </div>
-
-  <div style="display:flex;gap:10px;margin-top:12px">
-    <button class="btn btn-magenta" id="savePay" style="flex:1">Save to pay</button>
-    <button class="btn btn-ghost" id="postTg" style="flex:1;display:none">Post to Telegram</button>
-  </div>
-
-  <div class="sec">History</div>
-  <button class="navrow" id="openHistory">
-    <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v6h6"/><path d="M3.5 13a9 9 0 1 0 2.6-6.4L3 9"/><path d="M12 8v5l3 2"/></svg></span>
-    <span class="t">This week</span>
-    <span class="v" id="weekMini"></span>
-    <span class="chev">&rsaquo;</span>
-  </button>
+<div id="v-work" style="display:none">
+  <button class="navrow" id="openHistory" tabindex="-1" aria-hidden="true"><span class="v" id="weekMini"></span></button>
 </div>
 
 <!-- ============================= PHOTOS ============================= -->
@@ -620,32 +589,7 @@ body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
   <div class="steps" id="tdDone"></div>
 </div>
 
-<div class="wrap view" id="v-photos">
-  <div class="sec">Photos <span id="photoCount"></span></div>
-  <div class="card">
-    <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
-    <p class="hint" id="photoEmpty" style="display:none"></p>
-    <p class="hint" id="photoNote" style="display:none;color:var(--ok);font-weight:600"></p>
-    <button class="btn btn-ghost btn-sm" id="arrBtn" style="margin-top:10px;width:100%"></button>
-    <div class="row" style="margin-top:10px;align-items:center">
-      <button class="btn btn-quiet" id="galBtn" style="padding:6px 0;justify-content:flex-start"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Add from gallery</button>
-      <div id="photoActions" style="display:none;gap:6px;flex:0 0 auto">
-        <button class="btn btn-ghost btn-sm" id="sharePhotos">Share</button>
-        <button class="btn btn-ghost btn-sm" id="savePhotos">Save</button>
-      </div>
-    </div>
-  </div>
-  <p class="foot-note" id="addrWarn" style="display:none;color:var(--warn)">No address &mdash; fill in Checklist</p>
-
-  <div class="links">
-    <button class="danger" id="clearPhotos"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear photos</button>
-    <button id="openSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
-  </div>
-
-  <input type="file" id="camInput" accept="image/*" capture="environment"
-         multiple style="display:none">
-  <input type="file" id="galInput" accept="image/*" multiple style="display:none">
-</div>
+<button id="openSettings" style="display:none" tabindex="-1" aria-hidden="true"></button>
 
 <!-- ============================ CLOSE THE JOB ======================= -->
 <div class="wrap view" id="v-close" style="display:none">
@@ -667,23 +611,63 @@ body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
     </div>
   </div>
   <div id="clPre">
-  <div class="sec">Photos</div>
+    <div class="sec">Photos <span id="photoCount"></span></div>
+    <div class="card">
+      <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+      <p class="hint" id="photoEmpty" style="display:none"></p>
+      <p class="hint" id="photoNote" style="display:none;color:var(--ok);font-weight:600"></p>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn-link" id="arrBtn" style="display:none"></button>
+        <span style="flex:1"></span>
+        <div id="photoActions" style="display:none;gap:6px">
+          <button class="btn btn-ghost btn-sm" id="sharePhotos">Share</button>
+          <button class="btn btn-ghost btn-sm" id="savePhotos">Save</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="camBtn">Camera</button>
+      </div>
+      <button id="galBtn" style="display:none"></button>
+    </div>
+    <p class="foot-note" id="addrWarn" style="display:none;color:var(--warn)">No address &mdash; fill in Checklist</p>
+
+  <div class="sec">Work done <button class="eye hmEye aside" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
   <div class="card">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="flex:1"><b id="clPhotoN" style="font-size:20px">0 photos</b><div class="hint" id="clArr" style="margin:2px 0 0"></div></div>
-      <button class="btn btn-ghost btn-sm" id="clGal">Add from gallery</button>
+    <div class="row">
+      <div class="f"><label for="w_ft">Line extension, ft</label>
+        <input type="text" id="w_ft" autocomplete="off" inputmode="numeric" placeholder="0"></div>
+      <div class="f"><label for="w_ch">Chamber #</label>
+        <input type="text" id="w_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label for="w_spl">Splices</label>
+        <input type="text" id="w_spl" autocomplete="off" inputmode="numeric" placeholder="0"></div>
+      <div class="f"><label for="w_ext">Extenders given</label>
+        <input type="text" id="w_ext" autocomplete="off" inputmode="numeric" placeholder="0"></div>
     </div>
   </div>
-  <div class="sec">Work and pay <button class="eye hmEye aside" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
   <div class="card">
-    <div style="display:flex;align-items:center;gap:12px">
-      <b id="clTotal" style="font-size:30px;letter-spacing:-.5px;color:var(--ok)">$0</b>
-      <div class="pchips" id="clLine" style="flex:1"></div>
-      <button class="btn btn-ghost btn-sm" id="clEdit">Edit</button>
+    <div class="swrow">
+      <div class="t">2nd visit<small>$50 instead of the install</small></div>
+      <div class="chips swbox"><div class="chip sw" data-group="w_second" data-v="yes"></div></div>
     </div>
   </div>
-  <div class="sec">Telegram group <span class="aside" id="clTgState"></span></div>
-  <div class="card"><pre id="clTg" style="margin:0;white-space:pre-wrap;font:14px/1.45 inherit;font-family:inherit;color:var(--ink)"></pre></div>
+
+  <div class="total">
+    <small>You earn</small>
+    <b id="payTotal">$0</b>
+    <div class="pchips" id="payLine"></div>
+  </div>
+
+  <div class="sec">Notes for Skedulo <span id="clTgState"></span>
+    <button class="btn btn-ghost btn-sm aside" id="copyNotes" style="margin-left:auto"><svg viewBox="0 0 24 24" style="width:15px;height:15px"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy</button></div>
+  <div class="card" style="padding:4px">
+    <textarea id="w_notes" rows="6" style="background:#fff"></textarea>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:12px">
+    <button class="btn btn-magenta" id="savePay" style="display:none">Save to pay</button>
+    <button class="btn btn-ghost" id="postTg" style="flex:1;display:none">Post to Telegram</button>
+  </div>
+
   </div>
   <div id="upCard" style="display:none">
     <div class="sec">Upload</div>
@@ -700,6 +684,9 @@ body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
     </div>
   </div>
 
+  <div class="links"><button class="danger" id="clearPhotos"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear photos</button></div>
+  <input type="file" id="camInput" accept="image/*" capture="environment" multiple style="display:none">
+  <input type="file" id="galInput" accept="image/*" multiple style="display:none">
 </div>
 
 <!-- ============================= RESULT ============================= -->
@@ -1821,7 +1808,7 @@ function renderPhotos(){
   const add = document.createElement("div");
   add.className = "addtile";
   add.id = "addTile";
-  add.innerHTML = '<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Take photo</span>';
+  add.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Add photos</span>';
   grid.appendChild(add);
   photos.forEach((p, i) => {
     const d = document.createElement("div");
@@ -1837,7 +1824,7 @@ function renderPhotos(){
   }
 
 $("#photoGrid").addEventListener("click", e => {
-  if(e.target.closest("#addTile")){ $("#camInput").click(); return; }
+  if(e.target.closest("#addTile")){ $("#galInput").click(); return; }
   const t = e.target.closest("[data-i]");
   if(!t) return;
   const i = +t.dataset.i;
@@ -2066,10 +2053,10 @@ function exportPhotos(label){
 function arrivedAt(){ return parseInt(recall("arrived"), 10) || 0; }
 function arrPaint(){
   const t = arrivedAt(), b = $("#arrBtn");
-  b.textContent = t ? "Arrived " + new Date(t).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) + " \u00b7 tap to reset"
-                    : "I arrived \u00b7 mark the time";
+  b.style.display = t ? "" : "none";
+  b.textContent = t ? "Arrived " + new Date(t).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) + " \u00b7 tap to reset" : "";
 }
-$("#arrBtn").addEventListener("click", () => { store("arrived", arrivedAt() ? "" : String(Date.now())); arrPaint(); });
+$("#arrBtn").addEventListener("click", () => { store("arrived", ""); arrPaint(); paintClose(); });
 arrPaint();
 function addFromGallery(files){
   const t = arrivedAt();
@@ -2084,6 +2071,7 @@ function addFromGallery(files){
 $("#galBtn").addEventListener("click", () => $("#galInput").click());
 
 $("#camInput").addEventListener("change", e => {
+  if(!arrivedAt() && e.target.files && e.target.files[0]){ store("arrived", String(e.target.files[0].lastModified || Date.now())); arrPaint(); }
   addFiles(e.target.files);
   e.target.value = "";
 });
@@ -2564,6 +2552,7 @@ function updateTabs(){
   $("#dot-fcs2").classList.toggle("done", state.strokes.length > 0);
   if(state.view === "today") paintToday();
   if(state.view === "fcs2") paintReview();
+  if(state.view !== "today") stepPaint(state.view);
 }
 
 let saveTimer = null;
@@ -3302,13 +3291,26 @@ function setTabs(v){
 
 /* step header: back to Today, step title, next step */
 const NAV = {
-  photos:    {t: "Photos",        back: "today", next: "checklist", nl: "Checklist"},
-  checklist: {t: "Checklist",     back: "today", next: "fcs2",      nl: "Customer signs"},
-  fcs2:      {t: "Customer signs", back: "today", next: "close",    nl: "Close the job"},
-  work:      {t: "Work and pay",  back: "close", next: "",          nl: ""},
-  close:     {t: "Close the job", back: "today", next: "",          nl: ""},
-  result:    {t: "Document",      back: "",      next: "",          nl: ""}
+  checklist: {t: "Checklist",      back: "today"},
+  fcs2:      {t: "Customer signs", back: "today"},
+  close:     {t: "Close the job",  back: "today"},
+  result:    {t: "Document",       back: ""}
 };
+function stepPaint(v){
+  const name = ($("#c_customer").value || "").trim(), street = ($("#c_street").value || "").trim();
+  const done = {checklist: !!(name && street), fcs2: state.strokes.length > 0, close: !!uploadedOnce};
+  $$("#stepStrip button").forEach(b => {
+    b.classList.toggle("on", b.dataset.go === v);
+    b.classList.toggle("done", !!done[b.dataset.go] && b.dataset.go !== v);
+    b.firstChild.textContent = (done[b.dataset.go] && b.dataset.go !== v) ? "\u2713" : (["checklist","fcs2","close"].indexOf(b.dataset.go) + 1);
+  });
+}
+$("#stepStrip").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
+function startJob(){
+  if(!arrivedAt()) store("arrived", String(Date.now()));
+  arrPaint();
+  setView("checklist");
+}
 function tabbarSync(v){
   v = v || state.view;
   const wk = $("#histOverlay").classList.contains("on");
@@ -3324,11 +3326,11 @@ function navPaint(v){
   h.style.display = isToday ? "none" : "";
   tabbarSync(v);
   const n = NAV[v]; if(!n) return;
+  $("#stepStrip").style.display = (v === "result") ? "none" : "flex";
   $("#navTitle").textContent = n.t;
   $("#navBack").textContent = n.back ? "\u2039 " + (n.back === "today" ? "Today" : NAV[n.back].t) : "";
   $("#navBack").dataset.go = n.back;
-  $("#navNext").textContent = n.next ? n.nl + " \u203a" : "";
-  $("#navNext").dataset.go = n.next;
+  stepPaint(v);
 }
 $("#navBack").addEventListener("click", e => { const g = e.currentTarget.dataset.go; if(g) setView(g); else setView(state.view); });
 $("#navNext").addEventListener("click", e => { const g = e.currentTarget.dataset.go; if(g) setView(g); });
@@ -3341,7 +3343,7 @@ $("#newJobFab").addEventListener("click", () => {
   const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
   if(busy && !confirm("Start a new job? The current one is cleared.")) return;
   if(busy) resetJob();
-  setView("photos");
+  startJob();
 });
 $("#tdSettings").addEventListener("click", () => openSettings());
 
@@ -3350,9 +3352,7 @@ function paintReview(){
   $("#rvCust").textContent = ($("#c_customer").value || $("#f_customer").value || "").trim() || "\u2014";
   $("#rvRouter").textContent = ($("#c_model").value || "").trim() || "\u2014";
   $("#rvOnt").textContent = ($("#f_ontSerial").value || "").trim() || "\u2014";
-  $("#rvSign").textContent = state.strokes.length ? "Signed \u2713 \u00b7 tap to sign again" : "Sign";
 }
-$("#rvSign").addEventListener("click", () => openPad());
 
 /* closed state of the Close the job screen */
 let closedView = false, lastFolderId = "";
@@ -3372,16 +3372,9 @@ function paintClose(){
     $("#clcPay").textContent = $("#payTotal").textContent;
     $("#clcDrive").style.display = lastFolderId ? "" : "none";
   }
-  $("#clPhotoN").textContent = photos.length + (photos.length === 1 ? " photo" : " photos");
-  const t = arrivedAt();
-  $("#clArr").textContent = t ? "Since " + new Date(t).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : "";
-  $("#clTotal").textContent = $("#payTotal").textContent;
-  $("#clLine").innerHTML = $("#payLine").innerHTML;
-  $("#clTg").textContent = tgText();
-  $("#clTgState").innerHTML = tgReady() ? '<span class="pill ready">&#10003; ' + esc(tgCfg().title || "connected") + '</span>' : '<span class="pill">not connected</span>';
+  $("#clTgState").innerHTML = tgReady() ? '<span class="pill ready">&#10003; ' + esc(tgCfg().title || "connected") + '</span>' : '<span class="pill">Telegram not connected</span>';
+  const t = arrivedAt(); arrPaint();
 }
-$("#clGal").addEventListener("click", () => $("#galInput").click());
-$("#clEdit").addEventListener("click", () => setView("work"));
 
 /* one button: keep the pay record, then Drive, then Telegram (Telegram follows the upload) */
 function closeJob(){
@@ -3396,10 +3389,9 @@ function paintToday(){
   const name = ($("#c_customer").value || "").trim();
   const addr = composedAddress() || "";
   const rows = [
-    {go: "photos",    ok: photos.length > 0, t: "Photos",    v: photos.length ? photos.length + " added" : "none yet"},
     {go: "checklist", ok: !!(name && ($("#c_street").value || "").trim()), t: "Checklist", v: (name && addr) ? "filled" : "to do"},
     {go: "fcs2",      ok: state.strokes.length > 0, t: "Customer signs", v: state.strokes.length ? "signed" : "to do"},
-    {go: "close",     ok: !!uploadedOnce, t: "Close the job", v: uploadedOnce ? "sent" : (currentJobId != null ? "saved, not sent" : "to do")}
+    {go: "close",     ok: !!uploadedOnce, t: "Close the job", v: uploadedOnce ? "sent" : (photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") : "to do")}
   ];
   const okN = rows.filter(r => r.ok).length;
   const nxt = rows.find(r => !r.ok);
@@ -3409,7 +3401,7 @@ function paintToday(){
     ? '<button class="actv" data-go="' + (nxt ? nxt.go : "close") + '"><div class="ring"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="#e6e8ec" stroke-width="6"/><circle cx="28" cy="28" r="23" fill="none" stroke="#d6006c" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (okN / rows.length * C) + ' ' + C + '" transform="rotate(-90 28 28)"/></svg><b>' + okN + "/" + rows.length + '</b></div>'
       + '<div class="tt"><b>' + esc(addr || name || "Current job") + "</b>" + (name && addr ? "<small>" + esc(name) + "</small>" : "")
       + "<em>" + (nxt ? "Next: <b style='display:inline;font-size:14px'>" + nxt.t.toLowerCase() + "</b>" : "All steps done") + "</em></div></button>"
-    : '<button class="actv" data-go="photos"><div class="tt"><b>No job open</b><small>Take the first photo when you arrive</small></div></button>';
+    : '<button class="actv" data-start="1"><div class="tt"><b>No job open</b><small>Tap to start when you arrive</small></div></button>';
   $("#tdSteps").innerHTML = rows.map(r =>
     '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
     + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
@@ -3427,23 +3419,23 @@ function paintToday(){
   }).catch(() => {});
 }
 $("#tdSteps").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
-$("#tdActive").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
+$("#tdActive").addEventListener("click", e => { const g = e.target.closest("[data-go]"); if(g){ setView(g.dataset.go); return; } if(e.target.closest("[data-start]")) startJob(); });
 $("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if(b) openEdit(+b.dataset.edit); });
 $("#tdHero").addEventListener("click", () => $("#openHistory").click());
 
 function setView(v){
-  ["today","photos","checklist","fcs2","work","close","result"].forEach(k => {
+  if(v === "photos" || v === "work") v = "close";
+  ["today","checklist","fcs2","close","result"].forEach(k => {
     $("#v-"+k).style.display = (k === v) ? "block" : "none";
   });
   $("#upBox").style.display = (v === "close") ? "flex" : "none";
   navPaint(v);
-  if(v === "today" || v === "work" || v === "photos"){
+  if(v === "today"){
     state.view = v;
     $("#bar").style.display = "none";
-    if(v === "today") paintToday();
-    if(v === "work") paintWeekMini();
-    if(v === "photos"){ refreshStamp(); }
+    paintToday();
   } else if(v === "close"){
+    refreshStamp();
     state.view = v;
     $("#bar").style.display = "flex";
     try { docThumbs(); } catch(e){ console.error(e); }
