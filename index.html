@@ -548,7 +548,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
   <div class="links">
     <button class="danger" id="clearPhotos"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear photos</button>
-    <button id="openSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Drive settings</button>
+    <button id="openSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
   </div>
 
   <input type="file" id="camInput" accept="image/*" capture="environment"
@@ -2122,7 +2122,7 @@ function preloadGoogle(){
 }
 
 function pickFolder(){
-  if(!GD.clientId || !GD.apiKey){ alert("Open Drive settings and paste the two Google keys first."); return; }
+  if(!GD.clientId || !GD.apiKey){ alert("Open Settings and paste the two Google keys first."); return; }
   $("#setFolder").innerHTML = '<span class="pill">Opening Google&hellip;</span>';
   gToken(true)
     .then(token => loadScript("https://apis.google.com/js/api.js").then(() => token))
@@ -2245,8 +2245,12 @@ function buildDocs(){
   })).then(() => { freeOut(); return docs; });
 }
 
+/* files already on Drive for this job, so a retry after a dropped signal sends only what is left */
+let driveSent = {};
+const sentKey = (folder, f) => folder + "|" + f.name + "|" + (f.blob && f.blob.size);
+
 function driveUpload(){
-  if(!GD.clientId || !GD.apiKey){ alert("Open Drive settings and paste the two Google keys first."); return; }
+  if(!GD.clientId || !GD.apiKey){ alert("Open Settings and paste the two Google keys first."); return; }
   if(!GD.folderId){ openSettings(); return; }
   const folderName = composedAddress();
   if(!folderName){ alert("Fill the address on the Checklist tab first."); return; }
@@ -2275,7 +2279,8 @@ function driveUpload(){
                            .catch(e => console.error("doc build failed", e))
               : Promise.resolve());
   }).then(() => {
-    if(!confirm("Upload " + files.length + " files into\n\n"
+    const left = files.filter(f => !driveSent[sentKey(folderName, f)]).length;
+    if(!confirm("Upload " + left + (left === files.length ? "" : " remaining") + " files into\n\n"
                 + GD.folderName + " / " + folderName + " ?")){
       throw new Error("cancelled");
     }
@@ -2287,8 +2292,9 @@ function driveUpload(){
     let chain = Promise.resolve();
     files.forEach((f, i) => {
       chain = chain.then(() => {
+        if(driveSent[sentKey(folderName, f)]) return;
         driveStatus("Uploading " + (i + 1) + " of " + files.length + "...");
-        return uploadOne(f, ctx.id, ctx.token);
+        return uploadOne(f, ctx.id, ctx.token).then(() => { driveSent[sentKey(folderName, f)] = 1; });
       });
     });
     return chain;
@@ -2306,7 +2312,8 @@ function driveUpload(){
     release();
     if(err && err.message === "cancelled"){ driveStatus(); return; }
     driveStatus("<b style='color:#b3541e'>Upload failed:</b> "
-              + ((err && err.message) || "unknown") + ". Files are still on the phone.");
+              + ((err && err.message) || "unknown") + ". Files are still on the phone."
+              + (Object.keys(driveSent).length ? " Tap Upload again to send only what is left." : ""));
   });
 }
 
@@ -2318,7 +2325,7 @@ $("#startNext").addEventListener("click", () => {
 /* wipes everything about this customer, keeps the technician's own settings */
 function resetJob(){
   saveJob(uploadedOnce, photos.length, null, true);
-  currentJobId = null; currentJobWhen = null; tgPostedFor = ""; store("arrived", ""); arrPaint();
+  currentJobId = null; currentJobWhen = null; tgPostedFor = ""; driveSent = {}; store("arrived", ""); arrPaint();
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
   uploadedOnce = false;
