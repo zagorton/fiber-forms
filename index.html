@@ -638,12 +638,12 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     </div>
     <div class="sec">Notes for Skedulo</div>
     <div class="card" style="padding:4px"><textarea id="e_notes" rows="6" style="background:#fff"></textarea></div>
-    <p class="foot-note">Changes the history and the Excel export. Files already on Drive stay as they were.</p>
+    <p class="foot-note">Updates history and Excel. Files already on Drive stay as they are.</p>
   </div>
 </div>
 
 <div class="overlay sheet" id="setOverlay">
-  <div class="sheet-head"><span></span><h3>Drive settings</h3><button class="done" id="setClose">Done</button></div>
+  <div class="sheet-head"><span></span><h3>Settings</h3><button class="done" id="setClose">Done</button></div>
   <div class="sheet-body">
     <div class="sec">Upload folder</div>
     <div class="card">
@@ -652,7 +652,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
         <button class="btn btn-ghost btn-sm" id="pickFolderBtn" style="flex:none">Choose</button>
       </div>
     </div>
-    <p class="foot-note">Each job goes into a subfolder named after the address.</p>
+    <p class="foot-note">Each job gets its own subfolder, named by address.</p>
     <div class="sec">Google keys</div>
     <div class="card">
       <div class="f"><label for="g_client">OAuth Client ID</label>
@@ -661,7 +661,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <div class="f"><label for="g_key">API key</label>
         <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
     </div>
-    <p class="foot-note">From your lead. Pasted once per phone.</p>
+    <p class="foot-note">Paste once per phone.</p>
     <div class="sec">Telegram group</div>
     <div class="card">
       <div class="f"><label for="tg_token">Bot token</label>
@@ -671,12 +671,12 @@ body.locked{overflow:hidden;position:fixed;width:100%}
         <button class="btn btn-ghost btn-sm" id="tgFind" style="flex:none">Find group</button>
         <button class="btn btn-ghost btn-sm" id="tgTest" style="flex:none">Test</button>
       </div>
-      <div class="swrow" id="tgAutoRow"><div class="t">Post report when job is uploaded</div>
+      <div class="swrow" id="tgAutoRow"><div class="t">Post report after upload</div>
         <div class="chips swbox"><div class="chip sw" id="tgAuto"></div></div></div>
-      <div class="swrow" id="tgXlsRow"><div class="t">Send Excel to the group</div>
+      <div class="swrow" id="tgXlsRow"><div class="t">Send Excel to group</div>
         <div class="chips swbox"><div class="chip sw" id="tgXls"></div></div></div>
     </div>
-    <p class="foot-note">In Telegram: @BotFather &rarr; new bot &rarr; copy the token. Add the bot to your group and send /start there. Then tap Find group.</p>
+    <p class="foot-note">Create a bot in @BotFather and paste its token. Add the bot to your group, send /start@botname there, then tap Find group.</p>
     <div class="sec">Photo stamp preview</div>
     <div id="stampBox" style="background:#1c1c1e;color:#fff;border-radius:var(--r);
          padding:12px 14px;text-align:right;font-size:12.5px;line-height:1.45;
@@ -687,7 +687,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
 <div class="overlay" id="sigOverlay">
   <h3>Please sign below</h3>
-  <p>Sign with your finger, then tap Done</p>
+  <p>Sign with your finger, then tap Done.</p>
   <div class="padwrap"><canvas id="pad"></canvas><div class="padline"></div></div>
   <div class="ov-actions">
     <button class="btn btn-ghost" id="sigClear">Clear</button>
