@@ -620,15 +620,11 @@ input,textarea{-webkit-user-select:text;user-select:text}
       <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
       <p class="hint" id="photoEmpty" style="display:none"></p>
       <p class="hint" id="photoNote" style="display:none;color:var(--ok);font-weight:600"></p>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn-link" id="arrBtn" style="display:none"></button>
-        <span style="flex:1"></span>
-        <div id="photoActions" style="display:none;gap:6px">
-          <button class="btn btn-ghost btn-sm" id="sharePhotos">Share</button>
-          <button class="btn btn-ghost btn-sm" id="savePhotos">Save</button>
-        </div>
-        <button class="btn btn-ghost btn-sm" id="camBtn">Camera</button>
+      <div id="photoActions" style="display:none;gap:6px;margin-top:10px;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" id="sharePhotos">Share</button>
+        <button class="btn btn-ghost btn-sm" id="savePhotos">Save</button>
       </div>
+      <button class="btn-link" id="arrBtn" style="display:none"></button>
       <button id="galBtn" style="display:none"></button>
     </div>
     <p class="foot-note" id="addrWarn" style="display:none;color:var(--warn)">No address &mdash; fill in Checklist</p>
@@ -2055,11 +2051,7 @@ function exportPhotos(label){
 
 /* arrival time: the gallery picker can then be told "take everything" - older shots and ones already added are skipped */
 function arrivedAt(){ return parseInt(recall("arrived"), 10) || 0; }
-function arrPaint(){
-  const t = arrivedAt(), b = $("#arrBtn");
-  b.style.display = t ? "" : "none";
-  b.textContent = t ? "Arrived " + new Date(t).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) + " \u00b7 tap to reset" : "";
-}
+function arrPaint(){ /* arrival is kept quietly; nothing to show */ }
 $("#arrBtn").addEventListener("click", () => { store("arrived", ""); arrPaint(); paintClose(); });
 arrPaint();
 function addFromGallery(files){
@@ -3310,7 +3302,16 @@ function stepPaint(v){
   });
 }
 $("#stepStrip").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
+/* an empty job gets today's date and time, not whatever was saved last time */
+function freshStamp(){
+  const empty = !($("#c_customer").value || "").trim() && !($("#c_street").value || "").trim()
+             && !photos.length && !state.strokes.length;
+  if(!empty) return;
+  $("#c_daytime").value = nowStamp();
+  $("#f_date").value = today();
+}
 function startJob(){
+  freshStamp();
   if(!arrivedAt()) store("arrived", String(Date.now()));
   arrPaint();
   setView("checklist");
@@ -3410,7 +3411,7 @@ function paintToday(){
     ? '<button class="actv" data-go="' + (nxt ? nxt.go : "close") + '"><div class="ring"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="#e6e8ec" stroke-width="6"/><circle cx="28" cy="28" r="23" fill="none" stroke="#d6006c" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (okN / rows.length * C) + ' ' + C + '" transform="rotate(-90 28 28)"/></svg><b>' + okN + "/" + rows.length + '</b></div>'
       + '<div class="tt"><b>' + esc(addr || name || "Current job") + "</b>" + (name && addr ? "<small>" + esc(name) + "</small>" : "")
       + "<em>" + (nxt ? "Next: <b style='display:inline;font-size:14px'>" + nxt.t.toLowerCase() + "</b>" : "All steps done") + "</em></div></button>"
-    : '<button class="actv" data-start="1"><div class="tt"><b>No job open</b><small>Tap to start when you arrive</small></div></button>';
+    : '<div class="actv" style="cursor:default"><div class="tt"><b>No job open</b><small>Tap New job when you arrive</small></div></div>';
   $("#tdSteps").innerHTML = rows.map(r =>
     '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
     + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
@@ -3433,6 +3434,7 @@ $("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-
 
 function setView(v){
   if(v === "photos" || v === "work") v = "close";
+  if(v === "checklist" || v === "fcs2") freshStamp();
   ["today","checklist","fcs2","close","result"].forEach(k => {
     $("#v-"+k).style.display = (k === v) ? "block" : "none";
   });
@@ -3518,6 +3520,7 @@ $("#clearFcs").addEventListener("click", () => {
    further down the file, so calling them too early throws a TDZ error
    that used to kill the whole script (and silently disabled every button) */
 loadState();
+freshStamp();
 applySvcDefault();
 refreshWork();
 updateTabs();
