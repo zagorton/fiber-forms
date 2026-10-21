@@ -50,6 +50,20 @@ header{background:var(--bar);backdrop-filter:saturate(180%) blur(18px);
 
 /* layout */
 .wrap{padding:6px 16px 16px}
+.tdhero{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:var(--r);
+  padding:16px;width:100%;border:none;font-family:inherit;text-align:left;cursor:pointer;margin-top:14px}
+.tdhero small{display:block;font-size:13px;color:var(--muted)}
+.tdhero b{display:block;font-size:34px;font-weight:700;letter-spacing:-.5px;color:var(--ok);line-height:1.1}
+.tdhero span.r{font-size:15px;color:var(--muted);text-align:right}
+.step{display:flex;align-items:center;gap:12px;background:#fff;padding:13px 16px;width:100%;border:none;
+  font-family:inherit;text-align:left;cursor:pointer;border-bottom:.5px solid var(--line)}
+.step:last-child{border-bottom:none}
+.step .o{width:22px;height:22px;border-radius:50%;border:2px solid #c7c7cc;flex:none;display:flex;align-items:center;justify-content:center}
+.step.ok .o{background:var(--ok);border-color:var(--ok)}
+.step.ok .o:after{content:"";width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.step .t{flex:1;font-size:16px;color:var(--ink)}
+.step .v{color:var(--muted);font-size:14px}
+.steps{border-radius:var(--r);overflow:hidden}
 .sec{margin:22px 16px 7px;font-size:13px;font-weight:400;text-transform:uppercase;
   letter-spacing:.2px;color:var(--muted);display:flex;align-items:center;gap:8px}
 .sec .aside{margin-left:auto;text-transform:none;letter-spacing:0}
@@ -312,7 +326,8 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
 <header>
   <div class="tabs">
-    <div class="tab on" data-view="photos">Photos<i class="dot" id="dot-photos"></i></div>
+    <div class="tab on" data-view="today">Today</div>
+    <div class="tab" data-view="photos">Photos<i class="dot" id="dot-photos"></i></div>
     <div class="tab" data-view="checklist">Checklist<i class="dot" id="dot-checklist"></i></div>
     <div class="tab" data-view="fcs2">FCS2<i class="dot" id="dot-fcs2"></i></div>
     <div class="tab" data-view="work">Pay<i class="dot" id="dot-work"></i></div>
@@ -487,6 +502,18 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 </div>
 
 <!-- ============================= PHOTOS ============================= -->
+<!-- ============================= TODAY ============================== -->
+<div class="wrap view" id="v-today" style="display:none">
+  <button class="tdhero" id="tdHero" aria-label="Open history">
+    <div><small id="tdDate"></small><b id="tdTotal">$0</b></div>
+    <span class="r" id="tdCount"></span>
+  </button>
+  <div class="sec" id="tdJobTitle">Current job</div>
+  <div class="steps" id="tdSteps"></div>
+  <div class="sec" id="tdDoneTitle" style="display:none">Done today</div>
+  <div class="steps" id="tdDone"></div>
+</div>
+
 <div class="wrap view" id="v-photos">
   <div class="sec">Photos <span id="photoCount"></span></div>
   <div class="card">
@@ -2323,7 +2350,7 @@ function resetJob(){
   refreshStamp();
   saveState();
   updateTabs();
-  setView("photos");
+  setView("today");
 }
 
 /* ---------------- autosave the forms too -------------------------------- */
@@ -2353,6 +2380,7 @@ function updateTabs(){
   $("#dot-photos").classList.toggle("done", photos.length > 0);
   $("#dot-checklist").classList.toggle("done", !!chk);
   $("#dot-fcs2").classList.toggle("done", state.strokes.length > 0);
+  if(state.view === "today") paintToday();
 }
 
 let saveTimer = null;
@@ -3069,12 +3097,47 @@ function setTabs(v){
   $$(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === v));
 }
 
+function paintToday(){
+  const now = new Date();
+  $("#tdDate").textContent = now.toLocaleDateString("en-US", {weekday: "long", month: "short", day: "numeric"});
+  const name = ($("#c_customer").value || "").trim();
+  const addr = composedAddress() || "";
+  const rows = [
+    {go: "photos",    ok: photos.length > 0, t: "Photos",    v: photos.length ? photos.length + " added" : "none yet"},
+    {go: "checklist", ok: !!(name && ($("#c_street").value || "").trim()), t: "Checklist", v: (name && addr) ? "filled" : "to do"},
+    {go: "fcs2",      ok: state.strokes.length > 0, t: "Customer signature", v: state.strokes.length ? "signed" : "to do"},
+    {go: "work",      ok: currentJobId != null, t: "Pay", v: currentJobId != null ? "saved" : "not saved"},
+    {go: "photos",    ok: !!uploadedOnce, t: "Drive and Telegram", v: uploadedOnce ? "sent" : "to do"}
+  ];
+  $("#tdJobTitle").textContent = addr ? addr : "Current job";
+  $("#tdSteps").innerHTML = rows.map(r =>
+    '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
+    + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
+  weekJobs(0).then(list => {
+    const key = now.toDateString();
+    const today = list.filter(j => new Date(j.when).toDateString() === key);
+    $("#tdTotal").textContent = "$" + today.reduce((t, j) => t + (j.total || 0), 0);
+    $("#tdCount").textContent = today.length + (today.length === 1 ? " job" : " jobs") + " today";
+    $("#tdDoneTitle").style.display = today.length ? "" : "none";
+    $("#tdDone").innerHTML = today.map(j =>
+      '<button class="step" data-edit="' + j.id + '"><span class="t">' + esc(j.address || "") + '</span>'
+      + '<span class="v">$' + j.total + '</span></button>').join("");
+  }).catch(() => {});
+}
+$("#tdSteps").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
+$("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if(b) openEdit(+b.dataset.edit); });
+$("#tdHero").addEventListener("click", () => $("#openHistory").click());
+
 function setView(v){
-  ["photos","checklist","fcs2","work","result"].forEach(k => {
+  ["today","photos","checklist","fcs2","work","result"].forEach(k => {
     $("#v-"+k).style.display = (k === v) ? "block" : "none";
   });
   $("#upBox").style.display = (v === "photos") ? "flex" : "none";
-  if(v === "work"){
+  if(v === "today"){
+    state.view = v;
+    $("#bar").style.display = "none";
+    paintToday();
+  } else if(v === "work"){
     state.view = v;
     $("#bar").style.display = "none";
     paintWeekMini();
@@ -3102,7 +3165,7 @@ function setView(v){
 }
 $$(".tab").forEach(t => t.addEventListener("click", () => setView(t.dataset.view)));
 $("#backBtn").addEventListener("click", () => setView(state.view));
-setView("photos");
+setView("today");
 
 $("#platHint").innerHTML = IS_IOS
   ? "iPhone: <b>Share / Send</b> hands the file to Messages, Mail or Files."
