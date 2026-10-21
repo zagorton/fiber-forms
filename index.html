@@ -215,7 +215,10 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 .padline{position:absolute;left:6%;right:6%;bottom:22%;border-bottom:2px solid #c9d2db;
   pointer-events:none}
 .ov-actions{display:flex;gap:9px}.ov-actions .btn{flex:1}
-#sigOverlay .btn-ghost{background:#2c2c2e;color:#fff}
+#sigOverlay{background:rgba(16,18,24,.42);-webkit-backdrop-filter:blur(22px) saturate(1.1);backdrop-filter:blur(22px) saturate(1.1)}
+@supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){#sigOverlay{background:rgba(16,18,24,.92)}}
+#sigOverlay .btn-ghost{background:rgba(255,255,255,.22);color:#fff}
+#sigOverlay .padwrap{box-shadow:0 10px 40px rgba(0,0,0,.28)}
 @media (orientation:landscape) and (max-height:520px){
   .overlay{padding:calc(8px + env(safe-area-inset-top)) 12px
            calc(8px + env(safe-area-inset-bottom))}
@@ -898,14 +901,11 @@ input,textarea{-webkit-user-select:text;user-select:text}
 </div>
 
 <div class="overlay" id="sigOverlay">
-  <h3>Please sign below</h3>
-  <p>Sign with your finger, then tap Done.</p>
   <div class="padwrap"><canvas id="pad"></canvas><div class="padline"></div></div>
   <div class="ov-actions">
     <button class="btn btn-ghost" id="sigClear">Clear</button>
     <button class="btn btn-primary" id="sigDone">Done</button>
   </div>
-  <button class="btn-link" id="sigCancel" style="color:#636366;margin-top:8px;font-size:12px">Hold to go back</button>
 </div>
 
 <canvas id="out" style="display:none"></canvas>
@@ -1302,15 +1302,6 @@ function closePad(){
 }
 $("#sigSlot").addEventListener("click", openPad);
 $("#sigClear").addEventListener("click", () => { state.strokes = []; redrawPad(); });
-/* the customer holds the phone here: leaving takes a deliberate 1-second hold, so nobody wanders into the pay screen by accident */
-(function(){
-  let t = null;
-  const b = $("#sigCancel");
-  const stop = () => { clearTimeout(t); t = null; };
-  b.addEventListener("pointerdown", () => { stop(); t = setTimeout(() => { t = null; closePad(); }, 1000); });
-  ["pointerup","pointerleave","pointercancel"].forEach(ev => b.addEventListener(ev, stop));
-  b.addEventListener("contextmenu", e => e.preventDefault());
-})();
 $("#sigDone").addEventListener("click", () => {
   state.strokes = state.strokes.filter(s => s.length > 1);
   closePad();
