@@ -369,6 +369,36 @@ body.hm #savePay{filter:none}
 #tabbar button.on{color:var(--magenta);font-weight:700}
 #tabbar svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9}
 body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-select:none}
+
+/* ---- v59 screens ---- */
+.rv{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:15.5px}
+.rv:first-of-type{border-top:none}
+.rv span{color:var(--muted);flex:none}
+.rv b{font-weight:600;text-align:right;overflow-wrap:anywhere}
+.clic{width:72px;height:72px;border-radius:50%;background:#e3f4ea;color:var(--ok);display:inline-flex;align-items:center;justify-content:center}
+.clic svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:3}
+#v-close.closed #clPre, #v-close.closed #docCard{display:none !important}
+.upl-h{display:flex;justify-content:space-between;font-size:15px;margin-bottom:8px}
+.pbar{height:10px;border-radius:6px;background:var(--seg);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--magenta);border-radius:6px}
+.warnbox{background:#fff4dc;border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:14.5px;color:#6b4300}
+.warnbox b{display:block;color:#4a2d00}
+.upbtns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.step .t small{display:block;color:var(--muted);font-size:13px;margin-top:1px}
+.actv{display:flex;align-items:center;gap:14px;background:#fff;border-radius:20px;padding:16px;width:100%;border:none;font-family:inherit;text-align:left;cursor:pointer;margin-top:14px}
+.actv .ring{position:relative;width:56px;height:56px;flex:none}
+.actv .ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px}
+.actv .tt{flex:1;min-width:0}
+.actv .tt b{display:block;font-size:18px}
+.actv .tt small{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.actv .tt em{display:block;font-style:normal;font-size:14px;margin-top:6px}
+#newJobFab{display:none;position:fixed;right:16px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:45;border:none;border-radius:999px;
+  background:var(--magenta);color:#fff;font:600 16px inherit;font-family:inherit;padding:0 20px 0 14px;min-height:50px;
+  box-shadow:0 6px 18px rgba(214,0,108,.35);align-items:center;gap:6px;cursor:pointer}
+#newJobFab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.4}
+body.onweek #tabbar{z-index:120}
+body.onweek #histOverlay{bottom:calc(64px + env(safe-area-inset-bottom))}
+body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
 </style>
 </head>
 <body>
@@ -474,6 +504,15 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
 
 <!-- ============================== FCS2 ============================== -->
 <div class="wrap view" id="v-fcs2" style="display:none">
+  <div class="sec">Installation complete</div>
+  <div class="card" id="fcsReview">
+    <div style="font-size:21px;font-weight:700;margin-bottom:6px">Please review and sign</div>
+    <div class="rv"><span>Address</span><b id="rvAddr"></b></div>
+    <div class="rv"><span>Customer</span><b id="rvCust"></b></div>
+    <div class="rv"><span>Router</span><b id="rvRouter"></b></div>
+    <div class="rv"><span>ONT serial</span><b id="rvOnt"></b></div>
+    <button class="btn btn-magenta" id="rvSign" style="margin-top:14px">Sign</button>
+  </div>
   <div class="sec">Job</div>
   <div class="card">
     <div class="f"><label for="f_customer">Customer name</label>
@@ -574,7 +613,8 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
     <div><small>Earned today</small><b id="tdTotal">$0</b></div>
     <span class="r" id="tdCount"></span>
   </button>
-  <div class="sec" id="tdJobTitle">Current job</div>
+  <div id="tdActive"></div>
+  <div class="sec" id="tdJobTitle">Steps</div>
   <div class="steps" id="tdSteps"></div>
   <div class="sec" id="tdDoneTitle" style="display:none">Done today</div>
   <div class="steps" id="tdDone"></div>
@@ -609,6 +649,24 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
 
 <!-- ============================ CLOSE THE JOB ======================= -->
 <div class="wrap view" id="v-close" style="display:none">
+  <div id="closedCard" style="display:none">
+    <div style="text-align:center;padding:26px 0 14px">
+      <div class="clic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></div>
+      <div style="font-size:26px;font-weight:700;margin-top:12px">Job closed</div>
+      <div class="hint" id="clcAddr" style="margin-top:2px"></div>
+    </div>
+    <div class="card">
+      <div class="rv"><span>On Google Drive</span><b id="clcFiles"></b></div>
+      <div class="rv"><span>Telegram message</span><b id="clcTg"></b></div>
+      <div class="rv"><span>Added to this week</span><b id="clcPay" class="amtc"></b></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+      <button class="btn btn-magenta" id="clcToday">Back to Today</button>
+      <button class="btn btn-ghost" id="clcDrive">Open Drive folder</button>
+      <button class="btn btn-quiet" id="clcAgain">Edit and send again</button>
+    </div>
+  </div>
+  <div id="clPre">
   <div class="sec">Photos</div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:12px">
@@ -626,6 +684,7 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
   </div>
   <div class="sec">Telegram group <span class="aside" id="clTgState"></span></div>
   <div class="card"><pre id="clTg" style="margin:0;white-space:pre-wrap;font:14px/1.45 inherit;font-family:inherit;color:var(--ink)"></pre></div>
+  </div>
   <div id="upCard" style="display:none">
     <div class="sec">Upload</div>
     <div class="card status">
@@ -659,6 +718,7 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
   <button class="btn btn-quiet" id="backBtn" style="margin-top:6px">&lsaquo; Back to the form</button>
 </div>
 
+<button id="newJobFab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New job</button>
 <nav id="tabbar"><button id="tbToday" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Today</button>
   <button id="tbWeek"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button></nav>
 
@@ -690,7 +750,7 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
   </div>
   <div class="sheet-foot">
     <button class="btn btn-ghost" id="histAdd" style="margin-bottom:8px">+ Add job</button>
-    <button class="btn btn-magenta" id="histExport"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export week to Excel</button>
+    <button class="btn btn-magenta" id="histExport"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span id="histExpLbl">Export week to Excel</span></button>
   </div>
 </div>
 
@@ -735,7 +795,7 @@ body.hm :is(#clTotal, #clLine){filter:blur(7px);-webkit-user-select:none;user-se
 <div class="overlay sheet" id="setOverlay">
   <div class="sheet-head"><span></span><h3>Settings</h3><button class="done" id="setClose">Done</button></div>
   <div class="sheet-body">
-    <div class="sec">Upload folder</div>
+    <div class="sec">Upload folder <span class="aside" id="setDriveState"></span></div>
     <div class="card">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="flex:1;min-width:0" id="setFolder"></div>
@@ -2137,6 +2197,8 @@ $("#dest").addEventListener("click", () => { if($("#dest").classList.contains("w
 function openSettings(){
   paintDest(); refreshStamp(); showStorage();
   try{ tgPaint(); }catch(e){}
+  $("#setDriveState").innerHTML = (GD.clientId && GD.apiKey && GD.folderId)
+    ? '<span class="pill ready">&#10003; Connected</span>' : '<span class="pill">Not connected</span>';
   $("#setOverlay").classList.add("on");
   document.body.classList.add("locked");
 }
@@ -2144,6 +2206,16 @@ $("#openSettings").addEventListener("click", openSettings);
 $("#setClose").addEventListener("click", () => {
   $("#setOverlay").classList.remove("on");
   document.body.classList.remove("locked");
+});
+
+function upProgress(done, total){
+  const pct = total ? Math.round(done / total * 100) : 0;
+  return '<div class="upl-h"><b>' + done + " of " + total + " files sent</b><span>" + pct + '%</span></div>'
+       + '<div class="pbar"><i style="width:' + pct + '%"></i></div>';
+}
+document.addEventListener("click", e => {
+  if(e.target.id === "upRetry") driveUpload();
+  if(e.target.id === "upLater"){ driveStatus(); setView("today"); }
 });
 
 /* progress / result of an upload - the card is hidden when there is nothing to say */
@@ -2382,13 +2454,13 @@ function driveUpload(){
     return token;
   }).then(token => {
     driveStatus("Creating folder...");
-    return findOrMakeFolder(GD.folderId, folderName, token).then(id => ({id: id, token: token}));
+    return findOrMakeFolder(GD.folderId, folderName, token).then(id => { lastFolderId = id; return {id: id, token: token}; });
   }).then(ctx => {
     let chain = Promise.resolve();
     files.forEach((f, i) => {
       chain = chain.then(() => {
         if(driveSent[sentKey(folderName, f)]) return;
-        driveStatus("Uploading " + (i + 1) + " of " + files.length + "...");
+        driveStatus(upProgress(files.filter(x => driveSent[sentKey(folderName, x)]).length, files.length));
         return uploadOne(f, ctx.id, ctx.token).then(() => { driveSent[sentKey(folderName, f)] = 1; });
       });
     });
@@ -2398,17 +2470,25 @@ function driveUpload(){
               + files.length + " files are in <b>" + GD.folderName
               + " / " + folderName + "</b>.");
     uploadedOnce = true;
+    $("#clcFiles").textContent = files.length + (files.length === 1 ? " file" : " files");
+    tgMark(!tgReady() ? "Not set up" : (tgCfg().auto ? "Sending..." : "Not sent"));
+    closedView = true; paintClose();
     saveJob(true, files.length);
     tgAfterUpload();
     $("#startNext").style.display = "flex";
-    $("#startNext").scrollIntoView({behavior:"smooth", block:"center"});
+    window.scrollTo(0, 0);
     release();
   }).catch(err => {
     release();
     if(err && err.message === "cancelled"){ driveStatus(); return; }
-    driveStatus("<b style='color:#b3541e'>Upload failed:</b> "
-              + ((err && err.message) || "unknown") + ". Files are still on the phone."
-              + (Object.keys(driveSent).length ? " Tap Upload again to send only what is left." : ""));
+    const sentN = files.filter(x => driveSent[sentKey(folderName, x)]).length;
+    const left = files.length - sentN;
+    driveStatus('<div class="warnbox"><b>' + (navigator.onLine === false ? "No signal" : "Upload paused") + '</b>'
+              + "Nothing is lost. " + (left || files.length) + (((left || files.length) === 1) ? " file is" : " files are") + " waiting on the phone."
+              + ((err && err.message) ? "<br><small>" + esc(err.message) + "</small>" : "") + "</div>"
+              + (files.length ? upProgress(sentN, files.length) : "")
+              + '<div class="upbtns"><button class="btn btn-magenta" id="upRetry">Try again</button>'
+              + '<button class="btn btn-ghost" id="upLater">Send later</button></div>');
   });
 }
 
@@ -2420,7 +2500,7 @@ $("#startNext").addEventListener("click", () => {
 /* wipes everything about this customer, keeps the technician's own settings */
 function resetJob(){
   saveJob(uploadedOnce, photos.length, null, true);
-  currentJobId = null; currentJobWhen = null; tgPostedFor = ""; driveSent = {}; store("arrived", ""); arrPaint();
+  currentJobId = null; currentJobWhen = null; tgPostedFor = ""; driveSent = {}; closedView = false; lastFolderId = ""; store("arrived", ""); arrPaint();
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
   uploadedOnce = false;
@@ -2483,6 +2563,7 @@ function updateTabs(){
   $("#dot-checklist").classList.toggle("done", !!chk);
   $("#dot-fcs2").classList.toggle("done", state.strokes.length > 0);
   if(state.view === "today") paintToday();
+  if(state.view === "fcs2") paintReview();
 }
 
 let saveTimer = null;
@@ -2843,6 +2924,7 @@ function renderHistory(){
     $("#histTotal").textContent = "$" + total;
     $("#histCount").textContent = rows.length;
     $("#histExport").disabled = !rows.length;
+    $("#histExpLbl").textContent = (tgReady() && tgCfg().xls) ? "Send week to group" : "Export week to Excel";
     /* day bars, Monday - Saturday; tap one to show only that day */
     const sums = [0,0,0,0,0,0,0], cnt = [0,0,0,0,0,0,0];
     rows.forEach(j => { const w = new Date(j.when).getDay(); sums[w] += (j.total || 0); cnt[w]++; });
@@ -3028,12 +3110,14 @@ $("#openHistory").addEventListener("click", () => {
   weekOffset = 0; histDay = -1;
   $("#histOverlay").classList.add("on");
   document.body.classList.add("locked");
+  tabbarSync();
   renderHistory();
 });
 $("#histClose").addEventListener("click", () => {
   paintWeekMini();
   $("#histOverlay").classList.remove("on");
   document.body.classList.remove("locked");
+  tabbarSync();
 });
 $("#histAdd").addEventListener("click", openAdd);
 $("#histBars").addEventListener("click", e => {
@@ -3173,8 +3257,8 @@ function tgAfterUpload(){
   const text = tgText();
   const base = $("#driveStatus").innerHTML;
   const done = html => driveStatus(base + "<br>" + html);
-  tgSend(text).then(() => { tgPostedFor = addr; done('<span class="pill ready">&#10003; Posted to Telegram</span>'); })
-    .catch(() => { tgQueue(text); tgPostedFor = addr;
+  tgSend(text).then(() => { tgPostedFor = addr; tgMark("Posted"); done('<span class="pill ready">&#10003; Posted to Telegram</span>'); })
+    .catch(() => { tgQueue(text); tgPostedFor = addr; tgMark("Waiting for signal");
       done("<b style='color:#b3541e'>Telegram:</b> no signal, it will be posted later."); });
 }
 
@@ -3225,12 +3309,20 @@ const NAV = {
   close:     {t: "Close the job", back: "today", next: "",          nl: ""},
   result:    {t: "Document",      back: "",      next: "",          nl: ""}
 };
+function tabbarSync(v){
+  v = v || state.view;
+  const wk = $("#histOverlay").classList.contains("on");
+  $("#tabbar").style.display = (wk || v === "today") ? "flex" : "none";
+  $("#newJobFab").style.display = (!wk && v === "today") ? "inline-flex" : "none";
+  $("#tbToday").classList.toggle("on", !wk);
+  $("#tbWeek").classList.toggle("on", wk);
+  document.body.classList.toggle("onweek", wk);
+}
 function navPaint(v){
   const h = document.querySelector("header"), tb = $("#tabbar");
   const isToday = (v === "today");
   h.style.display = isToday ? "none" : "";
-  tb.style.display = isToday ? "flex" : "none";
-  $("#tbToday").classList.add("on"); $("#tbWeek").classList.remove("on");
+  tabbarSync(v);
   const n = NAV[v]; if(!n) return;
   $("#navTitle").textContent = n.t;
   $("#navBack").textContent = n.back ? "\u2039 " + (n.back === "today" ? "Today" : NAV[n.back].t) : "";
@@ -3240,11 +3332,46 @@ function navPaint(v){
 }
 $("#navBack").addEventListener("click", e => { const g = e.currentTarget.dataset.go; if(g) setView(g); else setView(state.view); });
 $("#navNext").addEventListener("click", e => { const g = e.currentTarget.dataset.go; if(g) setView(g); });
-$("#tbToday").addEventListener("click", () => setView("today"));
-$("#tbWeek").addEventListener("click", () => $("#openHistory").click());
+$("#tbToday").addEventListener("click", () => {
+  if($("#histOverlay").classList.contains("on")) $("#histClose").click();
+  setView("today");
+});
+$("#tbWeek").addEventListener("click", () => { if(!$("#histOverlay").classList.contains("on")) $("#openHistory").click(); });
+$("#newJobFab").addEventListener("click", () => {
+  const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
+  if(busy && !confirm("Start a new job? The current one is cleared.")) return;
+  if(busy) resetJob();
+  setView("photos");
+});
 $("#tdSettings").addEventListener("click", () => openSettings());
 
+function paintReview(){
+  $("#rvAddr").textContent = composedAddress() || "\u2014";
+  $("#rvCust").textContent = ($("#c_customer").value || $("#f_customer").value || "").trim() || "\u2014";
+  $("#rvRouter").textContent = ($("#c_model").value || "").trim() || "\u2014";
+  $("#rvOnt").textContent = ($("#f_ontSerial").value || "").trim() || "\u2014";
+  $("#rvSign").textContent = state.strokes.length ? "Signed \u2713 \u00b7 tap to sign again" : "Sign";
+}
+$("#rvSign").addEventListener("click", () => openPad());
+
+/* closed state of the Close the job screen */
+let closedView = false, lastFolderId = "";
+function tgMark(txt){ const e = $("#clcTg"); if(e) e.textContent = txt; }
+$("#clcToday").addEventListener("click", () => setView("today"));
+$("#clcAgain").addEventListener("click", () => { closedView = false; paintClose(); });
+$("#clcDrive").addEventListener("click", () => {
+  if(lastFolderId) window.open("https://drive.google.com/drive/folders/" + lastFolderId, "_blank");
+});
+
 function paintClose(){
+  $("#v-close").classList.toggle("closed", closedView);
+  $("#closedCard").style.display = closedView ? "block" : "none";
+  if(state.view === "close") $("#bar").style.display = closedView ? "none" : "flex";
+  if(closedView){
+    $("#clcAddr").textContent = composedAddress() || "";
+    $("#clcPay").textContent = $("#payTotal").textContent;
+    $("#clcDrive").style.display = lastFolderId ? "" : "none";
+  }
   $("#clPhotoN").textContent = photos.length + (photos.length === 1 ? " photo" : " photos");
   const t = arrivedAt();
   $("#clArr").textContent = t ? "Since " + new Date(t).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : "";
@@ -3274,7 +3401,15 @@ function paintToday(){
     {go: "fcs2",      ok: state.strokes.length > 0, t: "Customer signs", v: state.strokes.length ? "signed" : "to do"},
     {go: "close",     ok: !!uploadedOnce, t: "Close the job", v: uploadedOnce ? "sent" : (currentJobId != null ? "saved, not sent" : "to do")}
   ];
-  $("#tdJobTitle").textContent = addr ? addr : "Current job";
+  const okN = rows.filter(r => r.ok).length;
+  const nxt = rows.find(r => !r.ok);
+  const has = addr || name || photos.length;
+  const C = 144.5;
+  $("#tdActive").innerHTML = has
+    ? '<button class="actv" data-go="' + (nxt ? nxt.go : "close") + '"><div class="ring"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="#e6e8ec" stroke-width="6"/><circle cx="28" cy="28" r="23" fill="none" stroke="#d6006c" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (okN / rows.length * C) + ' ' + C + '" transform="rotate(-90 28 28)"/></svg><b>' + okN + "/" + rows.length + '</b></div>'
+      + '<div class="tt"><b>' + esc(addr || name || "Current job") + "</b>" + (name && addr ? "<small>" + esc(name) + "</small>" : "")
+      + "<em>" + (nxt ? "Next: <b style='display:inline;font-size:14px'>" + nxt.t.toLowerCase() + "</b>" : "All steps done") + "</em></div></button>"
+    : '<button class="actv" data-go="photos"><div class="tt"><b>No job open</b><small>Take the first photo when you arrive</small></div></button>';
   $("#tdSteps").innerHTML = rows.map(r =>
     '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
     + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
@@ -3284,12 +3419,15 @@ function paintToday(){
     $("#tdTotal").textContent = "$" + today.reduce((t, j) => t + (j.total || 0), 0);
     $("#tdCount").textContent = today.length + (today.length === 1 ? " job" : " jobs") + " today";
     $("#tdDoneTitle").style.display = today.length ? "" : "none";
-    $("#tdDone").innerHTML = today.map(j =>
-      '<button class="step" data-edit="' + j.id + '"><span class="t">' + esc(j.address || "") + '</span>'
-      + '<span class="v">$' + j.total + '</span></button>').join("");
+    $("#tdDone").innerHTML = today.map(j => {
+      const tm = new Date(j.when).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
+      return '<button class="step' + (j.uploaded ? " ok" : "") + '" data-edit="' + j.id + '"><span class="o"></span><span class="t">' + esc(j.address || "")
+        + "<small>" + (j.customer ? esc(j.customer) + " \u00b7 " : "") + (j.uploaded ? "sent " : "saved ") + tm + "</small></span>"
+        + '<span class="v">$' + j.total + "</span></button>"; }).join("");
   }).catch(() => {});
 }
 $("#tdSteps").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
+$("#tdActive").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
 $("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if(b) openEdit(+b.dataset.edit); });
 $("#tdHero").addEventListener("click", () => $("#openHistory").click());
 
@@ -3317,6 +3455,7 @@ function setView(v){
   } else if(v !== "result"){
     state.view = v;
     $("#bar").style.display = "flex";
+    if(v === "fcs2") paintReview();
     if($("#makeBtn").classList.contains("working")) { setTabs(v); return; }
     if(v === "checklist"){
       $("#makeBtn").innerHTML = ICON_DOC + "Create PDF for customer";
