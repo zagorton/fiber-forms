@@ -340,14 +340,16 @@ input[type=text]:focus,textarea:focus{box-shadow:0 0 0 3px rgba(10,96,208,.15)}
 .tdhero{margin-top:14px;flex-direction:column;align-items:stretch;gap:0}
 .tdhero b{letter-spacing:-.5px}
 .tdhero .top{display:flex;align-items:center;justify-content:space-between}
-.tdy{margin-top:14px;padding-top:12px;border-top:1px solid #eef0f3}
+.tdy{margin-top:14px;padding-top:12px;border-top:1px solid #eef0f3;max-height:120px;overflow:hidden;transition:max-height .6s ease,opacity .5s ease,margin .6s ease,padding .6s ease}
+#v-today{padding-bottom:100px}
+.tdy.gone{max-height:0;opacity:0;margin-top:0;padding-top:0;border-top-color:transparent}
 .tdy .yl{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--muted)}
 .tdy .yl b{font-size:17px;color:var(--text,#14161a);font-weight:700;display:inline}
 .ybar{height:10px;background:#eceef2;border-radius:5px;margin-top:8px;overflow:hidden;position:relative}
 .ybar i{display:block;height:100%;width:0;background:var(--ok);border-radius:5px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
 .ybar i.win{background:linear-gradient(90deg,var(--ok),#e0a800)}
 .tdy .ym b{display:inline;font-size:inherit;color:inherit;letter-spacing:0}
-.tdy .ym{font-size:14px;font-weight:500;margin-top:8px}
+.tdy .ym{font-size:14px;font-weight:500;margin-top:6px;color:var(--ok)}
 .tdy .ym.win{color:#b36b00;font-weight:700}
 .tdy .ym.win::before{content:"\2605 "}
 body.hm :is(#tdYAmt,#tdYMsg b){filter:blur(7px);-webkit-user-select:none;user-select:none}
@@ -651,7 +653,6 @@ input,textarea{-webkit-user-select:text;user-select:text}
     <span class="r" id="tdCount"></span></div>
     <div class="tdy" id="tdYest" style="display:none">
       <div class="yl"><span id="tdYLabel">Yesterday</span><b id="tdYAmt"></b></div>
-      <div class="ybar"><i id="tdYBar"></i></div>
       <div class="ym" id="tdYMsg"></div>
     </div>
   </div>
@@ -3553,25 +3554,29 @@ function paintToday(){
       const lbl = yd.toDateString() === yday.toDateString() ? "Yesterday" : yd.toLocaleDateString("en-US", {weekday: "long"});
       $("#tdYLabel").textContent = lbl + " \u00b7 " + pj.length + (pj.length === 1 ? " job" : " jobs");
       $("#tdYAmt").textContent = "$" + yt;
-      const pct = yt > 0 ? Math.min(100, Math.round(tot / yt * 100)) : (tot > 0 ? 100 : 0);
-      const bar = $("#tdYBar"); bar.style.width = pct + "%"; bar.classList.toggle("win", yt > 0 && tot >= yt);
       const m = $("#tdYMsg");
-      m.classList.toggle("win", yt > 0 && tot > yt);
-      m.innerHTML = yt <= 0 ? "" : tot > yt ? "You beat " + lbl.toLowerCase() + " by <b>$" + (tot - yt) + "</b>"
-        : tot === yt ? "Level with " + lbl.toLowerCase() + ". One more!"
-        : (tot === 0 ? lbl + " you made <b>$" + yt + "</b>. Beat it today?" : "<b>$" + (yt - tot) + "</b> more to beat " + lbl.toLowerCase());
+      m.textContent = yt > 0 ? "Great work. Let's beat it today." : "";
+      /* only before the first job of the day; it fades away once work starts */
+      const show = !today.length && !has;
+      yEl.classList.toggle("gone", !show);
       yEl.style.display = "";
     } else yEl.style.display = "none";
     $("#tdDoneTitle").style.display = today.length ? "" : "none";
-    $("#tdDone").innerHTML = today.map(j => {
+    const cap = tdAll ? 99 : (has ? 2 : 4);
+    const shown = today.slice().reverse().slice(0, cap);
+    $("#tdDone").innerHTML = shown.map(j => {
       const tm = new Date(j.when).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
       return '<button class="step' + (j.uploaded ? " ok" : "") + '" data-edit="' + j.id + '"><span class="o"></span><span class="t">' + esc(j.address || "")
         + "<small>" + (j.customer ? esc(j.customer) + " \u00b7 " : "") + (j.uploaded ? "sent " : "saved ") + tm + "</small></span>"
-        + '<span class="v">$' + j.total + "</span></button>"; }).join("");
+        + '<span class="v">$' + j.total + "</span></button>"; }).join("")
+      + (today.length > cap ? '<button class="step tdmore" data-more="1"><span class="t" style="text-align:center;color:var(--accent)">Show all ' + today.length + ' jobs</span></button>'
+         : (tdAll && today.length > (has ? 2 : 4) ? '<button class="step tdmore" data-more="0"><span class="t" style="text-align:center;color:var(--accent)">Show less</span></button>' : ""));
   }).catch(() => {});
 }
 $("#tdSteps").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
 $("#tdActive").addEventListener("click", e => { const g = e.target.closest("[data-go]"); if(g){ setView(g.dataset.go); return; } if(e.target.closest("[data-start]")) startJob(); });
+let tdAll = false;
+$("#tdDone").addEventListener("click", e => { const m = e.target.closest("[data-more]"); if(m){ tdAll = m.dataset.more === "1"; paintToday(); return; } });
 $("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if(b) openEdit(+b.dataset.edit); });
 
 function setView(v){
