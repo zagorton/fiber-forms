@@ -2944,16 +2944,21 @@ $("#tg_token").addEventListener("change", () => {
 });
 $("#tgFind").addEventListener("click", () => {
   store("tg_token", $("#tg_token").value.trim());
-  tgApi("getUpdates", {allowed_updates: JSON.stringify(["message","my_chat_member"]), limit: 100})
+  tgApi("getUpdates", {limit: 100})
     .then(list => {
-      let found = null;
-      list.slice().reverse().some(u => {
-        const o = u.my_chat_member || u.message || {};
-        const ch = o.chat;
-        if(ch && (ch.type === "group" || ch.type === "supergroup")){ found = ch; return true; }
-        return false;
+      let found = null; const seen = [];
+      list.slice().reverse().forEach(u => {
+        const k = Object.keys(u).filter(x => x !== "update_id")[0];
+        const o = u[k] || {}; const ch = o.chat;
+        if(ch) seen.push(k + ":" + ch.type);
+        if(!found && ch && ch.type !== "private") found = ch;
       });
-      if(!found){ alert("No group found yet. Add the bot to the group, send /start there, then tap Find group again."); return; }
+      if(!found){
+        alert("No group found.\nUpdates received: " + list.length +
+              (seen.length ? "\n" + seen.slice(0,4).join(", ") : "") +
+              "\n\nIn the group write: /start@YourBotName (use the bot's username), then tap Find group again.");
+        return;
+      }
       store("tg_chat", String(found.id)); store("tg_title", found.title || "Group");
       tgPaint();
     })
