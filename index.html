@@ -414,6 +414,58 @@ body.hm :is(.amtc){filter:blur(7px);-webkit-user-select:none;user-select:none}
 /* nothing on screen is selectable except what you type into */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea{-webkit-user-select:text;user-select:text}
+
+/* Today guidance (v63) */
+.tdroute{background:#fff;border-radius:22px;padding:18px 16px 8px;margin-top:14px}
+.tdroute .hd{padding:0 4px 12px}.tdroute .hd b{display:block;font-size:18px}.tdroute .hd small{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.tdroute .trk{position:relative;padding-bottom:8px}
+.tdroute .ln,.tdroute .lg{position:absolute;left:22px;top:38px;width:2px;background:#e3e5ea;border-radius:2px;height:152px}
+.tdroute .lg{background:var(--ok)}
+.tdroute .dts{position:absolute;left:0;width:46px;height:0}
+.tddot{position:absolute;left:19px;top:-42px;width:8px;height:8px;border-radius:50%;background:var(--magenta);opacity:0;animation:tdtravel 5s ease-in-out infinite}
+.tddot.b{animation-delay:1.7s}.tddot.c{animation-delay:3.4s}
+@keyframes tdtravel{0%{transform:translateY(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(76px);opacity:0}}
+.tdr{display:flex;align-items:center;gap:14px;width:100%;height:76px;border:none;background:none;font-family:inherit;text-align:left;color:inherit;cursor:pointer;position:relative;border-radius:16px}
+.tdr.cur{background:#fdeaf4;margin:0 -6px;width:calc(100% + 12px);padding:0 6px}
+.tdr .tx{flex:1;min-width:0}.tdr .tx b{display:block;font-size:16px;font-weight:500}.tdr .tx small{display:block;font-size:13px;color:var(--muted);margin-top:1px}
+.tdr.cur .tx b{font-weight:700}.tdr.cur .tx small{color:#7a2252}.tdr.later .tx b{color:var(--muted)}
+.tdr .nd{width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex:none;position:relative}
+.tdr .nd:not(.c):not(.l){}
+.tdr.done .nd{background:none}
+.tdr.done .nd svg{background:var(--ok);border-radius:50%;padding:7px;box-sizing:content-box;width:16px;height:16px}
+.tdr .nd.l{font-size:14px;font-weight:700;color:var(--muted)}
+.tdr .nd.l::before{content:"";position:absolute;width:26px;height:26px;border:2px solid #c9ccd3;border-radius:50%;background:#fff}
+.tdr .nd.l{z-index:1}
+.tdr .nd.c em{position:relative;width:30px;height:30px;border-radius:50%;background:var(--magenta);color:#fff;font-style:normal;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.tdr .nd.c u{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--magenta);opacity:.5;animation:tdripple 2.6s ease-out infinite}
+.tdr .nd.c u.b{animation-delay:1.3s}
+@keyframes tdripple{0%{transform:scale(1);opacity:.5}100%{transform:scale(2.2);opacity:0}}
+.tdnudge{margin-right:6px;animation:tdnudge 1.4s ease-in-out infinite}
+@keyframes tdnudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+.tdoff{display:flex;align-items:center;gap:14px;background:#fff4e0;border-radius:20px;padding:16px;margin-top:14px}
+.tdoff b{display:block;font-size:16px;color:#5c3700}.tdoff small{display:block;font-size:13.5px;color:#7a4a00;line-height:1.4;margin-top:2px}
+.tdoff .b1{animation:tdb 2s infinite}.tdoff .b2{animation:tdb 2s .4s infinite}.tdoff .b3{animation:tdb 2s .8s infinite}
+@keyframes tdb{0%,100%{opacity:.25}30%{opacity:1}}
+.tdqs{background:#fff;border-radius:20px;padding:4px 16px;margin-top:12px}
+.tdqs h6{margin:0;padding:12px 0 2px;font-size:12.5px;letter-spacing:.06em;color:var(--muted)}
+.tdq{display:flex;justify-content:space-between;align-items:center;min-height:52px;gap:10px}
+.tdq span{font-size:15px;font-weight:500;display:flex;align-items:center;gap:10px}.tdq small{font-size:13px;color:var(--muted);text-align:right}
+.tdqs .tdq{flex-direction:column;align-items:flex-start;justify-content:center;gap:0;padding:8px 0;border-bottom:1px solid #eef0f3}.tdqs .tdq:last-child{border:none}.tdqs .tdq small{text-align:left}
+.tdsend{background:#fff;border-radius:22px;padding:22px 16px 14px;margin-top:14px;display:flex;flex-direction:column;align-items:center}
+.ringbig{position:relative;width:176px;height:176px;animation:tdbreathe 3s ease-in-out infinite}
+.ringbig .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ringbig .mid b{font-size:44px;line-height:1}.ringbig .mid b span{font-size:22px;color:var(--muted);font-weight:500}.ringbig .mid small{font-size:14px;color:var(--muted);margin-top:4px}
+.tdspin{transform-origin:88px 88px;animation:tdspin 2.4s linear infinite}
+@keyframes tdspin{to{transform:rotate(360deg)}}
+@keyframes tdbreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.tdsl{width:100%;margin-top:16px;border-top:1px solid #eef0f3}.tdsl .tdq{border-bottom:1px solid #eef0f3}.tdsl .tdq:last-child{border:none}
+.tdq i{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none}
+.tdq i.sp{border:2.5px solid var(--magenta);border-right-color:transparent;animation:tdspin 1s linear infinite}
+.tdq i.wt{background:#e08a00;animation:tdblink 1.4s ease-in-out infinite}
+.tdq i.ck{background:var(--ok)}
+@keyframes tdblink{0%,100%{opacity:1}50%{opacity:.25}}
+.tdkeep{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.tddot,.tdr .nd.c u,.tdnudge,.tdoff .b1,.tdoff .b2,.tdoff .b3,.ringbig,.tdspin,.tdq i.sp,.tdq i.wt{animation:none}.tddot{display:none}}
 </style>
 </head>
 <body>
@@ -2192,6 +2244,8 @@ $("#setClose").addEventListener("click", () => {
   document.body.classList.remove("locked");
 });
 
+var sendSt = null;
+function sendSet(o){ sendSt = o; try{ if(state.view === "today") paintToday(); }catch(e){} }
 function upProgress(done, total){
   const pct = total ? Math.round(done / total * 100) : 0;
   return '<div class="upl-h"><b>' + done + " of " + total + " files sent</b><span>" + pct + '%</span></div>'
@@ -2418,6 +2472,7 @@ function driveUpload(){
   /* sign in FIRST, while the tap is fresh - otherwise Chrome blocks the
      Google window and the upload fails */
   let token = null;
+  sendSet({phase: "prep", done: 0, total: 0});
   driveStatus("Signing in...");
   gToken(true).then(t => {
     token = t;
@@ -2444,7 +2499,9 @@ function driveUpload(){
     files.forEach((f, i) => {
       chain = chain.then(() => {
         if(driveSent[sentKey(folderName, f)]) return;
-        driveStatus(upProgress(files.filter(x => driveSent[sentKey(folderName, x)]).length, files.length));
+        const dn = files.filter(x => driveSent[sentKey(folderName, x)]).length;
+        sendSet({phase: "up", done: dn, total: files.length});
+        driveStatus(upProgress(dn, files.length));
         return uploadOne(f, ctx.id, ctx.token).then(() => { driveSent[sentKey(folderName, f)] = 1; });
       });
     });
@@ -2458,12 +2515,13 @@ function driveUpload(){
     tgMark(!tgReady() ? "Not set up" : (tgCfg().auto ? "Sending..." : "Not sent"));
     closedView = true; paintClose();
     saveJob(true, files.length);
+    sendSet(tgReady() && tgCfg().auto ? {phase: "tg", done: files.length, total: files.length} : null);
     tgAfterUpload();
     $("#startNext").style.display = "flex";
     window.scrollTo(0, 0);
     release();
   }).catch(err => {
-    release();
+    release(); sendSet(null);
     if(err && err.message === "cancelled"){ driveStatus(); return; }
     const sentN = files.filter(x => driveSent[sentKey(folderName, x)]).length;
     const left = files.length - sentN;
@@ -3242,8 +3300,8 @@ function tgAfterUpload(){
   const text = tgText();
   const base = $("#driveStatus").innerHTML;
   const done = html => driveStatus(base + "<br>" + html);
-  tgSend(text).then(() => { tgPostedFor = addr; tgMark("Posted"); done('<span class="pill ready">&#10003; Posted to Telegram</span>'); })
-    .catch(() => { tgQueue(text); tgPostedFor = addr; tgMark("Waiting for signal");
+  tgSend(text).then(() => { sendSet(null); tgPostedFor = addr; tgMark("Posted"); done('<span class="pill ready">&#10003; Posted to Telegram</span>'); })
+    .catch(() => { sendSet(null); tgQueue(text); tgPostedFor = addr; tgMark("Waiting for signal");
       done("<b style='color:#b3541e'>Telegram:</b> no signal, it will be posted later."); });
 }
 
@@ -3393,6 +3451,54 @@ function closeJob(){
   driveUpload();
 }
 
+
+/* Today guidance: A route with a slow dot, E ring while sending, D banner without signal */
+const TD_CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+function tdOfflineHtml(){
+  let tgN = 0; try{ tgN = JSON.parse(recall("tg_pending") || "[]").length; }catch(e){}
+  const q = [];
+  if(!uploadedOnce && (photos.length || composedAddress())) q.push('<div class="tdq"><span>' + (photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") + " and both forms" : "Both forms") + '</span><small>go to Drive when the signal is back</small></div>');
+  if(tgN) q.push('<div class="tdq"><span>Telegram report' + (tgN > 1 ? "s (" + tgN + ")" : "") + '</span><small>posts on its own</small></div>');
+  return '<div class="tdoff"><svg width="40" height="40" viewBox="0 0 40 40"><rect class="b1" x="6" y="24" width="6" height="10" rx="2" fill="#b36b00"/><rect class="b2" x="16" y="16" width="6" height="18" rx="2" fill="#b36b00"/><rect class="b3" x="26" y="7" width="6" height="27" rx="2" fill="#b36b00"/></svg>'
+    + '<div><b>No signal here</b><small>Keep working. Everything is saved on the phone.</small></div></div>'
+    + (q.length ? '<div class="tdqs"><h6>WAITING FOR SIGNAL</h6>' + q.join("") + '</div>' : "");
+}
+function tdSendHtml(){
+  const st = sendSt, R = 76, L = 2 * Math.PI * R;
+  const frac = st.phase === "up" && st.total ? st.done / st.total : (st.phase === "tg" ? 1 : 0.04);
+  const big = st.phase === "up" ? st.done + '<span> / ' + st.total + '</span>' : (st.phase === "tg" ? '&#10003;' : '&hellip;');
+  const sub = st.phase === "up" ? "files sent" : (st.phase === "tg" ? "sending report" : "getting ready");
+  return '<div class="tdsend"><div class="ringbig"><svg width="176" height="176" viewBox="0 0 176 176"><circle cx="88" cy="88" r="76" fill="none" stroke="#eceef2" stroke-width="12"/>'
+    + '<circle cx="88" cy="88" r="76" fill="none" stroke="#1b7f4a" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (frac * L).toFixed(1) + ' ' + L.toFixed(1) + '" transform="rotate(-90 88 88)" style="transition:stroke-dasharray .6s"/>'
+    + '<g class="tdspin"><circle cx="88" cy="88" r="76" fill="none" stroke="#d6006c" stroke-width="12" stroke-linecap="round" stroke-dasharray="40 437" transform="rotate(-90 88 88)"/></g></svg>'
+    + '<div class="mid"><b>' + big + '</b><small>' + sub + '</small></div></div>'
+    + '<div class="tdsl"><div class="tdq"><span><i class="' + (st.phase === "tg" ? "ck" : "sp") + '"></i>Google Drive</span><small>' + (st.phase === "up" ? st.done + " of " + st.total : (st.phase === "tg" ? "done" : "starting")) + '</small></div>'
+    + '<div class="tdq"><span><i class="' + (st.phase === "tg" ? "sp" : "wt") + '"></i>Telegram</span><small>' + (st.phase === "tg" ? "sending" : "right after Drive") + '</small></div></div>'
+    + '<p class="tdkeep">Keep the app open</p></div>';
+}
+function tdRouteHtml(rows, nxt, addr, name){
+  const cur = nxt ? rows.indexOf(nxt) : -1;
+  const sub = [["Fill the address and details", "Filled"], ["Hand the phone to the customer", "Signed"], [photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") + " ready" : "Add photos and send", "Sent"]];
+  const dots = cur > 0 ? '<i class="tddot"></i><i class="tddot b"></i><i class="tddot c"></i>' : "";
+  const done = Math.max(0, cur < 0 ? 3 : cur);
+  const rowsH = rows.map((r, i) => {
+    const st = r.ok ? "done" : (i === cur ? "cur" : "later");
+    const o = r.ok ? '<span class="nd">' + TD_CHECK + '</span>' : (i === cur ? '<span class="nd c"><u></u><u class="b"></u><em>' + (i + 1) + '</em></span>' : '<span class="nd l">' + (i + 1) + '</span>');
+    return '<button class="tdr ' + st + '" data-go="' + r.go + '">' + o + '<span class="tx"><b>' + r.t + '</b><small>' + (r.ok ? sub[i][1] : sub[i][0]) + '</small></span>' + (i === cur ? '<svg class="tdnudge" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>' : "") + '</button>';
+  }).join("");
+  return '<div class="tdroute"><div class="hd"><b>' + esc(addr || name || "Current job") + '</b>' + (name && addr ? '<small>' + esc(name) + '</small>' : "") + '</div>'
+    + '<div class="trk"><div class="ln"></div><div class="lg" style="height:' + (Math.min(done, 2) * 76) + 'px"></div>' + (cur > 0 ? '<div class="dts" style="top:' + (cur * 76) + 'px">' + dots + '</div>' : "") + rowsH + '</div></div>';
+}
+function tdActiveHtml(rows, okN, nxt, has, addr, name){
+  let h = "";
+  if(navigator.onLine === false) h += tdOfflineHtml();
+  if(sendSt) return h + tdSendHtml();
+  if(has) return h + tdRouteHtml(rows, nxt, addr, name);
+  return h + '<div class="actv" style="cursor:default"><div class="tt"><b>No job open</b><small>Tap New job when you arrive</small></div></div>';
+}
+window.addEventListener("online", () => { try{ if(state.view === "today") paintToday(); }catch(e){} });
+window.addEventListener("offline", () => { try{ if(state.view === "today") paintToday(); }catch(e){} });
+
 function paintToday(){
   const now = new Date();
   $("#tdDate").textContent = now.toLocaleDateString("en-US", {weekday: "long", month: "short", day: "numeric"});
@@ -3406,12 +3512,7 @@ function paintToday(){
   const okN = rows.filter(r => r.ok).length;
   const nxt = rows.find(r => !r.ok);
   const has = addr || name || photos.length;
-  const C = 144.5;
-  $("#tdActive").innerHTML = has
-    ? '<button class="actv" data-go="' + (nxt ? nxt.go : "close") + '"><div class="ring"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="#e6e8ec" stroke-width="6"/><circle cx="28" cy="28" r="23" fill="none" stroke="#d6006c" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (okN / rows.length * C) + ' ' + C + '" transform="rotate(-90 28 28)"/></svg><b>' + okN + "/" + rows.length + '</b></div>'
-      + '<div class="tt"><b>' + esc(addr || name || "Current job") + "</b>" + (name && addr ? "<small>" + esc(name) + "</small>" : "")
-      + "<em>" + (nxt ? "Next: <b style='display:inline;font-size:14px'>" + nxt.t.toLowerCase() + "</b>" : "All steps done") + "</em></div></button>"
-    : '<div class="actv" style="cursor:default"><div class="tt"><b>No job open</b><small>Tap New job when you arrive</small></div></div>';
+  $("#tdActive").innerHTML = tdActiveHtml(rows, okN, nxt, has, addr, name);
   $("#tdSteps").innerHTML = rows.map(r =>
     '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
     + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
