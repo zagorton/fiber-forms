@@ -337,8 +337,20 @@ input[type=text]:focus,textarea:focus{box-shadow:0 0 0 3px rgba(10,96,208,.15)}
 .tdhead{display:flex;align-items:flex-end;justify-content:space-between;padding:18px 4px 0}
 .tdhead small{display:block;font-size:14px;color:var(--muted)}
 .tdhead h1{margin:2px 0 0;font-size:34px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
-.tdhero{margin-top:14px}
+.tdhero{margin-top:14px;flex-direction:column;align-items:stretch;gap:0}
 .tdhero b{letter-spacing:-.5px}
+.tdhero .top{display:flex;align-items:center;justify-content:space-between}
+.tdy{margin-top:14px;padding-top:12px;border-top:1px solid #eef0f3}
+.tdy .yl{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--muted)}
+.tdy .yl b{font-size:17px;color:var(--text,#14161a);font-weight:700;display:inline}
+.ybar{height:10px;background:#eceef2;border-radius:5px;margin-top:8px;overflow:hidden;position:relative}
+.ybar i{display:block;height:100%;width:0;background:var(--ok);border-radius:5px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.ybar i.win{background:linear-gradient(90deg,var(--ok),#e0a800)}
+.tdy .ym b{display:inline;font-size:inherit;color:inherit;letter-spacing:0}
+.tdy .ym{font-size:14px;font-weight:500;margin-top:8px}
+.tdy .ym.win{color:#b36b00;font-weight:700}
+.tdy .ym.win::before{content:"\2605 "}
+body.hm :is(#tdYAmt,#tdYMsg b){filter:blur(7px);-webkit-user-select:none;user-select:none}
 .step{padding:15px 18px}
 .eye{width:44px;height:44px;border:none;background:none;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none}
 .eye svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9}
@@ -635,8 +647,13 @@ input,textarea{-webkit-user-select:text;user-select:text}
     <button class="eye hmEye" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
   </div>
   <div class="tdhero" id="tdHero">
-    <div><small>Earned today</small><b id="tdTotal">$0</b></div>
-    <span class="r" id="tdCount"></span>
+    <div class="top"><div><small>Earned today</small><b id="tdTotal">$0</b></div>
+    <span class="r" id="tdCount"></span></div>
+    <div class="tdy" id="tdYest" style="display:none">
+      <div class="yl"><span id="tdYLabel">Yesterday</span><b id="tdYAmt"></b></div>
+      <div class="ybar"><i id="tdYBar"></i></div>
+      <div class="ym" id="tdYMsg"></div>
+    </div>
   </div>
   <div id="tdActive"></div>
   <div class="sec" id="tdJobTitle" style="display:none">Steps</div>
@@ -3516,11 +3533,35 @@ function paintToday(){
   $("#tdSteps").innerHTML = rows.map(r =>
     '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
     + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
-  weekJobs(0).then(list => {
+  jobsAll().then(all => {
+    all = all || [];
     const key = now.toDateString();
+    const list = all;
     const today = list.filter(j => new Date(j.when).toDateString() === key);
-    $("#tdTotal").textContent = "$" + today.reduce((t, j) => t + (j.total || 0), 0);
+    const tot = today.reduce((t, j) => t + (j.total || 0), 0);
+    $("#tdTotal").textContent = "$" + tot;
     $("#tdCount").textContent = today.length + (today.length === 1 ? " job" : " jobs") + " today";
+    /* the last day before today that had jobs */
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const prev = all.filter(j => j.when < start).sort((a, b) => b.when - a.when)[0];
+    const yEl = $("#tdYest");
+    if(prev){
+      const pk = new Date(prev.when).toDateString();
+      const pj = all.filter(j => new Date(j.when).toDateString() === pk);
+      const yt = pj.reduce((t, j) => t + (j.total || 0), 0);
+      const yd = new Date(prev.when), yday = new Date(start - 86400000);
+      const lbl = yd.toDateString() === yday.toDateString() ? "Yesterday" : yd.toLocaleDateString("en-US", {weekday: "long"});
+      $("#tdYLabel").textContent = lbl + " \u00b7 " + pj.length + (pj.length === 1 ? " job" : " jobs");
+      $("#tdYAmt").textContent = "$" + yt;
+      const pct = yt > 0 ? Math.min(100, Math.round(tot / yt * 100)) : (tot > 0 ? 100 : 0);
+      const bar = $("#tdYBar"); bar.style.width = pct + "%"; bar.classList.toggle("win", yt > 0 && tot >= yt);
+      const m = $("#tdYMsg");
+      m.classList.toggle("win", yt > 0 && tot > yt);
+      m.innerHTML = yt <= 0 ? "" : tot > yt ? "You beat " + lbl.toLowerCase() + " by <b>$" + (tot - yt) + "</b>"
+        : tot === yt ? "Level with " + lbl.toLowerCase() + ". One more!"
+        : (tot === 0 ? lbl + " you made <b>$" + yt + "</b>. Beat it today?" : "<b>$" + (yt - tot) + "</b> more to beat " + lbl.toLowerCase());
+      yEl.style.display = "";
+    } else yEl.style.display = "none";
     $("#tdDoneTitle").style.display = today.length ? "" : "none";
     $("#tdDone").innerHTML = today.map(j => {
       const tm = new Date(j.when).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
