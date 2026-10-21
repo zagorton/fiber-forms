@@ -455,16 +455,17 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <div class="t">2nd visit<small>$50 instead of the install</small></div>
       <div class="chips swbox"><div class="chip sw" data-group="w_second" data-v="yes"></div></div>
     </div>
-    <div class="swrow">
-      <div class="t">No extender in stock</div>
-      <div class="chips swbox"><div class="chip sw" data-group="w_nox" data-v="yes"></div></div>
-    </div>
   </div>
 
   <div class="sec">Notes for Skedulo
     <button class="btn btn-ghost btn-sm aside" id="copyNotes" style="margin-left:auto"><svg viewBox="0 0 24 24" style="width:15px;height:15px"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy</button></div>
   <div class="card" style="padding:4px">
     <textarea id="w_notes" rows="6" style="background:#fff"></textarea>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:12px">
+    <button class="btn btn-magenta" id="savePay" style="flex:1">Save to pay</button>
+    <button class="btn btn-ghost" id="postTg" style="flex:1;display:none">Post to Telegram</button>
   </div>
 
   <div class="sec">History</div>
@@ -560,15 +561,23 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     <div id="histList"></div>
   </div>
   <div class="sheet-foot">
+    <button class="btn btn-ghost" id="histAdd" style="margin-bottom:8px">+ Add job</button>
     <button class="btn btn-magenta" id="histExport"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export week to Excel</button>
   </div>
 </div>
 
 <div class="overlay sheet" id="editOverlay">
-  <div class="sheet-head"><button class="done" id="editCancel" style="justify-self:start">Cancel</button><h3>Edit job</h3><button class="done" id="editSave">Save</button></div>
+  <div class="sheet-head"><button class="done" id="editCancel" style="justify-self:start">Cancel</button><h3 id="editTitle">Edit job</h3><button class="done" id="editSave">Save</button></div>
   <div class="sheet-body">
     <div class="total"><small>You earn</small><b id="editTotal">$0</b><div class="pchips" id="editLine"></div></div>
-    <div class="sec" id="editAddr"></div>
+    <div class="card">
+      <div class="f"><label for="e_date">Day</label>
+        <input type="date" id="e_date"></div>
+      <div class="f"><label for="e_addr">Address</label>
+        <input type="text" id="e_addr" autocomplete="off" placeholder="Street, city"></div>
+      <div class="f"><label for="e_cust">Customer</label>
+        <input type="text" id="e_cust" autocomplete="off" autocapitalize="words" placeholder="optional"></div>
+    </div>
     <div class="card">
       <div class="row">
         <div class="f"><label for="e_ft">Line extension, ft</label>
@@ -587,10 +596,6 @@ body.locked{overflow:hidden;position:fixed;width:100%}
       <div class="swrow" data-e="second">
         <div class="t">2nd visit<small>$50 instead of the install</small></div>
         <div class="chips swbox"><div class="chip sw" id="e_second"></div></div>
-      </div>
-      <div class="swrow" data-e="nox">
-        <div class="t">No extender in stock</div>
-        <div class="chips swbox"><div class="chip sw" id="e_nox"></div></div>
       </div>
     </div>
     <div class="sec">Notes for Skedulo</div>
@@ -619,6 +624,21 @@ body.locked{overflow:hidden;position:fixed;width:100%}
         <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
     </div>
     <p class="foot-note">From your lead. Pasted once per phone.</p>
+    <div class="sec">Telegram group</div>
+    <div class="card">
+      <div class="f"><label for="tg_token">Bot token</label>
+        <input type="password" id="tg_token" autocomplete="off" placeholder="123456:ABC..."></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0 6px">
+        <div style="flex:1;min-width:0" id="tgStatus"></div>
+        <button class="btn btn-ghost btn-sm" id="tgFind" style="flex:none">Find group</button>
+        <button class="btn btn-ghost btn-sm" id="tgTest" style="flex:none">Test</button>
+      </div>
+      <div class="swrow" id="tgAutoRow"><div class="t">Post report when job is uploaded</div>
+        <div class="chips swbox"><div class="chip sw" id="tgAuto"></div></div></div>
+      <div class="swrow" id="tgXlsRow"><div class="t">Send Excel to the group</div>
+        <div class="chips swbox"><div class="chip sw" id="tgXls"></div></div></div>
+    </div>
+    <p class="foot-note">In Telegram: @BotFather &rarr; new bot &rarr; copy the token. Add the bot to your group and send /start there. Then tap Find group.</p>
     <div class="sec">Photo stamp preview</div>
     <div id="stampBox" style="background:#1c1c1e;color:#fff;border-radius:var(--r);
          padding:12px 14px;text-align:right;font-size:12.5px;line-height:1.45;
@@ -1956,6 +1976,7 @@ $("#dest").addEventListener("click", () => { if($("#dest").classList.contains("w
 
 function openSettings(){
   paintDest(); refreshStamp(); showStorage();
+  try{ tgPaint(); }catch(e){}
   $("#setOverlay").classList.add("on");
   document.body.classList.add("locked");
 }
@@ -2211,6 +2232,8 @@ function driveUpload(){
               + files.length + " files are in <b>" + GD.folderName
               + " / " + folderName + "</b>.");
     uploadedOnce = true;
+    saveJob(true, files.length);
+    tgAfterUpload();
     $("#startNext").style.display = "flex";
     $("#startNext").scrollIntoView({behavior:"smooth", block:"center"});
     release();
@@ -2229,7 +2252,8 @@ $("#startNext").addEventListener("click", () => {
 
 /* wipes everything about this customer, keeps the technician's own settings */
 function resetJob(){
-  saveJob(uploadedOnce, photos.length);
+  saveJob(uploadedOnce, photos.length, null, true);
+  currentJobId = null; currentJobWhen = null; tgPostedFor = "";
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
   uploadedOnce = false;
@@ -2512,8 +2536,7 @@ function buildNotes(){
   L.push("Line extension - " + (f.ft > 100 ? "extra" : f.ft + " ft"));
   if(ch) L.push(ch + " drop re-entry + splice");
   L.push("Splice at the house - inside+outside " + f.splices);
-  L.push("WiFi extender - " + f.extenders
-         + (state.checks.w_nox === "yes" ? "  X" : ""));
+  L.push("WiFi extender - " + f.extenders);
   return L.join("\n");
 }
 
@@ -2581,12 +2604,14 @@ const jobsDel = id => jobsRun("readwrite", st => st.delete(id));
 const jobsPut = j  => jobsRun("readwrite", st => st.put(j));
 const jobsGet = id => jobsRun("readonly",  st => st.get(id));
 
-function saveJob(uploaded, fileCount){
-  const addr = composedAddress();
+let currentJobId = null, currentJobWhen = null;
+function saveJob(uploaded, fileCount, addrOverride, final){
+  const addr = addrOverride || composedAddress();
   if(!addr) return Promise.resolve();
   const f = jobFigures();
-  return jobsAdd({
-    when: Date.now(), address: addr,
+  if(!currentJobWhen) currentJobWhen = Date.now();
+  const rec = {
+    when: currentJobWhen, address: addr,
     customer: ($("#c_customer").value || "").trim(),
     notes: $("#w_notes").value,
     ch: ($("#w_ch").value || "").trim(), nox: state.checks.w_nox === "yes",
@@ -2594,7 +2619,13 @@ function saveJob(uploaded, fileCount){
     install: f.install, line: f.line, splice: f.splice,
     extender: f.extender, second: f.second, total: f.total,
     uploaded: !!uploaded, files: fileCount || 0
-  }).catch(e => console.error("job save failed", e));
+  };
+  if(currentJobId != null){
+    rec.id = currentJobId;
+    return jobsPut(rec).catch(e => console.error("job save failed", e));
+  }
+  return jobsAdd(rec).then(id => { if(!final) currentJobId = id; })
+                     .catch(e => console.error("job save failed", e));
 }
 
 /* --- week helpers --- */
@@ -2707,7 +2738,7 @@ function editNotesText(f){
   L.push("Line extension - " + (f.ft > 100 ? "extra" : f.ft + " ft"));
   if(ch) L.push(ch + " drop re-entry + splice");
   L.push("Splice at the house - inside+outside " + f.splices);
-  L.push("WiFi extender - " + f.extenders + (editNox ? "  X" : ""));
+  L.push("WiFi extender - " + f.extenders);
   return L.join("\n");
 }
 function refreshEdit(){
@@ -2724,7 +2755,6 @@ function refreshEdit(){
 }
 function paintEditSwitches(){
   $("#e_second").classList.toggle("on", editSecond);
-  $("#e_nox").classList.toggle("on", editNox);
 }
 function openEdit(id){
   jobsGet(id).then(j => {
@@ -2740,7 +2770,11 @@ function openEdit(id){
     editNox = j.nox != null ? !!j.nox : /WiFi extender - \d+\s+X/.test(notes);
     $("#e_notes").value = notes;
     editNotesTouched = true;      /* keep the stored notes until a figure changes */
-    $("#editAddr").textContent = j.address || "";
+    $("#editTitle").textContent = "Edit job";
+    $("#e_date").value = dateInput(new Date(j.when));
+    $("#e_addr").value = j.address || "";
+    $("#e_cust").value = j.customer || "";
+    editDay0 = $("#e_date").value;
     paintEditSwitches();
     refreshEdit();
     $("#editOverlay").classList.add("on");
@@ -2755,25 +2789,52 @@ $("#e_ch").addEventListener("blur", () => {
 });
 $("#editOverlay").addEventListener("click", e => {
   const r = e.target.closest(".swrow");
-  if(!r) return;
+  if(!r || !e.target.closest(".chip")) return;   /* a row tap is forwarded to its chip by the global handler */
   if(r.dataset.e === "second") editSecond = !editSecond; else editNox = !editNox;
   editNotesTouched = false;
   paintEditSwitches(); refreshEdit();
 });
 $("#editCancel").addEventListener("click", () => $("#editOverlay").classList.remove("on"));
+let editDay0 = "";
+const dateInput = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+function openAdd(){
+  const [, , mon] = weekBounds(weekOffset);
+  const day = weekOffset === 0 ? new Date() : mon;
+  editJob = {isNew: true};
+  $("#editTitle").textContent = "Add job";
+  ["e_ft","e_spl","e_ext","e_ch","e_addr","e_cust"].forEach(id => $("#"+id).value = "");
+  $("#e_date").value = dateInput(day);
+  editDay0 = "";
+  editSecond = false; editNox = false; editNotesTouched = false;
+  paintEditSwitches(); refreshEdit();
+  $("#editOverlay").classList.add("on");
+}
 $("#editSave").addEventListener("click", () => {
   if(!editJob) return;
+  const addr = ($("#e_addr").value || "").trim();
+  if(!addr){ alert("Type the address of the job."); return; }
   const f = editFigures();
-  Object.assign(editJob, {
+  let when = editJob.when || Date.now();
+  const dv = $("#e_date").value;
+  if(dv && dv !== editDay0){
+    const p = dv.split("-").map(Number);
+    when = new Date(p[0], p[1]-1, p[2], 12, 0, 0).getTime();
+  }
+  const rec = Object.assign({}, editJob, {
+    when: when, address: addr, customer: ($("#e_cust").value || "").trim(),
     ft: f.ft, splices: f.splices, extenders: f.extenders, isSecond: editSecond,
     install: f.install, line: f.line, splice: f.splice, extender: f.extender,
     second: f.second, total: f.total,
-    ch: ($("#e_ch").value || "").trim(), nox: editNox, notes: $("#e_notes").value
+    ch: ($("#e_ch").value || "").trim(), nox: false, notes: $("#e_notes").value,
+    uploaded: editJob.uploaded || false, files: editJob.files || 0
   });
-  jobsPut(editJob).then(() => {
+  delete rec.isNew;
+  const done = () => {
     $("#editOverlay").classList.remove("on");
     renderHistory(); paintWeekMini();
-  }).catch(err => alert("Could not save: " + (err && err.message || err)));
+  };
+  (editJob.id != null ? jobsPut(rec) : jobsAdd(rec)).then(done)
+    .catch(err => alert("Could not save: " + (err && err.message || err)));
 });
 $("#openHistory").addEventListener("click", () => {
   weekOffset = 0;
@@ -2786,6 +2847,7 @@ $("#histClose").addEventListener("click", () => {
   $("#histOverlay").classList.remove("on");
   document.body.classList.remove("locked");
 });
+$("#histAdd").addEventListener("click", openAdd);
 $("#histPrev").addEventListener("click", () => { weekOffset--; renderHistory(); });
 $("#histNext").addEventListener("click", () => { weekOffset++; renderHistory(); });
 
@@ -2807,9 +2869,138 @@ $("#histExport").addEventListener("click", () => {
                + fmtCell(b).replace(/\//g,"-") + ".xlsx";
     const blob = new Blob([buildXLSX(out, "Week")],
       {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
-    saveToDevice({blob: blob, name: name, type: blob.type});
+    const cfg = tgCfg();
+    if(tgReady() && cfg.xls){
+      tgSendFile(blob, name, "Week " + fmtCell(a) + " - " + fmtCell(b) + "  $" + sum)
+        .then(() => alert("Excel sent to the group."))
+        .catch(e => { alert("Telegram failed (" + e.message + "). Saving on the phone instead.");
+                      saveToDevice({blob: blob, name: name, type: blob.type}); });
+    } else {
+      saveToDevice({blob: blob, name: name, type: blob.type});
+    }
   });
 });
+
+
+/* ---------------- Telegram group ---------------------------------------- */
+let tgPostedFor = "";
+const tgCfg = () => ({ token: recall("tg_token"), chat: recall("tg_chat"),
+                       title: recall("tg_title"),
+                       auto: recall("tg_auto") !== "0", xls: recall("tg_xls") !== "0" });
+const tgReady = () => { const c = tgCfg(); return !!(c.token && c.chat); };
+
+/* simple requests only (form body, no JSON header) so the browser does not need a preflight */
+function tgApi(method, params, file){
+  const c = tgCfg();
+  if(!c.token) return Promise.reject(new Error("No bot token"));
+  const fd = new FormData();
+  Object.keys(params || {}).forEach(k => fd.append(k, params[k]));
+  if(file) fd.append(file.field, file.blob, file.name);
+  return fetch("https://api.telegram.org/bot" + c.token + "/" + method, {method: "POST", body: fd})
+    .then(r => r.json())
+    .then(j => { if(!j.ok) throw new Error(j.description || "Telegram error"); return j.result; });
+}
+const tgSend = text => tgApi("sendMessage", {chat_id: tgCfg().chat, text: text});
+const tgSendFile = (blob, name, caption) =>
+  tgApi("sendDocument", {chat_id: tgCfg().chat, caption: caption || ""}, {field: "document", blob: blob, name: name});
+
+function tgText(){
+  const addr = composedAddress() || "";
+  let notes = ($("#w_notes").value || "").trim();
+  if(!notes) notes = buildNotes();
+  const waiting = state.checks.svc === "Waiting";
+  const mark = waiting ? "❌" : "✅";
+  return addr + "\n\n" + notes + "\n\n" + mark + " $" + jobFigures().total;
+}
+
+/* a message that could not be sent (no signal) waits here and goes out later */
+function tgQueue(text){
+  let q = []; try{ q = JSON.parse(recall("tg_pending") || "[]"); }catch(e){}
+  q.push(text); store("tg_pending", JSON.stringify(q));
+}
+function tgFlush(){
+  if(!tgReady() || navigator.onLine === false) return;
+  let q = []; try{ q = JSON.parse(recall("tg_pending") || "[]"); }catch(e){}
+  if(!q.length) return;
+  store("tg_pending", "[]");
+  q.reduce((p, t) => p.then(() => tgSend(t)), Promise.resolve())
+   .catch(() => { q.forEach(tgQueue); });
+}
+window.addEventListener("online", tgFlush);
+setTimeout(tgFlush, 3000);
+
+function tgPaint(){
+  const c = tgCfg();
+  $("#tg_token").value = c.token;
+  $("#tgStatus").innerHTML = (c.token && c.chat)
+    ? '<span class="pill ready">&#10003; ' + esc(c.title || "Group connected") + '</span>'
+    : '<span class="pill">Not connected</span>';
+  $("#tgAuto").classList.toggle("on", c.auto);
+  $("#tgXls").classList.toggle("on", c.xls);
+  $("#postTg").style.display = (c.token && c.chat) ? "" : "none";
+}
+$("#tg_token").addEventListener("change", () => {
+  store("tg_token", $("#tg_token").value.trim()); store("tg_chat", ""); store("tg_title", ""); tgPaint();
+});
+$("#tgFind").addEventListener("click", () => {
+  store("tg_token", $("#tg_token").value.trim());
+  tgApi("getUpdates", {allowed_updates: JSON.stringify(["message","my_chat_member"]), limit: 100})
+    .then(list => {
+      let found = null;
+      list.slice().reverse().some(u => {
+        const o = u.my_chat_member || u.message || {};
+        const ch = o.chat;
+        if(ch && (ch.type === "group" || ch.type === "supergroup")){ found = ch; return true; }
+        return false;
+      });
+      if(!found){ alert("No group found yet. Add the bot to the group, send /start there, then tap Find group again."); return; }
+      store("tg_chat", String(found.id)); store("tg_title", found.title || "Group");
+      tgPaint();
+    })
+    .catch(e => alert("Telegram: " + e.message));
+});
+$("#tgTest").addEventListener("click", () => {
+  if(!tgReady()){ alert("Connect the group first."); return; }
+  tgSend("Test from Fiber Forms").then(() => alert("Sent. Check your group."))
+    .catch(e => alert("Telegram: " + e.message));
+});
+$("#tgAuto").addEventListener("click", () => { store("tg_auto", tgCfg().auto ? "0" : "1"); tgPaint(); });
+$("#tgXls").addEventListener("click",  () => { store("tg_xls",  tgCfg().xls  ? "0" : "1"); tgPaint(); });
+
+/* after a successful Drive upload: post the report once per job */
+function tgAfterUpload(){
+  const c = tgCfg();
+  if(!(c.token && c.chat && c.auto)) return;
+  const addr = composedAddress() || "";
+  if(tgPostedFor && tgPostedFor === addr) return;
+  const text = tgText();
+  const base = $("#driveStatus").innerHTML;
+  const done = html => driveStatus(base + "<br>" + html);
+  tgSend(text).then(() => { tgPostedFor = addr; done('<span class="pill ready">&#10003; Posted to Telegram</span>'); })
+    .catch(() => { tgQueue(text); tgPostedFor = addr;
+      done("<b style='color:#b3541e'>Telegram:</b> no signal, it will be posted later."); });
+}
+
+/* Pay tab buttons */
+$("#postTg").addEventListener("click", () => {
+  if(!tgReady()){ openSettings(); return; }
+  const text = tgText();
+  tgSend(text).then(() => { alert("Posted to Telegram."); })
+    .catch(e => { tgQueue(text); alert("No signal. It will be posted later."); });
+});
+let paySaved = false;
+$("#savePay").addEventListener("click", () => {
+  let addr = composedAddress();
+  if(!addr){
+    addr = (window.prompt("Address of this job:") || "").trim();
+    if(!addr) return;
+  }
+  saveJob(uploadedOnce, photos.length, addr).then(() => {
+    paySaved = true; paintWeekMini();
+    const b = $("#savePay"); b.textContent = "Saved ✓"; setTimeout(() => { b.textContent = "Save to pay"; }, 1800);
+  });
+});
+tgPaint();
 
 /* ---------------- views ------------------------------------------------ */
 function setTabs(v){
