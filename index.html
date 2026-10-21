@@ -655,7 +655,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
     <button class="btn btn-ghost" id="sigClear">Clear</button>
     <button class="btn btn-primary" id="sigDone">Done</button>
   </div>
-  <button class="btn-link" id="sigCancel" style="color:#aeaeb2;margin-top:8px">Cancel</button>
+  <button class="btn-link" id="sigCancel" style="color:#636366;margin-top:8px;font-size:12px">Hold to go back</button>
 </div>
 
 <canvas id="out" style="display:none"></canvas>
@@ -1052,7 +1052,15 @@ function closePad(){
 }
 $("#sigSlot").addEventListener("click", openPad);
 $("#sigClear").addEventListener("click", () => { state.strokes = []; redrawPad(); });
-$("#sigCancel").addEventListener("click", closePad);
+/* the customer holds the phone here: leaving takes a deliberate 1-second hold, so nobody wanders into the pay screen by accident */
+(function(){
+  let t = null;
+  const b = $("#sigCancel");
+  const stop = () => { clearTimeout(t); t = null; };
+  b.addEventListener("pointerdown", () => { stop(); t = setTimeout(() => { t = null; closePad(); }, 1000); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev => b.addEventListener(ev, stop));
+  b.addEventListener("contextmenu", e => e.preventDefault());
+})();
 $("#sigDone").addEventListener("click", () => {
   state.strokes = state.strokes.filter(s => s.length > 1);
   closePad();
