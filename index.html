@@ -7,25 +7,25 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fiber Forms">
-<meta name="theme-color" content="#f9f9fb">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Fiber Install Forms</title>
 <style>
 /* ---- look: iOS-style grouped lists, one accent, calm greys ---- */
 :root{
-  --ink:#1c1c1e; --muted:#8a8a8e; --line:#e3e3e8; --bg:#f2f2f7; --card:#fff;
-  --field:#f2f2f7; --hair:#ececf0; --seg:#e9e9ee;
-  --bar:rgba(249,249,251,.92); --shade:rgba(0,0,0,.05);
-  --accent:#0a7aff; --ok:#1f9d55; --green:#34c759; --warn:#d9731a; --magenta:#e20074;
-  --r:14px;
+  --ink:#14161a; --muted:#5f6670; --line:#e6e8ec; --bg:#f6f7f9; --card:#fff;
+  --field:#f1f2f5; --hair:#ececf0; --seg:#eceef2;
+  --bar:rgba(255,255,255,.94); --shade:rgba(0,0,0,.05);
+  --accent:#0a60d0; --ok:#1b7f4a; --green:#2e9e4f; --warn:#d9731a; --magenta:#d6006c;
+  --r:18px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{
   overscroll-behavior:none; background:var(--bg); color:var(--ink);
-  font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  font:16px/1.4 Roboto,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased; padding:0 0 150px;
 }
 svg{stroke-linecap:round;stroke-linejoin:round}
@@ -309,6 +309,50 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 .doctile .lbl.warn{background:rgba(217,115,26,.92)}
 .status{display:flex;flex-direction:column;gap:10px}
 #stampBox{font-variant-numeric:tabular-nums}
+
+/* ---- v57 look: flat white header with underline tabs, roomier cards, one pink action ---- */
+header{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--line);padding-bottom:0}
+.tabs{background:none;padding:0;gap:0;border-radius:0}
+.tab{border-radius:0;padding:12px 2px 10px;color:var(--muted);font-size:14.5px;font-weight:500;
+  border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab.on{background:none;box-shadow:none;color:var(--ink);font-weight:700;border-bottom-color:var(--magenta)}
+#jobBar{padding:6px 2px 8px}
+.sec{margin:26px 20px 9px;font-size:12.5px;font-weight:500;letter-spacing:.07em}
+.card{padding:16px 18px}
+.card + .card{margin-top:14px}
+.foot-note{margin:8px 20px 0}
+input[type=text],textarea{border-radius:12px;padding:13px 14px}
+input[type=text]:focus,textarea:focus{box-shadow:0 0 0 3px rgba(10,96,208,.15)}
+.chips{border-radius:12px;padding:3px}
+.chip{border-radius:10px;padding:9px 6px}
+.chip.on{box-shadow:0 1px 3px rgba(10,96,208,.3)}
+.btn{border-radius:14px;padding:15px;min-height:52px}
+.btn-sm{min-height:0;padding:8px 14px}
+.bar{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none;border-top:1px solid var(--line)}
+.tg{border-radius:14px;min-height:48px;border:1px solid var(--line)}
+.sigslot{border-radius:14px}
+.sheet-head{background:#fff;border-bottom:1px solid var(--line)}
+.sheet-foot{background:#fff;border-top:1px solid var(--line)}
+.navrow{padding:15px 16px 15px 16px}
+.tdhead{display:flex;align-items:flex-end;justify-content:space-between;padding:18px 4px 0}
+.tdhead small{display:block;font-size:14px;color:var(--muted)}
+.tdhead h1{margin:2px 0 0;font-size:34px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+.tdhero{margin-top:14px}
+.tdhero b{letter-spacing:-.5px}
+.step{padding:15px 18px}
+.eye{width:44px;height:44px;border:none;background:none;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none}
+.eye svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9}
+.eye .x{display:none}
+.eye.off .x{display:block}
+.eye.off .o{display:none}
+.sec .eye{width:32px;height:32px;margin:-6px 0}
+.sec .eye svg{width:20px;height:20px}
+input[type=password]{width:100%;padding:13px 14px;font-size:17px;border:1px solid transparent;border-radius:12px;
+  background:var(--field);color:var(--ink);font-family:inherit;-webkit-appearance:none}
+input[type=password]:focus{outline:none;background:#fff;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,96,208,.15)}
+/* amounts are blurred while "hide amounts" is on */
+body.hm :is(.total b, .total .pchips, #tdTotal, #weekMini, #histTotal, .jrow .p, #tdDone .v, .bars .v, #savePay){filter:blur(7px);-webkit-user-select:none;user-select:none}
+body.hm #savePay{filter:none}
 </style>
 </head>
 <body>
@@ -452,7 +496,7 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 
 <!-- ============================== PAY =============================== -->
 <div class="wrap view" id="v-work" style="display:none">
-  <div class="sec">This job</div>
+  <div class="sec">This job <button class="eye hmEye aside" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
   <div class="total">
     <small>You earn</small>
     <b id="payTotal">$0</b>
@@ -504,8 +548,12 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 <!-- ============================= PHOTOS ============================= -->
 <!-- ============================= TODAY ============================== -->
 <div class="wrap view" id="v-today" style="display:none">
+  <div class="tdhead">
+    <div><small id="tdDate"></small><h1>Today</h1></div>
+    <button class="eye hmEye" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
+  </div>
   <button class="tdhero" id="tdHero" aria-label="Open history">
-    <div><small id="tdDate"></small><b id="tdTotal">$0</b></div>
+    <div><small>Earned today</small><b id="tdTotal">$0</b></div>
     <span class="r" id="tdCount"></span>
   </button>
   <div class="sec" id="tdJobTitle">Current job</div>
@@ -677,6 +725,11 @@ body.locked{overflow:hidden;position:fixed;width:100%}
         <div class="chips swbox"><div class="chip sw" id="tgXls"></div></div></div>
     </div>
     <p class="foot-note">Create a bot in @BotFather and paste its token. Add the bot to your group, send /start@botname there, then tap Find group.</p>
+    <div class="sec">Privacy</div>
+    <div class="card">
+      <div class="swrow" id="hmRow"><div class="t">Hide amounts<small>Blurs money on Today, Pay and History. Tap the eye to show.</small></div>
+        <div class="chips swbox"><div class="chip sw" id="hmSw"></div></div></div>
+    </div>
     <div class="sec">Photo stamp preview</div>
     <div id="stampBox" style="background:#1c1c1e;color:#fff;border-radius:var(--r);
          padding:12px 14px;text-align:right;font-size:12.5px;line-height:1.45;
@@ -3098,6 +3151,18 @@ $("#savePay").addEventListener("click", () => {
   });
 });
 tgPaint();
+
+/* ---------------- hide amounts ------------------------------------------ */
+const hmOn = () => recall("hm") !== "0";
+function hmApply(){
+  document.body.classList.toggle("hm", hmOn());
+  $$(".hmEye").forEach(b => b.classList.toggle("off", hmOn()));
+  const sw = $("#hmSw"); if(sw) sw.classList.toggle("on", hmOn());
+}
+function hmToggle(){ store("hm", hmOn() ? "0" : "1"); hmApply(); }
+document.addEventListener("click", e => { if(e.target.closest(".hmEye")) hmToggle(); });
+$("#hmSw").addEventListener("click", hmToggle);
+hmApply();
 
 /* ---------------- views ------------------------------------------------ */
 function setTabs(v){
