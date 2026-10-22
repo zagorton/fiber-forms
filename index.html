@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -534,6 +534,64 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
 .sg-note{margin:6px 0 14px;font-size:13px;color:var(--muted);line-height:1.4}
 .sec .pill{text-transform:none;letter-spacing:0;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
 #v-close .sec{white-space:nowrap}
+
+/* ---- v67 review fixes ---- */
+.qrow .chip{min-height:44px}
+.btn-sm{min-height:44px}
+#stepStrip button{min-height:44px}
+::placeholder{color:#7a828c;opacity:1}
+
+/* ---- v67 scanner ---- */
+.scanrow{display:flex;gap:8px}
+.scanrow input{flex:1;min-width:0}
+.scanbtn{flex:none;width:56px;min-height:48px;border:none;border-radius:12px;background:var(--magenta);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.scanbtn svg,#scanClose svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+body.noscan .scanbtn{display:none}
+body.noscan .scanrow input{width:100%}
+#scanOv{position:fixed;inset:0;z-index:150;background:#0d0f12;color:#fff;display:none}
+#scanOv.on{display:block}
+#scanVid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scan-top{position:absolute;left:0;right:0;top:0;display:grid;grid-template-columns:56px 1fr 56px;align-items:center;
+  padding:calc(12px + env(safe-area-inset-top)) 12px 12px;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent)}
+.scan-top b{text-align:center;font-size:17px;font-weight:600}
+#scanClose{width:48px;height:48px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+.scan-frame{position:absolute;left:50%;top:38%;width:min(72vw,320px);aspect-ratio:1;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:22px;
+  box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
+.scan-sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;color:var(--ink);border-radius:24px 24px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom))}
+.scan-sheet .sc-h{font-size:15px;color:var(--muted)}
+.scan-sheet .sc-r{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #eef0f3}
+.scan-sheet .sc-r:last-of-type{border-bottom:none}
+.scan-sheet .sc-r span{font-size:14px;color:var(--muted);flex:none}
+.scan-sheet .sc-r b{font-size:19px;letter-spacing:.02em;overflow-wrap:anywhere;text-align:right}
+.scan-sheet .sc-b{display:flex;gap:10px;margin-top:14px}
+.scan-sheet .sc-b .btn{flex:1}
+
+/* ---- v67 polish: contrast, touch targets, motion ---- */
+:root{--muted:#4b525c;--warn:#9a5200}
+.tdhead h1{font-size:30px}
+.chip.sw{background:#c3c7ce}
+.chip.sw.on{background:var(--green)}
+.step .o,.tg .ck{border-color:#8a919b}
+.btn[disabled]{opacity:1;background:#e3e5ea;color:#6b727c}
+.fclear::after{content:"";position:absolute;inset:-12px}
+.jrow .del,.weeknav button{min-width:44px;min-height:44px}
+button:focus-visible,.tab:focus-visible,.chip:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
+
+/* ---- v68 Today header ---- */
+.tdhead small{text-transform:uppercase;letter-spacing:.08em;font-size:12.5px;font-weight:600;color:var(--muted)}
+.tdhead h1{font-size:30px;margin-top:4px}
+.tdhero{background:linear-gradient(135deg,#1b1e25 0%,#34123a 100%);color:#fff;box-shadow:0 10px 28px rgba(20,22,26,.18);padding:20px}
+.tdhero small{color:rgba(255,255,255,.75)}
+.tdhero b#tdTotal{font-size:48px;color:#6fe3a0;letter-spacing:-1px}
+.tdhero span.r{color:#fff;background:rgba(255,255,255,.14);border-radius:99px;padding:6px 12px;font-size:14px;font-weight:600}
+.tdhero .tdw{display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18);font-size:14px;color:rgba(255,255,255,.75)}
+.tdhero .tdw b{display:inline;font-size:18px;font-weight:700;color:#fff;letter-spacing:0}
+.tdhero .tdy{border-top-color:rgba(255,255,255,.18)}
+.tdhero .tdy .yl{color:rgba(255,255,255,.75)}
+.tdhero .tdy .yl b{color:#fff}
+.tdhero .tdy .ym{color:#6fe3a0}
+body.hm #tdWeekAmt{filter:blur(7px);-webkit-user-select:none;user-select:none}
 </style>
 </head>
 <body>
@@ -573,7 +631,7 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
     <div class="f"><label for="c_customer">Name</label>
       <input type="text" id="c_customer" autocomplete="off" autocapitalize="words"></div>
     <div class="f"><label for="c_email">Email</label>
-      <input type="text" id="c_email" autocomplete="off" inputmode="email"
+      <input type="text" id="c_email" autocomplete="email" autocapitalize="none" spellcheck="false" inputmode="email"
              placeholder="name@example.com"></div>
     <div class="f"><label for="c_street">Address &mdash; paste the whole thing</label>
       <input type="text" id="c_street" autocomplete="off" autocapitalize="words"
@@ -615,9 +673,11 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
     <div class="f"><label for="c_model">Router model</label>
       <input type="text" id="c_model" autocomplete="off"></div>
     <div class="f"><label for="c_routerSn">Router serial #</label>
-      <input type="text" id="c_routerSn" autocomplete="off" autocapitalize="characters"></div>
-    <div class="f"><label for="c_extender">Extender serial # &amp; MAC</label>
-      <input type="text" id="c_extender" autocomplete="off" autocapitalize="characters"></div>
+      <div class="scanrow"><input type="text" id="c_routerSn" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button type="button" class="scanbtn" id="scanRouter" aria-label="Scan router label"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M11 8v8M15 8v8M18 8v8"/></svg></button></div></div>
+    <div class="f"><label for="c_extender">Extender serial #</label>
+      <div class="scanrow"><input type="text" id="c_extender" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button type="button" class="scanbtn" id="scanExt" aria-label="Scan extender barcode"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M11 8v8M15 8v8M18 8v8"/></svg></button></div></div>
   </div>
 
   <div class="sec">Speed test</div>
@@ -698,11 +758,12 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
 <!-- ============================= TODAY ============================== -->
 <div class="wrap view" id="v-today" style="display:none">
   <div class="tdhead">
-    <div><small id="tdDate"></small><h1>Today</h1></div>
+    <div><small id="tdDate"></small><h1 id="tdHello"></h1></div>
   </div>
   <div class="tdhero" id="tdHero">
     <div class="top"><div><small>Earned today</small><b id="tdTotal">$0</b></div>
     <span class="r" id="tdCount"></span></div>
+    <div class="tdw"><span id="tdWeekLbl">This week</span><b id="tdWeekAmt">$0</b></div>
     <div class="tdy" id="tdYest" style="display:none">
       <div class="yl"><span id="tdYLabel">Yesterday</span><b id="tdYAmt"></b></div>
       <div class="ym" id="tdYMsg"></div>
@@ -761,7 +822,7 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
     <div class="row">
       <div class="f"><label for="w_spl">Splices</label>
         <input type="text" id="w_spl" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-      <div class="f"><label for="w_ext">Extenders given</label>
+      <div class="f"><label for="w_ext">Wi-Fi extenders</label>
         <input type="text" id="w_ext" autocomplete="off" inputmode="numeric" placeholder="0"></div>
     </div>
   </div>
@@ -843,7 +904,7 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
 </div>
 
 <div class="overlay sheet" id="histOverlay">
-  <div class="sheet-head"><span></span><h3>History</h3><button class="done" id="histClose">Done</button></div>
+  <div class="sheet-head"><span></span><h3>Week</h3><button class="done" id="histClose">Done</button></div>
   <div class="sheet-body">
     <div class="weeknav">
       <button id="histPrev" aria-label="Previous week">&lsaquo;</button>
@@ -885,7 +946,7 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
       <div class="row">
         <div class="f"><label for="e_spl">Splices</label>
           <input type="text" id="e_spl" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-        <div class="f"><label for="e_ext">Extenders given</label>
+        <div class="f"><label for="e_ext">Wi-Fi extenders</label>
           <input type="text" id="e_ext" autocomplete="off" inputmode="numeric" placeholder="0"></div>
       </div>
     </div>
@@ -901,6 +962,13 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
   </div>
 </div>
 
+<div id="scanOv">
+  <video id="scanVid" playsinline muted></video>
+  <div class="scan-top"><button type="button" id="scanClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><b id="scanTitle"></b><span></span></div>
+  <div class="scan-frame" id="scanFrame"></div>
+  <div class="scan-sheet" id="scanSheet"></div>
+</div>
+
 <div id="sendOv"></div>
 
 <div class="overlay sheet" id="setOverlay">
@@ -909,7 +977,7 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
 
     <div class="sgroup">
       <div class="sg-h"><span class="sic drive"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
-        <div><b>Google Drive</b><small>Each job gets its own folder, named by address</small></div>
+        <div><b>Google Drive</b></div>
         <span id="setDriveState"></span></div>
       <div class="sg-row"><div style="flex:1;min-width:0" id="setFolder"></div>
         <button class="btn btn-ghost btn-sm" id="pickFolderBtn" style="flex:none">Choose folder</button></div>
@@ -925,7 +993,7 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
 
     <div class="sgroup">
       <div class="sg-h"><span class="sic tg"><svg viewBox="0 0 24 24"><path d="M22 3L11 14"/><path d="M22 3l-7 19-4-8-8-4z"/></svg></span>
-        <div><b>Telegram</b><small>Report to your group after every job</small></div>
+        <div><b>Telegram</b></div>
         <span id="tgStatus"></span></div>
       <div class="swrow" id="tgAutoRow"><div class="t">Post report after upload</div>
         <div class="chips swbox"><div class="chip sw" id="tgAuto"></div></div></div>
@@ -946,13 +1014,13 @@ body.sending #tabbar,body.sending #newJobFab{display:none !important}
     <div class="sgroup">
       <div class="sg-h"><span class="sic priv"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
         <div><b>Privacy</b></div></div>
-      <div class="swrow" id="hmRow"><div class="t">Hide amounts<small>Blurs money on Today, Week and Pay</small></div>
+      <div class="swrow" id="hmRow"><div class="t">Hide amounts</div>
         <div class="chips swbox"><div class="chip sw" id="hmSw"></div></div></div>
     </div>
 
     <div class="sgroup">
       <div class="sg-h"><span class="sic stamp"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-        <div><b>Photo stamp</b><small>This text is printed on every photo</small></div></div>
+        <div><b>Photo stamp</b></div></div>
       <div id="stampBox" style="background:#1c1c1e;color:#fff;border-radius:14px;margin:4px 0 12px;
            padding:12px 14px;text-align:right;font-size:12.5px;line-height:1.45;
            white-space:pre-line"></div>
@@ -2341,7 +2409,10 @@ function wake(on){
   try{
     if(on){
       if(navigator.wakeLock && !wakeLock) navigator.wakeLock.request("screen")
-        .then(l => { wakeLock = l; l.addEventListener("release", () => { wakeLock = null; }); }).catch(() => {});
+        .then(l => {
+          if(!sendSt){ l.release(); return; }
+          wakeLock = l; l.addEventListener("release", () => { wakeLock = null; });
+        }).catch(() => {});
     } else if(wakeLock){ wakeLock.release(); wakeLock = null; }
   }catch(e){}
 }
@@ -2355,7 +2426,7 @@ function sendOvPaint(){
   if(!el.classList.contains("on") || !g){
     const a = composedAddress() || "";
     el.innerHTML = '<div class="so-h"><b>Closing the job</b>' + (a ? "<small>" + esc(a) + "</small>" : "") + "</div>"
-      + t.innerHTML + '<button class="btn btn-quiet so-hide" id="soHide">Hide &mdash; keeps sending</button>';
+      + t.innerHTML + '<button class="btn btn-quiet so-hide" id="soHide">Hide (still sending)</button>';
     el.classList.add("on"); document.body.classList.add("sending"); wake(true);
     return;
   }
@@ -2363,6 +2434,7 @@ function sendOvPaint(){
   el.querySelector(".mid").innerHTML = t.querySelector(".mid").innerHTML;
   el.querySelector(".tdsl").innerHTML = t.querySelector(".tdsl").innerHTML;
 }
+document.addEventListener("visibilitychange", () => { if(!document.hidden && sendSt && !soHidden) wake(true); });
 document.addEventListener("click", e => {
   if(e.target.closest("#soHide")){ soHidden = true; $("#sendOv").classList.remove("on"); document.body.classList.remove("sending"); }
 });
@@ -2482,6 +2554,7 @@ $("#pickFolderBtn").addEventListener("click", pickFolder);
 function gFetch(url, opts, token){
   opts = opts || {};
   opts.headers = Object.assign({Authorization: "Bearer " + token}, opts.headers || {});
+  if(!opts.signal && window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(90000);
   return fetch(url, opts).then(r => r.json().then(j => {
     if(!r.ok) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
     return j;
@@ -2606,8 +2679,8 @@ function driveUpload(){
               : Promise.resolve());
   }).then(() => {
     const left = files.filter(f => !driveSent[sentKey(folderName, f)]).length;
-    if(!confirm("Upload " + left + (left === files.length ? "" : " remaining") + " files into\n\n"
-                + GD.folderName + " / " + folderName + " ?")){
+    if(left !== files.length && !confirm("Send the remaining " + left + " files into\n\n"
+                + GD.folderName + " / " + folderName + "?")){
       throw new Error("cancelled");
     }
     return token;
@@ -2628,8 +2701,8 @@ function driveUpload(){
     return chain;
   }).then(() => {
     driveStatus('<span class="pill ready">&#10003; Uploaded</span><br>'
-              + files.length + " files are in <b>" + GD.folderName
-              + " / " + folderName + "</b>.");
+              + files.length + " files are in <b>" + esc(GD.folderName)
+              + " / " + esc(folderName) + "</b>.");
     uploadedOnce = true;
     $("#clcFiles").textContent = files.length + (files.length === 1 ? " file" : " files");
     tgMark(!tgReady() ? "Not set up" : (tgCfg().auto ? "Sending..." : "Not sent"));
@@ -2863,7 +2936,7 @@ function zipStore(files) {
   return out;
 }
 
-function esc(s){ return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+function esc(s){ return String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
                           .replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
 function sheetXML(rows) {
@@ -2928,10 +3001,10 @@ const num = id => { const v = parseFloat(($("#"+id).value||"").replace(/[^\d.]/g
 
 function jobFigures(){
   const second = state.checks.w_second === "yes";
-  const ft  = num("w_ft"), spl = num("w_spl"), ext = num("w_ext");
+  const ft  = Math.min(num("w_ft"), 5000), spl = Math.min(Math.floor(num("w_spl")), 99), ext = Math.min(Math.floor(num("w_ext")), 99);
   const f = {
     install:  second ? 0 : PAY.install,
-    line:     Math.ceil(ft / 30) * PAY.per30ft,
+    line:     second ? 0 : Math.ceil(ft / 30) * PAY.per30ft,
     extender: ext * PAY.extender,
     splice:   spl * PAY.splice,
     second:   second ? PAY.secondVisit : 0
@@ -3154,10 +3227,10 @@ let editJob = null, editNotesTouched = false, editSecond = false, editNox = fals
 const enumv = id => { const v = parseFloat(($("#"+id).value||"").replace(/[^\d.]/g,""));
                       return isNaN(v) ? 0 : v; };
 function editFigures(){
-  const ft = enumv("e_ft"), spl = enumv("e_spl"), ext = enumv("e_ext");
+  const ft = Math.min(enumv("e_ft"), 5000), spl = Math.min(Math.floor(enumv("e_spl")), 99), ext = Math.min(Math.floor(enumv("e_ext")), 99);
   const f = {
     install: editSecond ? 0 : PAY.install,
-    line: Math.ceil(ft / 30) * PAY.per30ft,
+    line: editSecond ? 0 : Math.ceil(ft / 30) * PAY.per30ft,
     extender: ext * PAY.extender, splice: spl * PAY.splice,
     second: editSecond ? PAY.secondVisit : 0
   };
@@ -3335,7 +3408,8 @@ function tgApi(method, params, file){
   const fd = new FormData();
   Object.keys(params || {}).forEach(k => fd.append(k, params[k]));
   if(file) fd.append(file.field, file.blob, file.name);
-  return fetch("https://api.telegram.org/bot" + c.token + "/" + method, {method: "POST", body: fd})
+  const sig = (window.AbortSignal && AbortSignal.timeout) ? AbortSignal.timeout(file ? 90000 : 25000) : undefined;
+  return fetch("https://api.telegram.org/bot" + c.token + "/" + method, {method: "POST", body: fd, signal: sig})
     .then(r => r.json())
     .then(j => { if(!j.ok) throw new Error(j.description || "Telegram error"); return j.result; });
 }
@@ -3360,11 +3434,19 @@ function tgQueue(text){
 function tgFlush(){
   if(!tgReady() || navigator.onLine === false) return;
   let q = []; try{ q = JSON.parse(recall("tg_pending") || "[]"); }catch(e){}
-  if(!q.length) return;
-  store("tg_pending", "[]");
-  q.reduce((p, t) => p.then(() => tgSend(t)), Promise.resolve())
-   .catch(() => { q.forEach(tgQueue); });
+  if(!q.length || tgFlushing) return;
+  tgFlushing = true;
+  const next = () => {
+    let cur = []; try{ cur = JSON.parse(recall("tg_pending") || "[]"); }catch(e){}
+    if(!cur.length){ tgFlushing = false; return; }
+    tgSend(cur[0]).then(() => {
+      let now = []; try{ now = JSON.parse(recall("tg_pending") || "[]"); }catch(e){}
+      now.shift(); store("tg_pending", JSON.stringify(now)); next();
+    }).catch(() => { tgFlushing = false; });
+  };
+  next();
 }
+var tgFlushing = false;
 window.addEventListener("online", tgFlush);
 setTimeout(tgFlush, 3000);
 
@@ -3414,9 +3496,9 @@ $("#tgXls").addEventListener("click",  () => { store("tg_xls",  tgCfg().xls  ? "
 /* after a successful Drive upload: post the report once per job */
 function tgAfterUpload(){
   const c = tgCfg();
-  if(!(c.token && c.chat && c.auto)) return;
+  if(!(c.token && c.chat && c.auto)){ sendSet(null); return; }
   const addr = composedAddress() || "";
-  if(tgPostedFor && tgPostedFor === addr) return;
+  if(tgPostedFor && tgPostedFor === addr){ sendSet(null); return; }
   const text = tgText();
   const base = $("#driveStatus").innerHTML;
   const done = html => driveStatus(base + "<br>" + html);
@@ -3457,6 +3539,112 @@ function hmToggle(){ store("hm", hmOn() ? "0" : "1"); hmApply(); }
 document.addEventListener("click", e => { if(e.target.closest(".hmEye")) hmToggle(); });
 $("#hmSw").addEventListener("click", hmToggle);
 hmApply();
+
+
+/* ---------------- scan the router label (QR) or an extender barcode ----------------
+   The square code on a Nokia router holds lines like (S)serial (ID)wifi name (KY)wifi key.
+   Needs BarcodeDetector (Chrome on Android). Elsewhere the buttons stay hidden and
+   everything is typed by hand, exactly as before. */
+const SCAN_OK = !!(window.BarcodeDetector && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+if(!SCAN_OK) document.body.classList.add("noscan");
+let scanStream = null, scanTimer = 0, scanDet = null, scanMode = "router", scanFound = null, scanBusy = false;
+
+function parseLabel(raw){
+  const o = {};
+  String(raw || "").split(/[\r\n]+/).forEach(line => {
+    const m = line.match(/^\(([0-9A-Z]+)\)(.+)$/);
+    if(m) o[m[1]] = m[2].trim();
+  });
+  return o.S ? {serial: o.S.toUpperCase(), wifi: o.ID || "", pw: o.KY || o.P || ""} : null;
+}
+function scanPick(raw){
+  const t = String(raw || "").trim();
+  const lab = parseLabel(t);
+  if(scanMode === "router"){
+    if(lab) return lab;
+    if(/^ALCL[A-Z0-9]{8}$/i.test(t)) return {serial: t.toUpperCase()};
+    return null;
+  }
+  if(lab) return {ext: lab.serial};
+  return /^[A-Za-z0-9:\-]{6,40}$/.test(t) ? {ext: t.toUpperCase()} : null;
+}
+function scanSheetHtml(){
+  if(!scanFound) return '<div class="sc-h">' + (scanMode === "router" ? "Point at the square code on the router label" : "Point at the barcode on the extender") + "</div>";
+  const r = scanFound, rows = [];
+  if(r.serial) rows.push(["Serial", r.serial]);
+  if(r.wifi) rows.push(["Wi-Fi name", r.wifi]);
+  if(r.pw) rows.push(["Wi-Fi password", r.pw]);
+  if(r.ext) rows.push(["Extender serial", r.ext]);
+  return '<div class="sc-h">Found on the label</div>'
+    + rows.map(x => '<div class="sc-r"><span>' + x[0] + "</span><b>" + esc(x[1]) + "</b></div>").join("")
+    + '<div class="sc-b"><button class="btn btn-ghost" id="scanAgain">Scan again</button><button class="btn btn-magenta" id="scanUse">Use these</button></div>';
+}
+function scanPaint(){ $("#scanSheet").innerHTML = scanSheetHtml(); }
+function scanTick(){
+  if(!scanStream || scanFound) return;
+  const v = $("#scanVid");
+  if(v.readyState >= 2 && !scanBusy){
+    scanBusy = true;
+    scanDet.detect(v).then(list => {
+      scanBusy = false;
+      for(let i = 0; i < list.length; i++){
+        const r = scanPick(list[i].rawValue);
+        if(r){ scanFound = r; try{ navigator.vibrate && navigator.vibrate(40); }catch(e){} scanPaint(); return; }
+      }
+    }).catch(() => { scanBusy = false; });
+  }
+  scanTimer = setTimeout(scanTick, 150);
+}
+function scanClose(){
+  clearTimeout(scanTimer); scanTimer = 0; scanFound = null;
+  if(scanStream){ scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  $("#scanVid").srcObject = null;
+  $("#scanOv").classList.remove("on");
+  document.body.classList.remove("locked");
+}
+function scanOpen(mode){
+  if(!SCAN_OK) return;
+  scanMode = mode; scanFound = null;
+  $("#scanTitle").textContent = mode === "router" ? "Scan the router label" : "Scan the extender";
+  scanPaint();
+  $("#scanOv").classList.add("on");
+  document.body.classList.add("locked");
+  navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: "environment"}, width: {ideal: 1280}}, audio: false}).then(stream => {
+    scanStream = stream;
+    const v = $("#scanVid"); v.srcObject = stream; v.play().catch(() => {});
+    return BarcodeDetector.getSupportedFormats().catch(() => []);
+  }).then(sup => {
+    const want = ["qr_code", "code_128", "code_39", "code_93", "data_matrix", "ean_13", "itf"];
+    const use = want.filter(f => !sup.length || sup.indexOf(f) >= 0);
+    scanDet = new BarcodeDetector({formats: use.length ? use : undefined});
+    scanTick();
+  }).catch(() => {
+    $("#scanSheet").innerHTML = '<div class="sc-h">The camera is not available. Allow the camera for this app, or type the number.</div>'
+      + '<div class="sc-b"><button class="btn btn-ghost" id="scanAgain" style="display:none"></button><button class="btn btn-magenta" id="scanShut">Close</button></div>';
+  });
+}
+function scanSet(id, v){
+  const el = document.getElementById(id); if(!el || !v) return;
+  el.value = v;
+  el.dispatchEvent(new Event("input", {bubbles: true}));
+  el.dispatchEvent(new Event("change", {bubbles: true}));
+}
+function scanUse(){
+  const r = scanFound; if(!r) return;
+  if(r.serial) scanSet("c_routerSn", r.serial);
+  if(r.wifi) scanSet("c_wifiname", r.wifi);
+  if(r.pw) scanSet("c_wifipw", r.pw);
+  if(r.ext) scanSet("c_extender", r.ext);
+  scanClose();
+}
+$("#scanRouter").addEventListener("click", () => scanOpen("router"));
+$("#scanExt").addEventListener("click", () => scanOpen("ext"));
+$("#scanClose").addEventListener("click", scanClose);
+$("#scanOv").addEventListener("click", e => {
+  if(e.target.closest("#scanUse")) scanUse();
+  else if(e.target.closest("#scanAgain")){ scanFound = null; scanPaint(); scanTick(); }
+  else if(e.target.closest("#scanShut")) scanClose();
+});
 
 /* ---------------- views ------------------------------------------------ */
 function setTabs(v){
@@ -3632,6 +3820,8 @@ window.addEventListener("offline", () => { try{ if(state.view === "today") paint
 function paintToday(){
   const now = new Date();
   $("#tdDate").textContent = now.toLocaleDateString("en-US", {weekday: "long", month: "short", day: "numeric"});
+  { const hr = now.getHours(), nm = (recall("techName") || "").trim().split(/\s+/)[0];
+    $("#tdHello").textContent = (hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening") + (nm ? ", " + nm : ""); }
   const name = ($("#c_customer").value || "").trim();
   const addr = composedAddress() || "";
   const rows = [
@@ -3654,6 +3844,10 @@ function paintToday(){
     const tot = today.reduce((t, j) => t + (j.total || 0), 0);
     $("#tdTotal").textContent = "$" + tot;
     $("#tdCount").textContent = today.length + (today.length === 1 ? " job" : " jobs") + " today";
+    { const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)).getTime();
+      const wkJobs = all.filter(j => j.when >= mon);
+      $("#tdWeekLbl").textContent = "This week \u00b7 " + wkJobs.length + (wkJobs.length === 1 ? " job" : " jobs");
+      $("#tdWeekAmt").textContent = "$" + wkJobs.reduce((t, j) => t + (j.total || 0), 0); }
     /* the last day before today that had jobs */
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const prev = all.filter(j => j.when < start).sort((a, b) => b.when - a.when)[0];
