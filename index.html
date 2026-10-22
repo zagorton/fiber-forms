@@ -483,6 +483,57 @@ input,textarea{-webkit-user-select:text;user-select:text}
 @keyframes tdblink{0%,100%{opacity:1}50%{opacity:.25}}
 .tdkeep{margin:6px 0 0;font-size:14px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.tddot,.tdr .nd.c u,.tdnudge,.tdoff .b1,.tdoff .b2,.tdoff .b3,.ringbig,.tdspin,.tdq i.sp,.tdq i.wt{animation:none}.tddot{display:none}}
+
+/* ---- v67 polish ---- */
+body.onweek #histOverlay,body.onset #setOverlay{bottom:0}
+#tabbar button{min-width:0}
+body.onset #tabbar{z-index:120}
+body.sending #tabbar,body.sending #newJobFab{display:none !important}
+.dest.warn{font-weight:600}
+.card + .total{margin-top:16px}
+.total{background:#eaf6ef;border:1px solid #cfe9d9}
+.total small{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#3d7a57}
+.total b{color:var(--ok)}
+.total .pchips span{background:#fff}
+#sendOv{position:fixed;inset:0;z-index:140;background:var(--bg);display:none;flex-direction:column;align-items:center;
+  justify-content:center;padding:calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));overflow:auto}
+#sendOv.on{display:flex}
+#sendOv .so-h{text-align:center;margin-bottom:18px;width:100%;max-width:420px}
+#sendOv .so-h b{display:block;font-size:26px;font-weight:700;letter-spacing:-.3px}
+#sendOv .so-h small{display:block;font-size:14.5px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+#sendOv .tdsend{margin:0;width:100%;max-width:420px;padding:32px 20px 18px;box-shadow:0 8px 30px rgba(20,22,26,.07)}
+#sendOv .ringbig{width:230px;height:230px}
+#sendOv .ringbig svg{width:100%;height:100%}
+#sendOv .ringbig .mid b{font-size:54px}
+#sendOv .ringbig .mid b span{font-size:26px}
+#sendOv .ringbig .mid small{font-size:15px}
+#sendOv .tdkeep{margin:14px 0 4px;font-size:15px;font-weight:500}
+#sendOv .so-hide{margin-top:10px;font-size:14px;color:var(--muted)}
+.sgroup{background:#fff;border-radius:20px;padding:4px 16px 4px;margin-top:16px}
+.sg-h{display:flex;align-items:center;gap:12px;padding:14px 0 12px}
+.sg-h > div{flex:1;min-width:0}
+.sg-h b{display:block;font-size:17px;font-weight:600}
+.sg-h small{display:block;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.3}
+.sic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.sic svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sic.drive{background:#e8f0fe;color:#1a62d6}.sic.tg{background:#e1f3fb;color:#0a86bd}
+.sic.priv{background:#f0eafb;color:#6b43c9}.sic.stamp{background:#fff0de;color:#c46a0a}
+.sg-row{display:flex;align-items:center;gap:8px;padding:12px 0;border-top:1px solid #eef0f3}
+.sgroup .swrow{border-top:1px solid #eef0f3;margin-top:0;padding:14px 0}
+.sgroup .swrow + .swrow{margin-top:0;padding-top:14px}
+.sdet{border-top:1px solid #eef0f3}
+.sdet summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:15px 0;font-size:16px;font-weight:500;-webkit-tap-highlight-color:transparent}
+.sdet summary::-webkit-details-marker{display:none}
+.sdet summary small{margin-left:auto;color:var(--muted);font-weight:400;font-size:13px}
+.sdet summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+  transform:rotate(45deg);margin:-3px 2px 0 6px;transition:transform .2s;flex:none}
+.sdet[open] summary::after{transform:rotate(-135deg);margin-top:3px}
+.sdet .f{padding-bottom:8px}
+.sg-btns{display:flex;gap:8px;padding:2px 0 6px}
+.sg-btns .btn{flex:1}
+.sg-note{margin:6px 0 14px;font-size:13px;color:var(--muted);line-height:1.4}
+.sec .pill{text-transform:none;letter-spacing:0;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+#v-close .sec{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -648,8 +699,6 @@ input,textarea{-webkit-user-select:text;user-select:text}
 <div class="wrap view" id="v-today" style="display:none">
   <div class="tdhead">
     <div><small id="tdDate"></small><h1>Today</h1></div>
-    <div style="display:flex"><button class="eye" id="tdSettings" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
-    <button class="eye hmEye" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
   </div>
   <div class="tdhero" id="tdHero">
     <div class="top"><div><small>Earned today</small><b id="tdTotal">$0</b></div>
@@ -700,7 +749,6 @@ input,textarea{-webkit-user-select:text;user-select:text}
       <button class="btn-link" id="arrBtn" style="display:none"></button>
       <button id="galBtn" style="display:none"></button>
     </div>
-    <p class="foot-note" id="addrWarn" style="display:none;color:var(--warn)">No address &mdash; fill in Checklist</p>
 
   <div class="sec">Work done <button class="eye hmEye aside" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
   <div class="card">
@@ -780,7 +828,8 @@ input,textarea{-webkit-user-select:text;user-select:text}
 
 <button id="newJobFab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New job</button>
 <nav id="tabbar"><button id="tbToday" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Today</button>
-  <button id="tbWeek"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button></nav>
+  <button id="tbWeek"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
+  <button id="tbSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button></nav>
 
 <div class="bar" id="bar">
   <div id="upBox">
@@ -852,51 +901,64 @@ input,textarea{-webkit-user-select:text;user-select:text}
   </div>
 </div>
 
+<div id="sendOv"></div>
+
 <div class="overlay sheet" id="setOverlay">
   <div class="sheet-head"><span></span><h3>Settings</h3><button class="done" id="setClose">Done</button></div>
   <div class="sheet-body">
-    <div class="sec">Upload folder <span class="aside" id="setDriveState"></span></div>
-    <div class="card">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="flex:1;min-width:0" id="setFolder"></div>
-        <button class="btn btn-ghost btn-sm" id="pickFolderBtn" style="flex:none">Choose</button>
-      </div>
+
+    <div class="sgroup">
+      <div class="sg-h"><span class="sic drive"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+        <div><b>Google Drive</b><small>Each job gets its own folder, named by address</small></div>
+        <span id="setDriveState"></span></div>
+      <div class="sg-row"><div style="flex:1;min-width:0" id="setFolder"></div>
+        <button class="btn btn-ghost btn-sm" id="pickFolderBtn" style="flex:none">Choose folder</button></div>
+      <details class="sdet" id="gKeysDet">
+        <summary>Google keys<small>paste once per phone</small></summary>
+        <div class="f"><label for="g_client">OAuth Client ID</label>
+          <input type="text" id="g_client" autocomplete="off"
+                 placeholder="1234-abcd.apps.googleusercontent.com"></div>
+        <div class="f"><label for="g_key">API key</label>
+          <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
+      </details>
     </div>
-    <p class="foot-note">Each job gets its own subfolder, named by address.</p>
-    <div class="sec">Google keys</div>
-    <div class="card">
-      <div class="f"><label for="g_client">OAuth Client ID</label>
-        <input type="text" id="g_client" autocomplete="off"
-               placeholder="1234-abcd.apps.googleusercontent.com"></div>
-      <div class="f"><label for="g_key">API key</label>
-        <input type="text" id="g_key" autocomplete="off" placeholder="AIza..."></div>
-    </div>
-    <p class="foot-note">Paste once per phone.</p>
-    <div class="sec">Telegram group</div>
-    <div class="card">
-      <div class="f"><label for="tg_token">Bot token</label>
-        <input type="password" id="tg_token" autocomplete="off" placeholder="123456:ABC..."></div>
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 0 6px">
-        <div style="flex:1;min-width:0" id="tgStatus"></div>
-        <button class="btn btn-ghost btn-sm" id="tgFind" style="flex:none">Find group</button>
-        <button class="btn btn-ghost btn-sm" id="tgTest" style="flex:none">Test</button>
-      </div>
+
+    <div class="sgroup">
+      <div class="sg-h"><span class="sic tg"><svg viewBox="0 0 24 24"><path d="M22 3L11 14"/><path d="M22 3l-7 19-4-8-8-4z"/></svg></span>
+        <div><b>Telegram</b><small>Report to your group after every job</small></div>
+        <span id="tgStatus"></span></div>
       <div class="swrow" id="tgAutoRow"><div class="t">Post report after upload</div>
         <div class="chips swbox"><div class="chip sw" id="tgAuto"></div></div></div>
       <div class="swrow" id="tgXlsRow"><div class="t">Send Excel to group</div>
         <div class="chips swbox"><div class="chip sw" id="tgXls"></div></div></div>
+      <details class="sdet" id="tgTokDet">
+        <summary>Bot setup<small>token and group</small></summary>
+        <div class="f"><label for="tg_token">Bot token</label>
+          <input type="password" id="tg_token" autocomplete="off" placeholder="123456:ABC..."></div>
+        <div class="sg-btns">
+          <button class="btn btn-ghost btn-sm" id="tgFind">Find group</button>
+          <button class="btn btn-ghost btn-sm" id="tgTest">Test</button>
+        </div>
+        <p class="sg-note">Create a bot in @BotFather and paste its token. Add the bot to your group, send /start@botname there, then tap Find group.</p>
+      </details>
     </div>
-    <p class="foot-note">Create a bot in @BotFather and paste its token. Add the bot to your group, send /start@botname there, then tap Find group.</p>
-    <div class="sec">Privacy</div>
-    <div class="card">
-      <div class="swrow" id="hmRow"><div class="t">Hide amounts<small>Blurs money on Today, Pay and History. Tap the eye to show.</small></div>
+
+    <div class="sgroup">
+      <div class="sg-h"><span class="sic priv"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+        <div><b>Privacy</b></div></div>
+      <div class="swrow" id="hmRow"><div class="t">Hide amounts<small>Blurs money on Today, Week and Pay</small></div>
         <div class="chips swbox"><div class="chip sw" id="hmSw"></div></div></div>
     </div>
-    <div class="sec">Photo stamp preview</div>
-    <div id="stampBox" style="background:#1c1c1e;color:#fff;border-radius:var(--r);
-         padding:12px 14px;text-align:right;font-size:12.5px;line-height:1.45;
-         white-space:pre-line"></div>
-    <p class="foot-note" id="storageNote"></p>
+
+    <div class="sgroup">
+      <div class="sg-h"><span class="sic stamp"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+        <div><b>Photo stamp</b><small>This text is printed on every photo</small></div></div>
+      <div id="stampBox" style="background:#1c1c1e;color:#fff;border-radius:14px;margin:4px 0 12px;
+           padding:12px 14px;text-align:right;font-size:12.5px;line-height:1.45;
+           white-space:pre-line"></div>
+    </div>
+
+    <p class="foot-note" id="storageNote" style="text-align:center;margin:18px 16px 8px"></p>
   </div>
 </div>
 
@@ -1735,8 +1797,6 @@ function composedAddress(){
 
 function refreshStamp(){
   $("#stampBox").textContent = stampLines(new Date()).join("\n");
-  const has = ($("#c_street").value || "").trim() || ($("#c_city").value || "").trim();
-  $("#addrWarn").style.display = has ? "none" : "block";
   if(window.__destReady) paintDest();
 }
 ["c_street","c_city","c_county","c_state"].forEach(id => {
@@ -2219,16 +2279,21 @@ const ICON_FOLDER = '<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 
 function paintDest(){
   const el = $("#dest");
   if(!el) return;
-  let warn = false, html;
+  let warn = false, html, act = "settings";
   if(!GD.clientId || !GD.apiKey){
     warn = true; html = ICON_FOLDER + "<b>Connect Google Drive &rsaquo;</b>";
   } else if(!GD.folderId){
     warn = true; html = ICON_FOLDER + "<b>Choose a Drive folder &rsaquo;</b>";
   } else {
     const addr = composedAddress();
-    html = ICON_FOLDER + "<span>To</span><b>" + esc(GD.folderName) + " &rsaquo; "
-         + (addr ? esc(addr) : '<span style="color:var(--warn)">no address yet</span>') + "</b>";
+    if(addr){
+      html = ICON_FOLDER + "<span>Uploads to</span><b>" + esc(addr) + "</b>";
+    } else {
+      warn = true; act = "checklist";
+      html = ICON_FOLDER + "<b>Add the address in Checklist &rsaquo;</b>";
+    }
   }
+  el.dataset.act = act;
   el.innerHTML = html;
   el.classList.toggle("warn", warn);
   const f = $("#setFolder");
@@ -2237,24 +2302,70 @@ function paintDest(){
     : '<span class="pill">No folder yet</span>';
 }
 window.__destReady = true;
-$("#dest").addEventListener("click", () => { if($("#dest").classList.contains("warn")) openSettings(); });
+$("#dest").addEventListener("click", () => {
+  const d = $("#dest");
+  if(!d.classList.contains("warn")) return;
+  if(d.dataset.act === "checklist") setView("checklist"); else openSettings();
+});
 
 function openSettings(){
   paintDest(); refreshStamp(); showStorage();
   try{ tgPaint(); }catch(e){}
   $("#setDriveState").innerHTML = (GD.clientId && GD.apiKey && GD.folderId)
     ? '<span class="pill ready">&#10003; Connected</span>' : '<span class="pill">Not connected</span>';
+  const gd = $("#gKeysDet"); if(gd) gd.open = !(GD.clientId && GD.apiKey);
+  const td = $("#tgTokDet"); if(td){ const c = tgCfg(); td.open = !(c.token && c.chat); }
+  if($("#histOverlay").classList.contains("on")) $("#histClose").click();
   $("#setOverlay").classList.add("on");
   document.body.classList.add("locked");
+  try{ tabbarSync(); }catch(e){}
+  const sb = $("#setOverlay .sheet-body"); if(sb) sb.scrollTop = 0;
 }
 $("#openSettings").addEventListener("click", openSettings);
 $("#setClose").addEventListener("click", () => {
   $("#setOverlay").classList.remove("on");
   document.body.classList.remove("locked");
+  try{ tabbarSync(); }catch(e){}
 });
 
 var sendSt = null;
-function sendSet(o){ sendSt = o; try{ if(state.view === "today") paintToday(); }catch(e){} }
+var soHidden = false;
+function sendSet(o){
+  sendSt = o;
+  if(!o || o.phase === "prep") soHidden = false;
+  try{ sendOvPaint(); }catch(e){ console.error(e); }
+  try{ if(state.view === "today") paintToday(); }catch(e){}
+}
+var wakeLock = null;
+function wake(on){
+  try{
+    if(on){
+      if(navigator.wakeLock && !wakeLock) navigator.wakeLock.request("screen")
+        .then(l => { wakeLock = l; l.addEventListener("release", () => { wakeLock = null; }); }).catch(() => {});
+    } else if(wakeLock){ wakeLock.release(); wakeLock = null; }
+  }catch(e){}
+}
+/* full-screen sending window: shown from any tab while files go to Drive and Telegram */
+function sendOvPaint(){
+  const el = document.getElementById("sendOv"); if(!el) return;
+  if(!sendSt){ el.classList.remove("on"); document.body.classList.remove("sending"); wake(false); return; }
+  if(soHidden) return;
+  const t = document.createElement("div"); t.innerHTML = tdSendHtml();
+  const g = el.querySelector(".rg");
+  if(!el.classList.contains("on") || !g){
+    const a = composedAddress() || "";
+    el.innerHTML = '<div class="so-h"><b>Closing the job</b>' + (a ? "<small>" + esc(a) + "</small>" : "") + "</div>"
+      + t.innerHTML + '<button class="btn btn-quiet so-hide" id="soHide">Hide &mdash; keeps sending</button>';
+    el.classList.add("on"); document.body.classList.add("sending"); wake(true);
+    return;
+  }
+  g.setAttribute("stroke-dasharray", t.querySelector(".rg").getAttribute("stroke-dasharray"));
+  el.querySelector(".mid").innerHTML = t.querySelector(".mid").innerHTML;
+  el.querySelector(".tdsl").innerHTML = t.querySelector(".tdsl").innerHTML;
+}
+document.addEventListener("click", e => {
+  if(e.target.closest("#soHide")){ soHidden = true; $("#sendOv").classList.remove("on"); document.body.classList.remove("sending"); }
+});
 function upProgress(done, total){
   const pct = total ? Math.round(done / total * 100) : 0;
   return '<div class="upl-h"><b>' + done + " of " + total + " files sent</b><span>" + pct + '%</span></div>'
@@ -3386,11 +3497,14 @@ function startJob(){
 function tabbarSync(v){
   v = v || state.view;
   const wk = $("#histOverlay").classList.contains("on");
-  $("#tabbar").style.display = (wk || v === "today") ? "flex" : "none";
-  $("#newJobFab").style.display = (!wk && v === "today") ? "inline-flex" : "none";
-  $("#tbToday").classList.toggle("on", !wk);
+  const st = $("#setOverlay").classList.contains("on");
+  $("#tabbar").style.display = (!wk && !st && v === "today") ? "flex" : "none";
+  $("#newJobFab").style.display = (!wk && !st && v === "today") ? "inline-flex" : "none";
+  $("#tbToday").classList.toggle("on", !wk && !st);
   $("#tbWeek").classList.toggle("on", wk);
+  $("#tbSettings").classList.toggle("on", st);
   document.body.classList.toggle("onweek", wk);
+  document.body.classList.toggle("onset", st);
 }
 function navPaint(v){
   const h = document.querySelector("header"), tb = $("#tabbar");
@@ -3408,16 +3522,23 @@ $("#navBack").addEventListener("click", e => { const g = e.currentTarget.dataset
 $("#navNext").addEventListener("click", e => { const g = e.currentTarget.dataset.go; if(g) setView(g); });
 $("#tbToday").addEventListener("click", () => {
   if($("#histOverlay").classList.contains("on")) $("#histClose").click();
+  if($("#setOverlay").classList.contains("on")) $("#setClose").click();
   setView("today");
 });
-$("#tbWeek").addEventListener("click", () => { if(!$("#histOverlay").classList.contains("on")) $("#openHistory").click(); });
+$("#tbWeek").addEventListener("click", () => {
+  if($("#setOverlay").classList.contains("on")) $("#setClose").click();
+  if(!$("#histOverlay").classList.contains("on")) $("#openHistory").click();
+});
+$("#tbSettings").addEventListener("click", () => {
+  if($("#histOverlay").classList.contains("on")) $("#histClose").click();
+  if(!$("#setOverlay").classList.contains("on")) openSettings();
+});
 $("#newJobFab").addEventListener("click", () => {
   const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
   if(busy && !confirm("Start a new job? The current one is cleared.")) return;
   if(busy) resetJob();
   startJob();
 });
-$("#tdSettings").addEventListener("click", () => openSettings());
 
 function paintReview(){
   const cn = ($("#c_customer").value || "").trim();
@@ -3478,7 +3599,7 @@ function tdSendHtml(){
   const big = st.phase === "up" ? st.done + '<span> / ' + st.total + '</span>' : (st.phase === "tg" ? '&#10003;' : '&hellip;');
   const sub = st.phase === "up" ? "files sent" : (st.phase === "tg" ? "sending report" : "getting ready");
   return '<div class="tdsend"><div class="ringbig"><svg width="176" height="176" viewBox="0 0 176 176"><circle cx="88" cy="88" r="76" fill="none" stroke="#eceef2" stroke-width="12"/>'
-    + '<circle cx="88" cy="88" r="76" fill="none" stroke="#1b7f4a" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (frac * L).toFixed(1) + ' ' + L.toFixed(1) + '" transform="rotate(-90 88 88)" style="transition:stroke-dasharray .6s"/>'
+    + '<circle class="rg" cx="88" cy="88" r="76" fill="none" stroke="#1b7f4a" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (frac * L).toFixed(1) + ' ' + L.toFixed(1) + '" transform="rotate(-90 88 88)" style="transition:stroke-dasharray .6s"/>'
     + '<g class="tdspin"><circle cx="88" cy="88" r="76" fill="none" stroke="#d6006c" stroke-width="12" stroke-linecap="round" stroke-dasharray="40 437" transform="rotate(-90 88 88)"/></g></svg>'
     + '<div class="mid"><b>' + big + '</b><small>' + sub + '</small></div></div>'
     + '<div class="tdsl"><div class="tdq"><span><i class="' + (st.phase === "tg" ? "ck" : "sp") + '"></i>Google Drive</span><small>' + (st.phase === "up" ? st.done + " of " + st.total : (st.phase === "tg" ? "done" : "starting")) + '</small></div>'
@@ -3501,9 +3622,9 @@ function tdRouteHtml(rows, nxt, addr, name){
 function tdActiveHtml(rows, okN, nxt, has, addr, name){
   let h = "";
   if(navigator.onLine === false) h += tdOfflineHtml();
-  if(sendSt) return h + tdSendHtml();
+  if(sendSt) return h;
   if(has) return h + tdRouteHtml(rows, nxt, addr, name);
-  return h + '<div class="actv" style="cursor:default"><div class="tt"><b>No job open</b><small>Tap New job when you arrive</small></div></div>';
+  return h;
 }
 window.addEventListener("online", () => { try{ if(state.view === "today") paintToday(); }catch(e){} });
 window.addEventListener("offline", () => { try{ if(state.view === "today") paintToday(); }catch(e){} });
