@@ -698,6 +698,18 @@ html,body{touch-action:manipulation}
 #navTop #navBack:active{background:#dfe2e8}
 #clTgState{display:none}
 #notesHead{display:flex;align-items:center}
+
+/* ---- v75 one-row step header ---- */
+#stepStrip i:empty{display:none}
+body.stepsnav header{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;padding-bottom:10px}
+body.stepsnav #navTop{flex:none;min-height:0;padding:0;display:block}
+body.stepsnav #navTitle,body.stepsnav #navNext{display:none}
+body.stepsnav #navTop #navBack{margin:0}
+body.stepsnav #stepStrip{flex:1;min-width:0;padding:3px;margin:0;background:var(--seg);border-radius:14px;gap:2px}
+body.stepsnav #stepStrip button{background:transparent;min-height:40px;border-radius:11px;font-size:14px;color:var(--muted)}
+body.stepsnav #stepStrip button.on{background:var(--ink);color:#fff}
+body.stepsnav #stepStrip i{width:18px;height:18px;font-size:11px;font-weight:700}
+body.stepsnav #jobBar{flex-basis:100%}
 </style>
 </head>
 <body>
@@ -716,9 +728,9 @@ html,body{touch-action:manipulation}
 <header>
   <div id="navTop"><button id="navBack"></button><b id="navTitle"></b><button id="navNext"></button></div>
   <div id="stepStrip">
-    <button data-go="checklist"><i>1</i>Checklist</button>
-    <button data-go="fcs2"><i>2</i>Customer signs</button>
-    <button data-go="close"><i>3</i>Close the job</button>
+    <button data-go="checklist"><i></i>Checklist</button>
+    <button data-go="fcs2"><i></i>Signature</button>
+    <button data-go="close"><i></i>Close</button>
   </div>
   <div class="tabs">
     <div class="tab on" data-view="today">Today</div>
@@ -3919,6 +3931,13 @@ const NAV = {
   close:     {t: "Close the job",  back: "today"},
   result:    {t: "Document",       back: ""}
 };
+/* one compact row: back button + the three steps (no separate title) */
+function syncStepsNav(v){
+  try{
+    const on = $("#stepStrip").style.display !== "none" && ["checklist","fcs2","close"].indexOf(v || state.view) >= 0;
+    document.body.classList.toggle("stepsnav", on);
+  }catch(e){}
+}
 function stepPaint(v){
   const name = ($("#c_customer").value || "").trim(), street = ($("#c_street").value || "").trim();
   const done = {checklist: !!(name && street), fcs2: state.strokes.length > 0, close: !!uploadedOnce};
@@ -3927,8 +3946,9 @@ function stepPaint(v){
   $$("#stepStrip button").forEach(b => {
     b.classList.toggle("on", b.dataset.go === v);
     b.classList.toggle("done", !!done[b.dataset.go] && b.dataset.go !== v);
-    b.firstChild.textContent = (done[b.dataset.go] && b.dataset.go !== v) ? "\u2713" : (["checklist","fcs2","close"].indexOf(b.dataset.go) + 1);
+    b.firstChild.textContent = (done[b.dataset.go] && b.dataset.go !== v) ? "\u2713" : "";
   });
+  syncStepsNav(v);
 }
 $("#stepStrip").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
 /* an empty job gets today's date and time, not whatever was saved last time */
@@ -4029,6 +4049,7 @@ $("#clcAgain").addEventListener("click", () => { closedView = false; paintClose(
 function paintClose(){
   $("#v-close").classList.toggle("closed", closedView);
   if(state.view === "close") $("#stepStrip").style.display = closedView ? "none" : "";
+  syncStepsNav();
   document.body.classList.toggle("jobclosed", !!closedView && state.view === "close");
   $("#closedCard").style.display = closedView ? "block" : "none";
   if(state.view === "close") $("#bar").style.display = closedView ? "none" : "flex";
