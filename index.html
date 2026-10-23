@@ -664,7 +664,7 @@ html{overscroll-behavior-y:none}
 .tdclosed .ic svg{width:18px;height:18px;stroke:var(--ok);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .tdclosed .tx{flex:1;min-width:0}
 .tdclosed b{display:block;font-size:16px;font-weight:600;overflow-wrap:anywhere}
-.tdclosed small{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+.tdclosed small{display:block;font-size:14px;font-weight:600;color:var(--magenta);margin-top:2px}
 .tdclosed .ch{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* ---- v72 finished screen ---- */
@@ -4067,7 +4067,7 @@ function tdActiveHtml(rows, okN, nxt, has, addr, name){
   let h = "";
   if(navigator.onLine === false) h += tdOfflineHtml();
   if(sendSt) return h;
-  if(has && uploadedOnce) return h + '<button class="tdclosed" data-go="close"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="tx"><b>' + esc(addr || name || "Job") + '</b><small>Sent \u00b7 tap to fix or resend</small></span><svg class="ch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
+  if(has && uploadedOnce) return h + '<button class="tdclosed" data-go="close"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="tx"><b>' + esc(addr || name || "Job") + '</b><small>Finish the job</small></span><svg class="ch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
   if(has) return h + tdRouteHtml(rows, nxt, addr, name);
   return h;
 }
