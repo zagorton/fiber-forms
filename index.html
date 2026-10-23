@@ -656,6 +656,32 @@ body.jobclosed #navBack{visibility:hidden}
 #sendOv .so-keep{position:relative;z-index:1;margin:26px 0 0;font-size:13px;color:rgba(255,255,255,.45)}
 #sendOv .so-fly{position:absolute;left:50%;top:50%;width:24px;height:30px;border-radius:6px;background:linear-gradient(160deg,#fff,#e4d4ff);box-shadow:0 0 14px rgba(255,255,255,.5);opacity:0;pointer-events:none}
 @media (prefers-reduced-motion:reduce){#sendOv *{animation:none !important}}
+
+/* ---- v71 closed job card on Today ---- */
+html{overscroll-behavior-y:none}
+.tdclosed{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;background:#fff;border:0;border-radius:20px;padding:14px 16px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.tdclosed .ic{width:36px;height:36px;border-radius:50%;background:#e3f4ea;display:flex;align-items:center;justify-content:center;flex:none}
+.tdclosed .ic svg{width:18px;height:18px;stroke:var(--ok);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.tdclosed .tx{flex:1;min-width:0}
+.tdclosed b{display:block;font-size:16px;font-weight:600;overflow-wrap:anywhere}
+.tdclosed small{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+.tdclosed .ch{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---- v72 finished screen ---- */
+#sendOv.res .so-rows,#sendOv.res .so-keep{display:none}
+#sendOv.res .so-ring{width:min(52vw,190px);height:min(52vw,190px)}
+#sendOv.res .so-h{margin-bottom:22px}
+#sendOv.res .mid .ckd{width:76px;height:76px}
+#sendOv .so-res{position:relative;z-index:3;width:100%;max-width:380px;margin-top:30px;display:flex;flex-direction:column;align-items:stretch;animation:soUp .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes soUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+#sendOv .so-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:4px 18px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#sendOv .so-card>div{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0;border-top:1px solid rgba(255,255,255,.1);font-size:15.5px}
+#sendOv .so-card>div:first-child{border-top:0}
+#sendOv .so-card span{color:rgba(255,255,255,.62)}
+#sendOv .so-card b{font-weight:600;color:#fff}
+#sendOv .so-done{margin-top:18px;min-height:54px;border:0;border-radius:16px;background:#fff;color:#14161a;font-family:inherit;font-size:17px;font-weight:600;cursor:pointer}
+#sendOv .so-fix{margin-top:6px;min-height:48px;border:0;background:none;color:rgba(255,255,255,.7);font-family:inherit;font-size:15px;font-weight:500;cursor:pointer}
+body.hm #soPay{filter:blur(7px);-webkit-user-select:none;user-select:none}
 </style>
 </head>
 <body>
@@ -2221,7 +2247,7 @@ function prepPhoto(file){
    some. One shared queue now handles every photo, one at a time, and nothing
    fails silently. */
 let photoQueue = Promise.resolve();
-let pending = 0, failed = 0, uploadedOnce = false;
+let pending = 0, failed = 0, uploadedOnce = recall("uploadedOnce") === "1";
 
 function queueStatus(){
   const c = $("#photoCount");
@@ -2498,7 +2524,7 @@ function sovBuild(el){
   const a = composedAddress() || "";
   soShown = 0; soTotal = 0;
   el.innerHTML = '<div class="so-bg"><i class="o1"></i><i class="o2"></i></div><canvas id="soFx"></canvas>'
-    + '<div class="so-h"><b id="soTitle">Closing the job</b>' + (a ? "<small>" + esc(a) + "</small>" : "") + "</div>"
+    + '<div class="so-h"><b id="soTitle">Sending files</b>' + (a ? "<small>" + esc(a) + "</small>" : "") + "</div>"
     + '<div class="so-ring" id="soRing"><svg viewBox="0 0 240 240"><defs>'
     + '<linearGradient id="soG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5ca8"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>'
     + '<linearGradient id="soG2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8af0b4"/><stop offset="1" stop-color="#2bb673"/></linearGradient></defs>'
@@ -2512,7 +2538,7 @@ function sovBuild(el){
     + '<svg class="ckd" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></div></div>'
     + '<div class="so-rows"><span id="soDrive" class="on"><i></i>Google Drive</span><span id="soTg"><i></i>Telegram</span></div>'
     + '<p class="so-keep">Keep the app open</p>';
-  el.classList.remove("fin", "out"); el.classList.add("on", "ind");
+  el.classList.remove("fin", "out", "res"); el.classList.add("on", "ind");
   document.body.classList.add("sending"); wake(true);
 }
 function soCount(to){
@@ -2568,11 +2594,11 @@ function soBurst(){
   }catch(e){}
 }
 /* the last file is in: ring closes, turns green, check draws itself, confetti */
-function sendOvFinale(){
+function sendOvFinale(quiet){
   const el = document.getElementById("sendOv");
   if(!el || !el.classList.contains("on") || soFinAt) return;
   soFinAt = Date.now();
-  if(soTotal && soShown < soTotal) soFly();
+  if(!quiet && soTotal && soShown < soTotal) soFly();
   el.classList.remove("ind"); el.classList.add("fin");
   const arc = soQ(".arc");
   arc.setAttribute("stroke", "url(#soG2)");
@@ -2582,9 +2608,46 @@ function sendOvFinale(){
   soCount(soTotal || soShown);
   const d = soQ("#soDrive"), tg = soQ("#soTg");
   d.className = "done"; if(tg.style.display !== "none") tg.className = "on";
+  if(quiet) return;
   try{ if(navigator.vibrate) navigator.vibrate([18, 50, 18]); }catch(e){}
   soBurst();
 }
+/* the finished state: same look as the animation, with Done and Fix */
+function sovResult(){
+  const el = document.getElementById("sendOv");
+  if(!el || !el.classList.contains("on") || el.classList.contains("res")) return;
+  clearTimeout(soHideT); wake(false);
+  const n = soTotal || +recall("uploadedN") || 0;
+  const tg = ($("#clcTg") && $("#clcTg").textContent) || "";
+  const pay = ($("#clcPay") && $("#clcPay").textContent) || "";
+  const rows = '<div><span>Google Drive</span><b>' + (n ? n + (n === 1 ? " file" : " files") : "sent") + '</b></div>'
+    + '<div id="soTgRow"' + ((!tg || tg === "Not set up") ? ' style="display:none"' : "") + '><span>Telegram</span><b id="soTgV">' + esc(tg) + '</b></div>'
+    + (pay ? '<div><span>Earned</span><b id="soPay">' + esc(pay) + '</b></div>' : "");
+  const box = document.createElement("div"); box.className = "so-res";
+  box.innerHTML = '<div class="so-card">' + rows + '</div><button class="so-done" id="soDone">Done</button><button class="so-fix" id="soFix">Fix and resend</button>';
+  el.appendChild(box);
+  el.classList.add("res");
+}
+function sovShowClosed(){
+  const el = document.getElementById("sendOv"); if(!el) return;
+  closedView = true; try{ paintClose(); }catch(e){}
+  sovBuild(el); soTotal = +recall("uploadedN") || 0; soShown = soTotal;
+  sendOvFinale(true);
+  sovResult();
+}
+document.addEventListener("click", e => {
+  if(e.target.closest("#soDone")){
+    const el = document.getElementById("sendOv");
+    el.classList.add("out");
+    setTimeout(() => { el.classList.remove("on", "out", "fin", "res", "ind"); document.body.classList.remove("sending"); soFinAt = 0; }, 350);
+    resetJob();
+  }
+  if(e.target.closest("#soFix")){
+    const el = document.getElementById("sendOv");
+    el.classList.remove("on", "out", "fin", "res", "ind"); document.body.classList.remove("sending"); soFinAt = 0;
+    closedView = false; setView("close"); try{ paintClose(); }catch(e2){}
+  }
+});
 function sovUpdate(){
   const st = sendSt, el = document.getElementById("sendOv");
   const ind = st.phase !== "up" || !st.total;
@@ -2606,11 +2669,12 @@ function sendOvPaint(){
   const el = document.getElementById("sendOv"); if(!el) return;
   if(!sendSt){
     if(!el.classList.contains("on")){ wake(false); document.body.classList.remove("sending"); return; }
-    if(soFinAt){ clearTimeout(soHideT); soHideT = setTimeout(sovHide, Math.max(0, soFinAt + 1900 - Date.now())); return; }
+    if(el.classList.contains("res")) return;
+    if(soFinAt){ clearTimeout(soHideT); soHideT = setTimeout(sovResult, Math.max(0, soFinAt + 1900 - Date.now())); return; }
     sovHide(); return;
   }
   if(soFinAt) return;
-  if(!el.classList.contains("on") || el.classList.contains("fin") || el.classList.contains("out")) sovBuild(el);
+  if(!el.classList.contains("on") || el.classList.contains("fin") || el.classList.contains("out") || el.classList.contains("res")) sovBuild(el);
   wake(true);
   sovUpdate();
 }
@@ -2883,12 +2947,11 @@ function driveUpload(){
     driveStatus('<span class="pill ready">&#10003; Uploaded</span><br>'
               + files.length + " files are in <b>" + esc(GD.folderName)
               + " / " + esc(folderName) + "</b>.");
-    uploadedOnce = true;
+    uploadedOnce = true; store("uploadedOnce", "1"); store("uploadedN", String(files.length));
     $("#clcFiles").textContent = files.length + (files.length === 1 ? " file" : " files");
     tgMark(!tgReady() ? "Not set up" : (tgCfg().auto ? "Sending..." : "Not sent"));
     closedView = true; paintClose();
     try{ sendOvFinale(); }catch(e){ console.error(e); }
-    setView("today");
     saveJob(true, files.length);
     sendSet(tgReady() && tgCfg().auto ? {phase: "tg", done: files.length, total: files.length} : null);
     tgAfterUpload();
@@ -2920,7 +2983,7 @@ function resetJob(){
   currentJobId = null; currentJobWhen = null; tgPostedFor = ""; driveSent = {}; closedView = false; lastFolderId = ""; store("arrived", ""); arrPaint();
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
-  uploadedOnce = false;
+  uploadedOnce = false; store("uploadedOnce", ""); store("uploadedN", "");
   idbClear().catch(() => {});
   renderPhotos();
 
@@ -3932,7 +3995,10 @@ function toastMsg(t){
   e.textContent = t; e.className = "on";
   clearTimeout(toastMsg.t); toastMsg.t = setTimeout(() => { e.className = ""; }, 2600);
 }
-function tgMark(txt){ const e = $("#clcTg"); if(e) e.textContent = txt; }
+function tgMark(txt){
+  const e = $("#clcTg"); if(e) e.textContent = txt;
+  const v = document.getElementById("soTgV"); if(v){ v.textContent = txt; const r = document.getElementById("soTgRow"); if(r) r.style.display = (!txt || txt === "Not set up") ? "none" : ""; }
+}
 $("#clcNext").addEventListener("click", () => setView("today"));
 $("#clcAgain").addEventListener("click", () => { closedView = false; paintClose(); });
 
@@ -3944,6 +4010,8 @@ function paintClose(){
   if(state.view === "close") $("#bar").style.display = closedView ? "none" : "flex";
   if(closedView){
     $("#clcAddr").textContent = composedAddress() || "";
+    if(!$("#clcFiles").textContent){ const n = +recall("uploadedN"); if(n) $("#clcFiles").textContent = n + (n === 1 ? " file" : " files"); }
+    $("#clcTg").parentNode.style.display = $("#clcTg").textContent ? "" : "none";
     $("#clcPay").textContent = $("#payTotal").textContent;
   }
   $("#clTgState").innerHTML = tgReady() ? '<span class="pill ready">&#10003; ' + esc(tgCfg().title || "connected") + '</span>' : '<span class="pill">Telegram not connected</span>';
@@ -3999,6 +4067,7 @@ function tdActiveHtml(rows, okN, nxt, has, addr, name){
   let h = "";
   if(navigator.onLine === false) h += tdOfflineHtml();
   if(sendSt) return h;
+  if(has && uploadedOnce) return h + '<button class="tdclosed" data-go="close"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="tx"><b>' + esc(addr || name || "Job") + '</b><small>Sent \u00b7 tap to fix or resend</small></span><svg class="ch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
   if(has) return h + tdRouteHtml(rows, nxt, addr, name);
   return h;
 }
@@ -4068,7 +4137,7 @@ function paintToday(){
   }).catch(() => {});
 }
 $("#tdSteps").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
-$("#tdActive").addEventListener("click", e => { const g = e.target.closest("[data-go]"); if(g){ setView(g.dataset.go); return; } if(e.target.closest("[data-start]")) startJob(); });
+$("#tdActive").addEventListener("click", e => { const g = e.target.closest("[data-go]"); if(g){ if(g.dataset.go === "close" && uploadedOnce){ sovShowClosed(); return; } setView(g.dataset.go); return; } if(e.target.closest("[data-start]")) startJob(); });
 let tdAll = false;
 $("#tdDone").addEventListener("click", e => { const m = e.target.closest("[data-more]"); if(m){ tdAll = m.dataset.more === "1"; paintToday(); return; } });
 $("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if(b) openEdit(+b.dataset.edit); });
