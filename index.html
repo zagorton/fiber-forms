@@ -592,6 +592,70 @@ button:focus-visible,.tab:focus-visible,.chip:focus-visible,input:focus-visible{
 .tdhero .tdy .yl b{color:#fff}
 .tdhero .tdy .ym{color:#6fe3a0}
 body.hm #tdWeekAmt{filter:blur(7px);-webkit-user-select:none;user-select:none}
+
+/* ---- v69 close + sending ---- */
+#v-close.closed #upCard,#v-close.closed .links{display:none !important}
+body.jobclosed #jobBar{display:none !important}
+body.jobclosed #navBack{visibility:hidden}
+#toastMsg{position:fixed;left:50%;bottom:96px;transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:200;background:#14161a;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:99px;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .35s,opacity .35s}
+#toastMsg.on{transform:translate(-50%,0);opacity:1}
+#clcAddr b{color:var(--ink);font-weight:600}
+#clcAddr{font-size:15px;line-height:1.45}
+.ckd{width:64px;height:64px;stroke:var(--ok);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:26;stroke-dashoffset:26;animation:ckdraw .6s .1s ease-out forwards}
+@keyframes ckdraw{to{stroke-dashoffset:0}}
+#sendOv .ringbig .mid b{display:flex;align-items:center;justify-content:center}
+#sendOv .ringbig .rg{filter:drop-shadow(0 0 8px rgba(214,0,108,.35))}
+#sendOv .ringbig .mid .ckd{width:96px;height:96px}
+#sendOv .ringbig .rg[stroke="#1b7f4a"]{filter:none}
+#sendOv .tdkeep{font-weight:400;color:var(--muted);font-size:13.5px}
+
+/* ---- v70 sending screen: dark, ring, finale ---- */
+#sendOv{background:linear-gradient(165deg,#12141a 0%,#1d1030 60%,#2b1038 100%);color:#fff;overflow:hidden;transition:opacity .38s ease}
+#sendOv.out{opacity:0}
+#sendOv .so-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#sendOv .so-bg i{position:absolute;width:340px;height:340px;border-radius:50%;filter:blur(70px);opacity:.5;transition:background 1s}
+#sendOv .so-bg .o1{background:#d6006c;left:-120px;top:-60px;animation:soD1 9s ease-in-out infinite alternate}
+#sendOv .so-bg .o2{background:#6d3df0;right:-140px;bottom:-80px;animation:soD2 11s ease-in-out infinite alternate}
+#sendOv.fin .so-bg i{background:#1b9e63}
+@keyframes soD1{to{transform:translate(70px,90px) scale(1.15)}}
+@keyframes soD2{to{transform:translate(-60px,-80px) scale(1.2)}}
+#sendOv #soFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+#sendOv .so-h{position:relative;z-index:1;text-align:center;margin:0 0 34px;max-width:420px}
+#sendOv .so-h b{display:block;font-size:22px;font-weight:600;letter-spacing:-.2px;color:#fff}
+#sendOv .so-h small{display:block;margin-top:6px;font-size:14px;color:rgba(255,255,255,.62)}
+#sendOv .so-ring{position:relative;z-index:1;width:min(76vw,280px);height:min(76vw,280px)}
+#sendOv .so-ring>svg{width:100%;height:100%;overflow:visible}
+#sendOv .arc{transition:stroke-dasharray .7s cubic-bezier(.3,.7,.2,1);filter:drop-shadow(0 0 10px rgba(214,0,108,.55))}
+#sendOv.fin .arc{filter:drop-shadow(0 0 12px rgba(111,227,160,.6))}
+#sendOv .hd{transform-origin:120px 120px;transition:transform .7s cubic-bezier(.3,.7,.2,1);filter:drop-shadow(0 0 6px #fff)}
+#sendOv .hd circle{animation:soPulse 1.4s ease-in-out infinite}
+@keyframes soPulse{50%{opacity:.4}}
+#sendOv.fin .hd{opacity:0;transition:opacity .3s .5s}
+#sendOv .orb{transform-origin:120px 120px;animation:tdspin 40s linear infinite}
+#sendOv .indg{display:none;transform-origin:120px 120px;animation:tdspin 1.3s linear infinite;filter:drop-shadow(0 0 10px rgba(214,0,108,.5))}
+#sendOv.ind .indg{display:block}
+#sendOv.ind .arc,#sendOv.ind .hd{display:none}
+#sendOv .rip{opacity:0;transform-origin:120px 120px}
+#sendOv.fin .rip{animation:soRip 1.1s ease-out}
+@keyframes soRip{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(1.5)}}
+#sendOv .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#sendOv .mid b{font-size:68px;font-weight:700;line-height:1;letter-spacing:-2px;font-variant-numeric:tabular-nums;color:#fff}
+#sendOv .mid b.bump{animation:soBump .35s}
+@keyframes soBump{40%{transform:scale(1.12)}}
+#sendOv .mid small{margin-top:8px;font-size:14px;color:rgba(255,255,255,.62)}
+#sendOv .mid .ckd{position:absolute;display:none;width:104px;height:104px;stroke:#6fe3a0}
+#sendOv.fin .mid b,#sendOv.fin .mid small{display:none}
+#sendOv.fin .mid .ckd{display:block}
+#sendOv .so-rows{position:relative;z-index:1;display:flex;gap:10px;margin-top:38px}
+#sendOv .so-rows span{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;background:rgba(255,255,255,.08);font-size:14px;font-weight:500;color:rgba(255,255,255,.7)}
+#sendOv .so-rows i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.28)}
+#sendOv .so-rows .on{color:#fff}
+#sendOv .so-rows .on i{background:none;border:2px solid #ff5ca8;border-right-color:transparent;animation:tdspin 1s linear infinite}
+#sendOv .so-rows .done{color:#fff}
+#sendOv .so-rows .done i{background:#6fe3a0;border:0;animation:none}
+#sendOv .so-keep{position:relative;z-index:1;margin:26px 0 0;font-size:13px;color:rgba(255,255,255,.45)}
+#sendOv .so-fly{position:absolute;left:50%;top:50%;width:24px;height:30px;border-radius:6px;background:linear-gradient(160deg,#fff,#e4d4ff);box-shadow:0 0 14px rgba(255,255,255,.5);opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#sendOv *{animation:none !important}}
 </style>
 </head>
 <body>
@@ -787,14 +851,13 @@ body.hm #tdWeekAmt{filter:blur(7px);-webkit-user-select:none;user-select:none}
       <div class="hint" id="clcAddr" style="margin-top:2px"></div>
     </div>
     <div class="card">
-      <div class="rv"><span>On Google Drive</span><b id="clcFiles"></b></div>
-      <div class="rv"><span>Telegram message</span><b id="clcTg"></b></div>
-      <div class="rv"><span>Added to this week</span><b id="clcPay" class="amtc"></b></div>
+      <div class="rv"><span>Google Drive</span><b id="clcFiles"></b></div>
+      <div class="rv"><span>Telegram</span><b id="clcTg"></b></div>
+      <div class="rv"><span>Earned</span><b id="clcPay" class="amtc"></b></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
-      <button class="btn btn-magenta" id="clcToday">Back to Today</button>
-      <button class="btn btn-ghost" id="clcDrive">Open Drive folder</button>
-      <button class="btn btn-quiet" id="clcAgain">Edit and send again</button>
+      <button class="btn btn-magenta" id="clcNext">Done</button>
+      <button class="btn btn-quiet" id="clcAgain">Fix and resend</button>
     </div>
   </div>
   <div id="clPre">
@@ -2401,6 +2464,7 @@ var soHidden = false;
 function sendSet(o){
   sendSt = o;
   if(!o || o.phase === "prep") soHidden = false;
+  if(o && o.phase === "prep"){ soFinAt = 0; clearTimeout(soHideT); }
   try{ sendOvPaint(); }catch(e){ console.error(e); }
   try{ if(state.view === "today") paintToday(); }catch(e){}
 }
@@ -2416,23 +2480,139 @@ function wake(on){
     } else if(wakeLock){ wakeLock.release(); wakeLock = null; }
   }catch(e){}
 }
+var soFinAt = 0, soHideT = null, soShown = 0, soTotal = 0, soTween = 0;
+const SO_L = 2 * Math.PI * 96;
+function soQ(sel){ return document.querySelector("#sendOv " + sel); }
+function sovHide(){
+  const el = document.getElementById("sendOv"); if(!el) return;
+  clearTimeout(soHideT);
+  el.classList.add("out");
+  wake(false);
+  setTimeout(() => {
+    if(sendSt){ el.classList.remove("out"); return; }
+    el.classList.remove("on", "out", "fin", "ind");
+    document.body.classList.remove("sending"); soFinAt = 0;
+  }, 400);
+}
+function sovBuild(el){
+  const a = composedAddress() || "";
+  soShown = 0; soTotal = 0;
+  el.innerHTML = '<div class="so-bg"><i class="o1"></i><i class="o2"></i></div><canvas id="soFx"></canvas>'
+    + '<div class="so-h"><b id="soTitle">Closing the job</b>' + (a ? "<small>" + esc(a) + "</small>" : "") + "</div>"
+    + '<div class="so-ring" id="soRing"><svg viewBox="0 0 240 240"><defs>'
+    + '<linearGradient id="soG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5ca8"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>'
+    + '<linearGradient id="soG2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8af0b4"/><stop offset="1" stop-color="#2bb673"/></linearGradient></defs>'
+    + '<circle class="orb" cx="120" cy="120" r="114" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2" stroke-dasharray="1 9" stroke-linecap="round"/>'
+    + '<circle cx="120" cy="120" r="96" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="10"/>'
+    + '<circle class="rip" cx="120" cy="120" r="96" fill="none" stroke="#6fe3a0" stroke-width="2"/>'
+    + '<g class="indg"><circle cx="120" cy="120" r="96" fill="none" stroke="url(#soG)" stroke-width="10" stroke-linecap="round" stroke-dasharray="120 484" transform="rotate(-90 120 120)"/></g>'
+    + '<circle class="arc" cx="120" cy="120" r="96" fill="none" stroke="url(#soG)" stroke-width="10" stroke-linecap="round" style="stroke-dasharray:0 604" transform="rotate(-90 120 120)"/>'
+    + '<g class="hd" style="transform:rotate(0deg)"><circle cx="120" cy="24" r="5" fill="#fff"/></g></svg>'
+    + '<div class="mid"><b id="soNum">&hellip;</b><small id="soOf">getting ready</small>'
+    + '<svg class="ckd" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></div></div>'
+    + '<div class="so-rows"><span id="soDrive" class="on"><i></i>Google Drive</span><span id="soTg"><i></i>Telegram</span></div>'
+    + '<p class="so-keep">Keep the app open</p>';
+  el.classList.remove("fin", "out"); el.classList.add("on", "ind");
+  document.body.classList.add("sending"); wake(true);
+}
+function soCount(to){
+  const n = soQ("#soNum"); if(!n) return;
+  const from = soShown; soShown = to;
+  cancelAnimationFrame(soTween);
+  if(from === to){ n.textContent = to; return; }
+  n.classList.remove("bump"); void n.offsetWidth; n.classList.add("bump");
+  const t0 = performance.now();
+  const step = t => {
+    const k = Math.min(1, (t - t0) / 450);
+    n.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+    if(k < 1) soTween = requestAnimationFrame(step);
+  };
+  soTween = requestAnimationFrame(step);
+}
+function soFly(){
+  const r = soQ("#soRing"); if(!r || !r.animate) return;
+  const f = document.createElement("i"); f.className = "so-fly"; r.appendChild(f);
+  const an = f.animate([
+    {transform: "translate(-50%,250px) scale(1)", opacity: 0},
+    {opacity: 1, offset: .2},
+    {transform: "translate(-50%,-50%) scale(.25)", opacity: 0}
+  ], {duration: 760, easing: "cubic-bezier(.45,0,.75,.45)"});
+  an.onfinish = () => f.remove();
+  r.animate([{transform: "scale(1)"}, {transform: "scale(1.035)", offset: .5}, {transform: "scale(1)"}], {duration: 420, delay: 620});
+}
+function soBurst(){
+  try{
+    if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cv = soQ("#soFx"), ring = soQ("#soRing"); if(!cv || !ring) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), W = cv.clientWidth, H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    const g = cv.getContext("2d"); g.scale(dpr, dpr);
+    const rb = ring.getBoundingClientRect(), cb = cv.getBoundingClientRect();
+    const cx = rb.left - cb.left + rb.width / 2, cy = rb.top - cb.top + rb.height / 2;
+    const cols = ["#6fe3a0", "#ffffff", "#ff5ca8", "#a78bfa", "#2bb673"], P = [];
+    for(let i = 0; i < 46; i++){
+      const a = Math.random() * 6.283, v = 2.5 + Math.random() * 5.5;
+      P.push({x: cx + Math.cos(a) * rb.width * .38, y: cy + Math.sin(a) * rb.width * .38, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, s: 1.8 + Math.random() * 3, c: cols[i % cols.length], l: 1});
+    }
+    let last = performance.now();
+    const tick = t => {
+      const dt = Math.min(2, (t - last) / 16.7); last = t;
+      g.clearRect(0, 0, W, H); let alive = 0;
+      P.forEach(p => {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .965; p.vy = p.vy * .965 + .09 * dt; p.l -= .016 * dt;
+        if(p.l > 0){ alive++; g.globalAlpha = p.l; g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 6.283); g.fill(); }
+      });
+      if(alive && cv.isConnected) requestAnimationFrame(tick); else g.clearRect(0, 0, W, H);
+    };
+    requestAnimationFrame(tick);
+  }catch(e){}
+}
+/* the last file is in: ring closes, turns green, check draws itself, confetti */
+function sendOvFinale(){
+  const el = document.getElementById("sendOv");
+  if(!el || !el.classList.contains("on") || soFinAt) return;
+  soFinAt = Date.now();
+  if(soTotal && soShown < soTotal) soFly();
+  el.classList.remove("ind"); el.classList.add("fin");
+  const arc = soQ(".arc");
+  arc.setAttribute("stroke", "url(#soG2)");
+  arc.style.strokeDasharray = SO_L.toFixed(1) + " " + SO_L.toFixed(1);
+  soQ(".hd").style.transform = "rotate(360deg)";
+  soQ("#soTitle").textContent = "Job closed";
+  soCount(soTotal || soShown);
+  const d = soQ("#soDrive"), tg = soQ("#soTg");
+  d.className = "done"; if(tg.style.display !== "none") tg.className = "on";
+  try{ if(navigator.vibrate) navigator.vibrate([18, 50, 18]); }catch(e){}
+  soBurst();
+}
+function sovUpdate(){
+  const st = sendSt, el = document.getElementById("sendOv");
+  const ind = st.phase !== "up" || !st.total;
+  el.classList.toggle("ind", ind);
+  const frac = ind ? 0 : Math.max(.04, st.done / st.total);
+  soQ(".arc").style.strokeDasharray = (frac * SO_L).toFixed(1) + " " + SO_L.toFixed(1);
+  soQ(".hd").style.transform = "rotate(" + (frac * 360).toFixed(1) + "deg)";
+  const tgOn = tgReady() && tgCfg().auto;
+  const tg = soQ("#soTg"); tg.style.display = tgOn ? "" : "none";
+  if(!ind){
+    soTotal = st.total;
+    soQ("#soOf").textContent = "of " + st.total + (st.total === 1 ? " file" : " files");
+    if(st.done > soShown && soShown >= 0 && st.done > 0) soFly();
+    soCount(st.done);
+  }
+}
 /* full-screen sending window: shown from any tab while files go to Drive and Telegram */
 function sendOvPaint(){
   const el = document.getElementById("sendOv"); if(!el) return;
-  if(!sendSt){ el.classList.remove("on"); document.body.classList.remove("sending"); wake(false); return; }
-  if(soHidden) return;
-  const t = document.createElement("div"); t.innerHTML = tdSendHtml();
-  const g = el.querySelector(".rg");
-  if(!el.classList.contains("on") || !g){
-    const a = composedAddress() || "";
-    el.innerHTML = '<div class="so-h"><b>Closing the job</b>' + (a ? "<small>" + esc(a) + "</small>" : "") + "</div>"
-      + t.innerHTML + '<button class="btn btn-quiet so-hide" id="soHide">Hide (still sending)</button>';
-    el.classList.add("on"); document.body.classList.add("sending"); wake(true);
-    return;
+  if(!sendSt){
+    if(!el.classList.contains("on")){ wake(false); document.body.classList.remove("sending"); return; }
+    if(soFinAt){ clearTimeout(soHideT); soHideT = setTimeout(sovHide, Math.max(0, soFinAt + 1900 - Date.now())); return; }
+    sovHide(); return;
   }
-  g.setAttribute("stroke-dasharray", t.querySelector(".rg").getAttribute("stroke-dasharray"));
-  el.querySelector(".mid").innerHTML = t.querySelector(".mid").innerHTML;
-  el.querySelector(".tdsl").innerHTML = t.querySelector(".tdsl").innerHTML;
+  if(soFinAt) return;
+  if(!el.classList.contains("on") || el.classList.contains("fin") || el.classList.contains("out")) sovBuild(el);
+  wake(true);
+  sovUpdate();
 }
 document.addEventListener("visibilitychange", () => { if(!document.hidden && sendSt && !soHidden) wake(true); });
 document.addEventListener("click", e => {
@@ -2707,6 +2887,8 @@ function driveUpload(){
     $("#clcFiles").textContent = files.length + (files.length === 1 ? " file" : " files");
     tgMark(!tgReady() ? "Not set up" : (tgCfg().auto ? "Sending..." : "Not sent"));
     closedView = true; paintClose();
+    try{ sendOvFinale(); }catch(e){ console.error(e); }
+    setView("today");
     saveJob(true, files.length);
     sendSet(tgReady() && tgCfg().auto ? {phase: "tg", done: files.length, total: files.length} : null);
     tgAfterUpload();
@@ -3661,6 +3843,8 @@ const NAV = {
 function stepPaint(v){
   const name = ($("#c_customer").value || "").trim(), street = ($("#c_street").value || "").trim();
   const done = {checklist: !!(name && street), fcs2: state.strokes.length > 0, close: !!uploadedOnce};
+  try{ $("#stepStrip").style.display = (v === "close" && closedView) ? "none" : "";
+       document.body.classList.toggle("jobclosed", v === "close" && closedView); }catch(e){}
   $$("#stepStrip button").forEach(b => {
     b.classList.toggle("on", b.dataset.go === v);
     b.classList.toggle("done", !!done[b.dataset.go] && b.dataset.go !== v);
@@ -3723,7 +3907,7 @@ $("#tbSettings").addEventListener("click", () => {
 });
 $("#newJobFab").addEventListener("click", () => {
   const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
-  if(busy && !confirm("Start a new job? The current one is cleared.")) return;
+  if(busy && !uploadedOnce && !confirm("Start a new job? The current one is cleared.")) return;
   if(busy) resetJob();
   startJob();
 });
@@ -3742,21 +3926,25 @@ function paintReview(){
 
 /* closed state of the Close the job screen */
 let closedView = false, lastFolderId = "";
+function toastMsg(t){
+  let e = document.getElementById("toastMsg");
+  if(!e){ e = document.createElement("div"); e.id = "toastMsg"; document.body.appendChild(e); }
+  e.textContent = t; e.className = "on";
+  clearTimeout(toastMsg.t); toastMsg.t = setTimeout(() => { e.className = ""; }, 2600);
+}
 function tgMark(txt){ const e = $("#clcTg"); if(e) e.textContent = txt; }
-$("#clcToday").addEventListener("click", () => setView("today"));
+$("#clcNext").addEventListener("click", () => setView("today"));
 $("#clcAgain").addEventListener("click", () => { closedView = false; paintClose(); });
-$("#clcDrive").addEventListener("click", () => {
-  if(lastFolderId) window.open("https://drive.google.com/drive/folders/" + lastFolderId, "_blank");
-});
 
 function paintClose(){
   $("#v-close").classList.toggle("closed", closedView);
+  if(state.view === "close") $("#stepStrip").style.display = closedView ? "none" : "";
+  document.body.classList.toggle("jobclosed", !!closedView && state.view === "close");
   $("#closedCard").style.display = closedView ? "block" : "none";
   if(state.view === "close") $("#bar").style.display = closedView ? "none" : "flex";
   if(closedView){
     $("#clcAddr").textContent = composedAddress() || "";
     $("#clcPay").textContent = $("#payTotal").textContent;
-    $("#clcDrive").style.display = lastFolderId ? "" : "none";
   }
   $("#clTgState").innerHTML = tgReady() ? '<span class="pill ready">&#10003; ' + esc(tgCfg().title || "connected") + '</span>' : '<span class="pill">Telegram not connected</span>';
   const t = arrivedAt(); arrPaint();
@@ -3784,14 +3972,14 @@ function tdOfflineHtml(){
 function tdSendHtml(){
   const st = sendSt, R = 76, L = 2 * Math.PI * R;
   const frac = st.phase === "up" && st.total ? st.done / st.total : (st.phase === "tg" ? 1 : 0.04);
-  const big = st.phase === "up" ? st.done + '<span> / ' + st.total + '</span>' : (st.phase === "tg" ? '&#10003;' : '&hellip;');
-  const sub = st.phase === "up" ? "files sent" : (st.phase === "tg" ? "sending report" : "getting ready");
+  const big = st.phase === "up" ? st.done + '<span> / ' + st.total + '</span>' : (st.phase === "tg" ? '<svg class="ckd" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>' : '&hellip;');
+  const sub = st.phase === "up" ? "files sent" : (st.phase === "tg" ? "sent" : "getting ready");
   return '<div class="tdsend"><div class="ringbig"><svg width="176" height="176" viewBox="0 0 176 176"><circle cx="88" cy="88" r="76" fill="none" stroke="#eceef2" stroke-width="12"/>'
-    + '<circle class="rg" cx="88" cy="88" r="76" fill="none" stroke="#1b7f4a" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (frac * L).toFixed(1) + ' ' + L.toFixed(1) + '" transform="rotate(-90 88 88)" style="transition:stroke-dasharray .6s"/>'
-    + '<g class="tdspin"><circle cx="88" cy="88" r="76" fill="none" stroke="#d6006c" stroke-width="12" stroke-linecap="round" stroke-dasharray="40 437" transform="rotate(-90 88 88)"/></g></svg>'
+    + '<circle class="rg" cx="88" cy="88" r="76" fill="none" stroke="' + (st.phase === "tg" ? "#1b7f4a" : "#d6006c") + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (frac * L).toFixed(1) + ' ' + L.toFixed(1) + '" transform="rotate(-90 88 88)" style="transition:stroke-dasharray .6s"/>'
+    + '</svg>'
     + '<div class="mid"><b>' + big + '</b><small>' + sub + '</small></div></div>'
     + '<div class="tdsl"><div class="tdq"><span><i class="' + (st.phase === "tg" ? "ck" : "sp") + '"></i>Google Drive</span><small>' + (st.phase === "up" ? st.done + " of " + st.total : (st.phase === "tg" ? "done" : "starting")) + '</small></div>'
-    + '<div class="tdq"><span><i class="' + (st.phase === "tg" ? "sp" : "wt") + '"></i>Telegram</span><small>' + (st.phase === "tg" ? "sending" : "right after Drive") + '</small></div></div>'
+    + (tgReady() && tgCfg().auto ? '<div class="tdq"><span><i class="' + (st.phase === "tg" ? "sp" : "wt") + '"></i>Telegram</span><small>' + (st.phase === "tg" ? "posting" : "next") + '</small></div>' : "") + '</div>'
     + '<p class="tdkeep">Keep the app open</p></div>';
 }
 function tdRouteHtml(rows, nxt, addr, name){
