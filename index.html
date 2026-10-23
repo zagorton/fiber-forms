@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -682,6 +682,22 @@ html{overscroll-behavior-y:none}
 #sendOv .so-done{margin-top:18px;min-height:54px;border:0;border-radius:16px;background:#fff;color:#14161a;font-family:inherit;font-size:17px;font-weight:600;cursor:pointer}
 #sendOv .so-fix{margin-top:6px;min-height:48px;border:0;background:none;color:rgba(255,255,255,.7);font-family:inherit;font-size:15px;font-weight:500;cursor:pointer}
 body.hm #soPay{filter:blur(7px);-webkit-user-select:none;user-select:none}
+
+/* ---- v73 ring thins out as it shrinks ---- */
+#sendOv .so-ring{transition:width .7s cubic-bezier(.3,.7,.2,1),height .7s cubic-bezier(.3,.7,.2,1)}
+#sendOv .arc,#sendOv .trk{transition:stroke-dasharray .7s cubic-bezier(.3,.7,.2,1),stroke-width .7s cubic-bezier(.3,.7,.2,1)}
+#sendOv.res .arc,#sendOv.res .trk{stroke-width:5px}
+#sendOv .mid .ckd{stroke-width:2.6;transition:width .7s,height .7s}
+#sendOv.res .mid .ckd{width:62px;height:62px;stroke-width:2}
+
+/* ---- v74 round back button, no zoom ---- */
+html,body{touch-action:manipulation}
+#navTop #navBack{width:40px;height:40px;min-height:40px;padding:0;margin-left:10px;border-radius:50%;background:#eceef2;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+#navTop #navBack:empty{visibility:hidden}
+#navTop #navBack svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+#navTop #navBack:active{background:#dfe2e8}
+#clTgState{display:none}
+#notesHead{display:flex;align-items:center}
 </style>
 </head>
 <body>
@@ -928,9 +944,9 @@ body.hm #soPay{filter:blur(7px);-webkit-user-select:none;user-select:none}
     <div class="pchips" id="payLine"></div>
   </div>
 
-  <div class="sec">Notes for Skedulo <span id="clTgState"></span>
+  <div class="sec" id="notesHead" style="cursor:pointer">Notes for Skedulo <span id="clTgState"></span><svg id="notesChev" viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;margin-left:4px;transition:transform .25s"><path d="M6 9l6 6 6-6"/></svg>
     <button class="btn btn-ghost btn-sm aside" id="copyNotes" style="margin-left:auto"><svg viewBox="0 0 24 24" style="width:15px;height:15px"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy</button></div>
-  <div class="card" style="padding:4px">
+  <div class="card" id="notesCard" style="padding:4px;display:none">
     <textarea id="w_notes" rows="6" style="background:#fff"></textarea>
   </div>
 
@@ -2529,7 +2545,7 @@ function sovBuild(el){
     + '<linearGradient id="soG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5ca8"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>'
     + '<linearGradient id="soG2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8af0b4"/><stop offset="1" stop-color="#2bb673"/></linearGradient></defs>'
     + '<circle class="orb" cx="120" cy="120" r="114" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2" stroke-dasharray="1 9" stroke-linecap="round"/>'
-    + '<circle cx="120" cy="120" r="96" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="10"/>'
+    + '<circle class="trk" cx="120" cy="120" r="96" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="10"/>'
     + '<circle class="rip" cx="120" cy="120" r="96" fill="none" stroke="#6fe3a0" stroke-width="2"/>'
     + '<g class="indg"><circle cx="120" cy="120" r="96" fill="none" stroke="url(#soG)" stroke-width="10" stroke-linecap="round" stroke-dasharray="120 484" transform="rotate(-90 120 120)"/></g>'
     + '<circle class="arc" cx="120" cy="120" r="96" fill="none" stroke="url(#soG)" stroke-width="10" stroke-linecap="round" style="stroke-dasharray:0 604" transform="rotate(-90 120 120)"/>'
@@ -3460,7 +3476,7 @@ $("#histList").addEventListener("click", e => {
   const b = e.target.closest("[data-del]");
   if(b){
     if(!confirm("Remove this job from the history?")) return;
-    jobsDel(+b.dataset.del).then(() => { renderHistory(); paintWeekMini(); });
+    jobsDel(+b.dataset.del).then(() => { renderHistory(); paintWeekMini(); try{ paintToday(); }catch(e){} });
     return;
   }
   const r = e.target.closest("[data-edit]");
@@ -3582,7 +3598,7 @@ $("#editSave").addEventListener("click", () => {
   delete rec.isNew;
   const done = () => {
     $("#editOverlay").classList.remove("on");
-    renderHistory(); paintWeekMini();
+    renderHistory(); paintWeekMini(); try{ paintToday(); }catch(e){}
   };
   (editJob.id != null ? jobsPut(rec) : jobsAdd(rec)).then(done)
     .catch(err => alert("Could not save: " + (err && err.message || err)));
@@ -3703,7 +3719,7 @@ function tgPaint(){
     : '<span class="pill">Not connected</span>';
   $("#tgAuto").classList.toggle("on", c.auto);
   $("#tgXls").classList.toggle("on", c.xls);
-  $("#postTg").style.display = (c.token && c.chat) ? "" : "none";
+  $("#postTg").style.display = (c.token && c.chat && !c.auto) ? "" : "none";
 }
 $("#tg_token").addEventListener("change", () => {
   store("tg_token", $("#tg_token").value.trim()); store("tg_chat", ""); store("tg_title", ""); tgPaint();
@@ -3949,7 +3965,8 @@ function navPaint(v){
   const n = NAV[v]; if(!n) return;
   $("#stepStrip").style.display = (v === "result") ? "none" : "flex";
   $("#navTitle").textContent = n.t;
-  $("#navBack").textContent = n.back ? "\u2039 " + (n.back === "today" ? "Today" : NAV[n.back].t) : "";
+  $("#navBack").innerHTML = n.back ? '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>' : "";
+  $("#navBack").setAttribute("aria-label", n.back ? "Back to " + (n.back === "today" ? "Today" : NAV[n.back].t) : "");
   $("#navBack").dataset.go = n.back;
   stepPaint(v);
 }
@@ -3995,6 +4012,13 @@ function toastMsg(t){
   e.textContent = t; e.className = "on";
   clearTimeout(toastMsg.t); toastMsg.t = setTimeout(() => { e.className = ""; }, 2600);
 }
+["gesturestart","gesturechange","gestureend"].forEach(n => document.addEventListener(n, e => e.preventDefault()));
+$("#notesHead").addEventListener("click", e => {
+  if(e.target.closest("#copyNotes")) return;
+  const c = $("#notesCard"), open = c.style.display === "none";
+  c.style.display = open ? "" : "none";
+  $("#notesChev").style.transform = open ? "rotate(180deg)" : "";
+});
 function tgMark(txt){
   const e = $("#clcTg"); if(e) e.textContent = txt;
   const v = document.getElementById("soTgV"); if(v){ v.textContent = txt; const r = document.getElementById("soTgRow"); if(r) r.style.display = (!txt || txt === "Not set up") ? "none" : ""; }
