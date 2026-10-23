@@ -710,6 +710,9 @@ body.stepsnav #stepStrip button{background:transparent;min-height:40px;border-ra
 body.stepsnav #stepStrip button.on{background:var(--ink);color:#fff}
 body.stepsnav #stepStrip i{width:18px;height:18px;font-size:11px;font-weight:700}
 body.stepsnav #jobBar{flex-basis:100%}
+
+/* ---- v76 week + finish tidy ---- */
+#histOverlay .sheet-body{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
@@ -730,7 +733,7 @@ body.stepsnav #jobBar{flex-basis:100%}
   <div id="stepStrip">
     <button data-go="checklist"><i></i>Checklist</button>
     <button data-go="fcs2"><i></i>Signature</button>
-    <button data-go="close"><i></i>Close</button>
+    <button data-go="close"><i></i>Finish</button>
   </div>
   <div class="tabs">
     <div class="tab on" data-view="today">Today</div>
@@ -805,7 +808,7 @@ body.stepsnav #jobBar{flex-basis:100%}
   </div>
   <p class="foot-note">Type a number and a space &mdash; it becomes &ldquo;920mb /&rdquo;.</p>
 
-  <div class="sec">Circle Yes or No</div>
+  <div class="sec">Customer questions</div>
   <div class="card"><div id="qRows"></div></div>
 
   <div class="sec">Customer email</div>
@@ -901,7 +904,7 @@ body.stepsnav #jobBar{flex-basis:100%}
   <div id="closedCard" style="display:none">
     <div style="text-align:center;padding:26px 0 14px">
       <div class="clic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></div>
-      <div style="font-size:26px;font-weight:700;margin-top:12px">Job closed</div>
+      <div style="font-size:26px;font-weight:700;margin-top:12px">Job finished</div>
       <div class="hint" id="clcAddr" style="margin-top:2px"></div>
     </div>
     <div class="card">
@@ -915,7 +918,7 @@ body.stepsnav #jobBar{flex-basis:100%}
     </div>
   </div>
   <div id="clPre">
-    <div class="sec">Photos <span id="photoCount"></span></div>
+    <div class="sec">Photos <span id="photoCount"></span><button class="btn btn-ghost btn-sm aside" id="clearPhotos" style="margin-left:auto;color:#e0352b;background:none;box-shadow:none;min-height:36px;font-size:14px;padding:0 4px">Clear all</button></div>
     <div class="card">
       <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
       <p class="hint" id="photoEmpty" style="display:none"></p>
@@ -977,13 +980,12 @@ body.stepsnav #jobBar{flex-basis:100%}
   </div>
 
   <div id="docCard" style="display:none">
-    <div class="sec">Forms going up</div>
+    <div class="sec">Forms</div>
     <div class="card">
       <div id="docStrip" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"></div>
     </div>
   </div>
 
-  <div class="links"><button class="danger" id="clearPhotos"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Clear photos</button></div>
   <input type="file" id="camInput" accept="image/*" capture="environment" multiple style="display:none">
   <input type="file" id="galInput" accept="image/*" multiple style="display:none">
 </div>
@@ -1021,7 +1023,7 @@ body.stepsnav #jobBar{flex-basis:100%}
 </div>
 
 <div class="overlay sheet" id="histOverlay">
-  <div class="sheet-head"><span></span><h3>Week</h3><button class="done" id="histClose">Done</button></div>
+  <div class="sheet-head"><button class="done" id="histAdd" aria-label="Add job" style="justify-self:start;font-size:28px;line-height:1;padding:0 12px">+</button><h3>Week</h3><button class="done" id="histClose">Done</button></div>
   <div class="sheet-body">
     <div class="weeknav">
       <button id="histPrev" aria-label="Previous week">&lsaquo;</button>
@@ -1034,10 +1036,7 @@ body.stepsnav #jobBar{flex-basis:100%}
     </div>
     <div class="bars" id="histBars"></div>
     <div id="histList"></div>
-  </div>
-  <div class="sheet-foot">
-    <button class="btn btn-ghost" id="histAdd" style="margin-bottom:8px">+ Add job</button>
-    <button class="btn btn-magenta" id="histExport"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span id="histExpLbl">Export week to Excel</span></button>
+    <button class="btn btn-ghost" id="histExport" style="margin-top:20px"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span id="histExpLbl">Export week to Excel</span></button>
   </div>
 </div>
 
@@ -2472,7 +2471,7 @@ function paintDest(){
   } else {
     const addr = composedAddress();
     if(addr){
-      html = ICON_FOLDER + "<span>Uploads to</span><b>" + esc(addr) + "</b>";
+      html = "";
     } else {
       warn = true; act = "checklist";
       html = ICON_FOLDER + "<b>Add the address in Checklist &rsaquo;</b>";
@@ -2480,6 +2479,7 @@ function paintDest(){
   }
   el.dataset.act = act;
   el.innerHTML = html;
+  el.style.display = html ? "" : "none";
   el.classList.toggle("warn", warn);
   const f = $("#setFolder");
   if(f) f.innerHTML = GD.folderId
@@ -2632,7 +2632,7 @@ function sendOvFinale(quiet){
   arc.setAttribute("stroke", "url(#soG2)");
   arc.style.strokeDasharray = SO_L.toFixed(1) + " " + SO_L.toFixed(1);
   soQ(".hd").style.transform = "rotate(360deg)";
-  soQ("#soTitle").textContent = "Job closed";
+  soQ("#soTitle").textContent = "Job finished";
   soCount(soTotal || soShown);
   const d = soQ("#soDrive"), tg = soQ("#soTg");
   d.className = "done"; if(tg.style.display !== "none") tg.className = "on";
@@ -3433,7 +3433,7 @@ function renderHistory(){
     $("#histTotal").textContent = "$" + total;
     $("#histCount").textContent = rows.length;
     $("#histExport").disabled = !rows.length;
-    $("#histExpLbl").textContent = (tgReady() && tgCfg().xls) ? "Send week to group" : "Export week to Excel";
+    $("#histExpLbl").textContent = (tgReady() && tgCfg().xls) ? "Send week" : "Export to Excel";
     /* day bars, Monday - Saturday; tap one to show only that day */
     const sums = [0,0,0,0,0,0,0], cnt = [0,0,0,0,0,0,0];
     rows.forEach(j => { const w = new Date(j.when).getDay(); sums[w] += (j.total || 0); cnt[w]++; });
@@ -3655,6 +3655,7 @@ $("#histExport").addEventListener("click", () => {
     const blob = new Blob([buildXLSX(out, "Week")],
       {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
     const cfg = tgCfg();
+    if(tgReady() && cfg.xls && !confirm("Send this week to the group?")) return;
     if(tgReady() && cfg.xls){
       tgSendFile(blob, name, "Week " + fmtCell(a) + " - " + fmtCell(b) + "  $" + sum)
         .then(() => alert("Excel sent to the group."))
@@ -3928,7 +3929,7 @@ function setTabs(v){
 const NAV = {
   checklist: {t: "Checklist",      back: "today"},
   fcs2:      {t: "Customer signs", back: "today"},
-  close:     {t: "Close the job",  back: "today"},
+  close:     {t: "Finish",         back: "today"},
   result:    {t: "Document",       back: ""}
 };
 /* one compact row: back button + the three steps (no separate title) */
@@ -4129,7 +4130,7 @@ function paintToday(){
   const rows = [
     {go: "checklist", ok: !!(name && ($("#c_street").value || "").trim()), t: "Checklist", v: (name && addr) ? "filled" : "to do"},
     {go: "fcs2",      ok: state.strokes.length > 0, t: "Customer signs", v: state.strokes.length ? "signed" : "to do"},
-    {go: "close",     ok: !!uploadedOnce, t: "Close the job", v: uploadedOnce ? "sent" : (photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") : "to do")}
+    {go: "close",     ok: !!uploadedOnce, t: "Finish the job", v: uploadedOnce ? "sent" : (photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") : "to do")}
   ];
   const okN = rows.filter(r => r.ok).length;
   const nxt = rows.find(r => !r.ok);
@@ -4206,7 +4207,7 @@ function setView(v){
     try { docThumbs(); } catch(e){ console.error(e); }
     paintClose();
     if(!$("#makeBtn").classList.contains("working")){
-      $("#makeBtn").innerHTML = ICON_UP + "Close job";
+      $("#makeBtn").innerHTML = ICON_UP + "Finish job";
       $("#makeBtn").className = "btn btn-magenta";
     }
   } else if(v !== "result"){
