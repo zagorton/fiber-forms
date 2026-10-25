@@ -750,10 +750,9 @@ body.stepsnav #jobBar{flex-basis:100%}
 #sendOv.noanim .so-dark{opacity:0}
 
 /* ---- v79 document screen: preview, one main action ---- */
-#v-result{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
-#v-result .rescap{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding:0 2px}
-#v-result .rescap b{font-size:17px;font-weight:600}
-#v-result .rescap span{font-size:13px;color:var(--muted)}
+#v-result{padding-bottom:calc(150px + env(safe-area-inset-bottom));overflow:hidden}
+#v-result .card{height:calc(100dvh - 296px - env(safe-area-inset-bottom));min-height:300px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+#v-result #resultImg{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}
 #v-result .resbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:12px 16px calc(14px + env(safe-area-inset-bottom))}
 #v-result .resbar .btn{min-height:50px}
 #v-result .resbar #shareBtn{min-height:56px;font-size:17px}
@@ -1068,7 +1067,6 @@ body.stepsnav #jobBar{flex-basis:100%}
 <div class="wrap view" id="v-result" style="display:none">
   <div class="card" style="padding:14px">
     <img id="resultImg" alt="Completed form">
-    <div class="rescap"><b id="resName">Checklist</b><span id="resMeta"></span></div>
   </div>
   <div class="resbar" id="resBar">
     <button class="btn btn-magenta" id="shareBtn"></button>
@@ -1093,7 +1091,7 @@ body.stepsnav #jobBar{flex-basis:100%}
       <div class="tg on" id="formsBtn"><span class="ck"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="l">Checklist + FCS2</span></div>
     </div>
   </div>
-  <button class="btn btn-magenta" id="makeBtn">Create PDF for customer</button>
+  <button class="btn btn-magenta" id="makeBtn">Create PDF</button>
 </div>
 
 <div class="overlay sheet" id="histOverlay">
@@ -1968,9 +1966,7 @@ const IC_SAVE = '<svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 10.5
 const IC_IMG  = '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M20 15l-5-5L6 20"/></svg>';
 function showResult(title, hint){
   const pdf = !!(result && /pdf/.test(result.type || ""));
-  NAV.result = {t: pdf ? "Customer copy" : "Signed form", back: state.view};
-  $("#resName").textContent = pdf ? "Checklist" : "FCS2";
-  $("#resMeta").textContent = pdf ? "PDF \u00b7 1 page" : "JPG";
+  NAV.result = {t: pdf ? "Checklist" : "FCS2", back: state.view};
   $("#shareBtn").innerHTML = IC_SEND + (pdf ? "Send to customer" : "Share");
   $("#saveBtn").innerHTML = IC_SAVE + (pdf ? "Save PDF" : "Save JPG");
   const alt = $("#altBtn"), hasAlt = !!(result && result.alt);
@@ -4346,10 +4342,10 @@ function setView(v){
     if(v === "fcs2") paintReview();
     if($("#makeBtn").classList.contains("working")) { setTabs(v); return; }
     if(v === "checklist"){
-      $("#makeBtn").innerHTML = ICON_DOC + "Create PDF for customer";
+      $("#makeBtn").innerHTML = ICON_DOC + "Create PDF";
       $("#makeBtn").className = "btn btn-magenta";
     } else {
-      $("#makeBtn").innerHTML = ICON_IMG + "Create JPG to upload";
+      $("#makeBtn").innerHTML = ICON_IMG + "Create JPG";
       $("#makeBtn").className = "btn btn-magenta";
     }
   } else {
