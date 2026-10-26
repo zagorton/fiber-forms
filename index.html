@@ -1207,7 +1207,7 @@ body.stepsnav #jobBar{flex-basis:100%}
       <div class="f"><label for="sk_url">Skedulo calendar link</label>
         <input type="text" id="sk_url" name="sk_x1" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true" data-1p-ignore style="-webkit-text-security:disc" placeholder="Paste the iCalendar link"></div>
       <div class="sg-btns"><button class="btn btn-ghost btn-sm" id="skSave">Save and check</button></div>
-      <p class="sg-note">Skedulo app \u2192 More \u2192 Settings \u2192 iCalendar link \u2192 Copy Link. Your jobs then appear on Today by themselves.</p>
+      <p class="sg-note">Copy the iCalendar link in Skedulo.</p>
     </div>
 
     <div class="sgroup">
@@ -3163,7 +3163,10 @@ function skRefresh(force){
       if(t.indexOf("BEGIN:VCALENDAR") < 0) throw new Error("notcal");
       const day0 = new Date(); day0.setHours(0, 0, 0, 0);
       const lim = day0.getTime() + 8 * 86400000;
-      const list = parseIcs(t).filter(e => e.start >= day0.getTime() && e.start < lim)
+      const allEv = parseIcs(t);
+      store("skTotal", String(allEv.length));
+      store("skLast", String(allEv.reduce((m, e) => Math.max(m, e.start || 0), 0)));
+      const list = allEv.filter(e => e.start >= day0.getTime() && e.start < lim)
         .sort((a, b) => a.start - b.start)
         .map(e => ({uid: e.uid || "", start: e.start, end: e.end || 0, addr: e.loc || e.sum || "", sum: e.sum || ""}));
       store("skJobs", JSON.stringify(list)); store("skAt", String(Date.now())); skErr = "";
@@ -3230,7 +3233,12 @@ $("#skSave").addEventListener("click", () => {
   if(!v){ skPaintStatus(); paintSk(); return; }
   skRefresh(true).then(() => {
     if(skErr && SK_MSG[skErr]) notice(SK_MSG[skErr][0], SK_MSG[skErr][1]);
-    else notice("Schedule connected", skCache().length + " jobs in the next 7 days.");
+    else {
+      const n = skCache().length, tot = +recall("skTotal") || 0, last = +recall("skLast") || 0;
+      let m = n + (n === 1 ? " job" : " jobs") + " in the next 7 days.";
+      if(!n) m += tot ? "\nThe calendar has " + tot + " events, the latest on " + new Date(last).toLocaleDateString("en-US", {month: "short", day: "numeric"}) + "." : "\nThe calendar is empty for now.";
+      notice("Schedule connected", m);
+    }
   });
 });
 document.addEventListener("visibilitychange", () => { if(!document.hidden) skRefresh(false); });
