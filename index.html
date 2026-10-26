@@ -964,6 +964,8 @@ body.stepsnav #jobBar{flex-basis:100%}
     </div>
   </div>
   <div id="tdActive"></div>
+  <div class="sec" id="tdSkTitle" style="display:none">Next jobs</div>
+  <div class="steps" id="tdSk" style="display:none"></div>
   <div class="sec" id="tdJobTitle" style="display:none">Steps</div>
   <div class="steps" id="tdSteps" style="display:none"></div>
   <div class="sec" id="tdDoneTitle" style="display:none">Done today</div>
@@ -1197,6 +1199,15 @@ body.stepsnav #jobBar{flex-basis:100%}
         </div>
         <p class="sg-note">Create a bot in @BotFather and paste its token. Add the bot to your group, send /start@botname there, then tap Find group.</p>
       </details>
+    </div>
+
+    <div class="sgroup">
+      <div class="sg-h"><span class="sic priv"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>
+        <div><b>Schedule</b></div><span id="skStatus"></span></div>
+      <div class="f"><label for="sk_url">Skedulo calendar link</label>
+        <input type="text" id="sk_url" name="sk_x1" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true" data-1p-ignore style="-webkit-text-security:disc" placeholder="Paste the iCalendar link"></div>
+      <div class="sg-btns"><button class="btn btn-ghost btn-sm" id="skSave">Save and check</button></div>
+      <p class="sg-note">Skedulo app \u2192 More \u2192 Settings \u2192 iCalendar link \u2192 Copy Link. Your jobs then appear on Today by themselves.</p>
     </div>
 
     <div class="sgroup">
@@ -3098,6 +3109,134 @@ function driveUpload(){
   });
 }
 
+
+/* ---------------- Skedulo schedule (iCalendar) ---------------------------- */
+let skBusy = false, skErr = "";
+function skUrl(){ return recall("skUrl").trim(); }
+function skCache(){ try{ return JSON.parse(recall("skJobs") || "[]") || []; }catch(e){ return []; } }
+function tzMs(y, mo, d, h, mi, se, tz){
+  const guess = Date.UTC(y, mo - 1, d, h, mi, se);
+  try{
+    const f = new Intl.DateTimeFormat("en-US", {timeZone: tz, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric"});
+    const o = {}; f.formatToParts(new Date(guess)).forEach(x => { o[x.type] = +x.value; });
+    const as = Date.UTC(o.year, o.month - 1, o.day, o.hour, o.minute, o.second);
+    return guess - (as - guess);
+  }catch(e){ return new Date(y, mo - 1, d, h, mi, se).getTime(); }
+}
+function icsDate(v, params){
+  const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/.exec(v.trim());
+  if(!m) return 0;
+  const y = +m[1], mo = +m[2], d = +m[3], h = +(m[4] || 0), mi = +(m[5] || 0), se = +(m[6] || 0);
+  if(m[7]) return Date.UTC(y, mo - 1, d, h, mi, se);
+  const tz = /TZID=([^;:]+)/i.exec(params || "");
+  return tz ? tzMs(y, mo, d, h, mi, se, tz[1]) : new Date(y, mo - 1, d, h, mi, se).getTime();
+}
+function icsText(v){ return String(v || "").replace(/\\[nN]/g, ", ").replace(/\\([,;\\])/g, "$1").trim(); }
+function parseIcs(txt){
+  const lines = String(txt).replace(/\r?\n[ \t]/g, "").split(/\r?\n/);
+  const out = []; let ev = null;
+  lines.forEach(ln => {
+    if(ln === "BEGIN:VEVENT"){ ev = {}; return; }
+    if(ln === "END:VEVENT"){ if(ev && ev.start && !/CANCEL/i.test(ev.status || "")) out.push(ev); ev = null; return; }
+    if(!ev) return;
+    const i = ln.indexOf(":"); if(i < 0) return;
+    const head = ln.slice(0, i), val = ln.slice(i + 1);
+    const name = head.split(";")[0].toUpperCase(), params = head.slice(name.length);
+    if(name === "UID") ev.uid = val;
+    else if(name === "SUMMARY") ev.sum = icsText(val);
+    else if(name === "LOCATION") ev.loc = icsText(val);
+    else if(name === "STATUS") ev.status = val;
+    else if(name === "DTSTART") ev.start = icsDate(val, params);
+    else if(name === "DTEND") ev.end = icsDate(val, params);
+  });
+  return out;
+}
+function skRefresh(force){
+  const url = skUrl();
+  if(!url || skBusy) return Promise.resolve();
+  const at = +recall("skAt") || 0;
+  if(!force && Date.now() - at < 5 * 60 * 1000) return Promise.resolve();
+  if(navigator.onLine === false){ skErr = "offline"; return Promise.resolve(); }
+  skBusy = true;
+  return fetch(url, {cache: "no-store"}).then(r => { if(!r.ok) throw new Error("http " + r.status); return r.text(); })
+    .then(t => {
+      if(t.indexOf("BEGIN:VCALENDAR") < 0) throw new Error("notcal");
+      const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+      const lim = day0.getTime() + 8 * 86400000;
+      const list = parseIcs(t).filter(e => e.start >= day0.getTime() && e.start < lim)
+        .sort((a, b) => a.start - b.start)
+        .map(e => ({uid: e.uid || "", start: e.start, end: e.end || 0, addr: e.loc || e.sum || "", sum: e.sum || ""}));
+      store("skJobs", JSON.stringify(list)); store("skAt", String(Date.now())); skErr = "";
+    })
+    .catch(e => { skErr = (e instanceof TypeError) ? "blocked" : (e.message === "notcal" ? "notcal" : "fail"); })
+    .then(() => { skBusy = false; try{ paintSk(); skPaintStatus(); }catch(e){} });
+}
+function skPaintStatus(){
+  const el = $("#skStatus"); if(!el) return;
+  if(!skUrl()){ el.innerHTML = '<span class="pill">Not set</span>'; return; }
+  if(skErr === "blocked") el.innerHTML = '<span class="pill">Blocked</span>';
+  else if(skErr) el.innerHTML = '<span class="pill">Error</span>';
+  else el.innerHTML = '<span class="pill ready">&#10003; ' + skCache().length + ' jobs</span>';
+}
+const SK_MSG = {
+  blocked: ["Skedulo does not allow the app to read the calendar", "The link is saved, but the phone blocked the request. Tell me and we will use Google Calendar instead."],
+  notcal: ["This is not a calendar link", "Copy the iCalendar link in Skedulo → More → Settings."],
+  fail: ["Could not load the schedule", "Check the link and the signal, then try again."],
+  offline: ["No signal", "The schedule updates when you are online."]
+};
+function paintSk(){
+  const box = $("#tdSk"), tt = $("#tdSkTitle"); if(!box) return;
+  if(!skUrl()){ box.style.display = "none"; tt.style.display = "none"; return; }
+  const now = Date.now();
+  const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+  jobsAll().then(all => {
+    const recent = (all || []).filter(j => j.when >= day0.getTime() - 86400000).map(j => String(j.address || "").toLowerCase());
+    const cur = (composedAddress() || "").toLowerCase();
+    const list = skCache().filter(e => {
+      const key = String(e.addr).split(",")[0].trim().toLowerCase();
+      if(!key) return true;
+      if(cur && cur.indexOf(key) === 0) return false;
+      return !recent.some(a => a.indexOf(key) === 0);
+    });
+    const fmt = new Intl.DateTimeFormat("en-US", {hour: "numeric", minute: "2-digit"});
+    const dfmt = new Intl.DateTimeFormat("en-US", {weekday: "short"});
+    const rows = list.map((e, i) => {
+      const d = new Date(e.start), same = d.toDateString() === new Date().toDateString();
+      return '<button class="step" data-sk="' + i + '"><span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>';
+    });
+    window.skShown = list;
+    if(!rows.length){
+      if(skErr && SK_MSG[skErr] && !skCache().length){
+        box.innerHTML = '<div class="warnbox"><b>' + SK_MSG[skErr][0] + '</b>' + SK_MSG[skErr][1] + '</div>';
+        box.style.display = ""; tt.style.display = "none";
+      } else { box.style.display = "none"; tt.style.display = "none"; }
+      return;
+    }
+    box.innerHTML = rows.join(""); box.style.display = ""; tt.style.display = "";
+  }).catch(() => {});
+}
+$("#tdSk").addEventListener("click", e => {
+  const b = e.target.closest("[data-sk]"); if(!b) return;
+  const j = (window.skShown || [])[+b.dataset.sk]; if(!j) return;
+  const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
+  if(busy && !uploadedOnce && !confirm("Start this job? The current one is cleared.")) return;
+  if(busy) resetJob();
+  applyAddress(j.addr);
+  startJob();
+});
+$("#skSave").addEventListener("click", () => {
+  const v = ($("#sk_url").value || "").trim();
+  store("skUrl", v); store("skAt", "0"); store("skJobs", ""); skErr = "";
+  if(!v){ skPaintStatus(); paintSk(); return; }
+  skRefresh(true).then(() => {
+    if(skErr && SK_MSG[skErr]) notice(SK_MSG[skErr][0], SK_MSG[skErr][1]);
+    else notice("Schedule connected", skCache().length + " jobs in the next 7 days.");
+  });
+});
+document.addEventListener("visibilitychange", () => { if(!document.hidden) skRefresh(false); });
+window.addEventListener("online", () => skRefresh(false));
+setTimeout(() => { try{ $("#sk_url").value = skUrl(); skPaintStatus(); paintSk(); skRefresh(false); }catch(e){} }, 800);
+
 $("#noteGo").addEventListener("click", noteClose);
 $("#noteBd").addEventListener("click", () => { noteFn = null; noteClose(); });
 $("#startNext").addEventListener("click", () => {
@@ -4262,6 +4401,7 @@ function paintToday(){
   const nxt = rows.find(r => !r.ok);
   const has = addr || name || photos.length;
   $("#tdActive").innerHTML = tdActiveHtml(rows, okN, nxt, has, addr, name);
+  try{ paintSk(); skRefresh(false); }catch(e){}
   $("#tdSteps").innerHTML = rows.map(r =>
     '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
     + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
