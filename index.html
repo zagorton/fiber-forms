@@ -964,7 +964,7 @@ body.stepsnav #jobBar{flex-basis:100%}
     </div>
   </div>
   <div id="tdActive"></div>
-  <div class="sec" id="tdSkTitle" style="display:none">Next jobs</div>
+  <div class="sec" id="tdSkTitle" style="display:flex;align-items:center;justify-content:space-between"><span>Next jobs</span><span style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" id="skFileBtn" type="button">File</button><button class="btn btn-ghost btn-sm" id="skPasteBtn" type="button">Paste</button></span><input type="file" id="skFile" accept=".xlsx" style="display:none"></div>
   <div class="steps" id="tdSk" style="display:none"></div>
   <div class="sec" id="tdJobTitle" style="display:none">Steps</div>
   <div class="steps" id="tdSteps" style="display:none"></div>
@@ -3151,6 +3151,142 @@ function parseIcs(txt){
   });
   return out;
 }
+function pasteCache(){ try{ return JSON.parse(recall("skPaste") || "[]") || []; }catch(e){ return []; } }
+function skAll(){
+  const seen = {}, out = [];
+  skCache().concat(pasteCache()).forEach(e => {
+    const k = String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString();
+    if(seen[k]) return; seen[k] = 1; out.push(e);
+  });
+  return out.sort((a, b) => a.start - b.start);
+}
+function parsePortal(txt){
+  const toks = String(txt).split(/[\t\r\n]+| {2,}/).map(x => x.trim()).filter(Boolean);
+  const out = []; let cur = null;
+  const done = () => { if(cur && cur.addr && !cur.cancel) out.push(cur); };
+  toks.forEach(t => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/.exec(t);
+    if(m){ done(); cur = {uid: "", start: new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime(), end: 0, addr: "", sum: "", ref: ""}; return; }
+    if(!cur) return;
+    if(/^\d{1,2}:\d{2}$/.test(t) && !cur.end){ const h = t.split(":"); const d = new Date(cur.start); d.setHours(+h[0], +h[1], 0, 0); cur.end = d.getTime(); return; }
+    if(/^[A-Z0-9]{2,8}-SR-\d+-\d+$/i.test(t)){ cur.ref = t; cur.uid = t; return; }
+    if(cur.ref && !cur.addr && /\d/.test(t) && /[A-Za-z]/.test(t)){ cur.addr = t; return; }
+    if(cur.ref && cur.addr && /cancel/i.test(t)) cur.cancel = true;
+  });
+  done();
+  if(!out.length){
+    String(txt).split(/\r?\n/).forEach(ln => {
+      const r = /(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2}).*?([A-Z0-9]{2,8}-SR-\d+-\d+)\s+(.+?,\s*[A-Z]{2}\s+\d{5})/.exec(ln);
+      if(r && !/cancel/i.test(ln)) out.push({uid: r[6], ref: r[6], start: new Date(+r[1], +r[2] - 1, +r[3], +r[4], +r[5]).getTime(), end: 0, addr: r[7].trim(), sum: ""});
+    });
+  }
+  return out;
+}
+function pastePortal(txt){
+  const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+  const list = parsePortal(txt).filter(e => e.start >= day0.getTime()).sort((a, b) => a.start - b.start);
+  if(!list.length){ notice("No jobs found", "Copy the Resource Schedule table in the portal, then tap Paste."); return; }
+  store("skPaste", JSON.stringify(list));
+  paintSk();
+  toastMsg(list.length + (list.length === 1 ? " job" : " jobs"));
+}
+/* customer file (.xlsx from the portal): read in the browser, kept on the phone */
+function u16(d, o){ return d[o] | (d[o + 1] << 8); }
+function u32(d, o){ return (d[o] | (d[o + 1] << 8) | (d[o + 2] << 16) | (d[o + 3] << 24)) >>> 0; }
+function zipEntries(buf){
+  const d = new Uint8Array(buf); let e = -1;
+  for(let i = d.length - 22; i >= Math.max(0, d.length - 70000); i--){ if(u32(d, i) === 0x06054b50){ e = i; break; } }
+  if(e < 0) throw new Error("zip");
+  const n = u16(d, e + 10); let o = u32(d, e + 16); const out = {};
+  for(let k = 0; k < n; k++){
+    if(u32(d, o) !== 0x02014b50) break;
+    const meth = u16(d, o + 10), csz = u32(d, o + 20), nl = u16(d, o + 28), xl = u16(d, o + 30), cl = u16(d, o + 32), lo = u32(d, o + 42);
+    const name = new TextDecoder().decode(d.subarray(o + 46, o + 46 + nl));
+    const ln = u16(d, lo + 26), lx = u16(d, lo + 28), st = lo + 30 + ln + lx;
+    out[name] = {meth: meth, data: d.subarray(st, st + csz)};
+    o += 46 + nl + xl + cl;
+  }
+  return out;
+}
+function zipRead(ent){
+  if(!ent) return Promise.resolve("");
+  if(ent.meth === 0) return Promise.resolve(new TextDecoder().decode(ent.data));
+  const ds = new DecompressionStream("deflate-raw");
+  const w = ds.writable.getWriter(); w.write(ent.data); w.close();
+  return new Response(ds.readable).arrayBuffer().then(b => new TextDecoder().decode(b));
+}
+function colNum(ref){ let n = 0; const m = /^[A-Z]+/.exec(ref); (m ? m[0] : "").split("").forEach(ch => { n = n * 26 + ch.charCodeAt(0) - 64; }); return n; }
+function xlsxRows(buf){
+  return Promise.resolve().then(() => {
+    const z = zipEntries(buf);
+    const sheetName = z["xl/worksheets/sheet1.xml"] ? "xl/worksheets/sheet1.xml" : Object.keys(z).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort()[0];
+    return Promise.all([zipRead(z["xl/sharedStrings.xml"]), zipRead(z[sheetName])]);
+  }).then(r => {
+    const dp = new DOMParser();
+    const ss = [];
+    if(r[0]) Array.prototype.forEach.call(dp.parseFromString(r[0], "text/xml").getElementsByTagName("si"), si => {
+      ss.push(Array.prototype.map.call(si.getElementsByTagName("t"), t => t.textContent).join(""));
+    });
+    const rows = [];
+    Array.prototype.forEach.call(dp.parseFromString(r[1], "text/xml").getElementsByTagName("row"), row => {
+      const cells = [];
+      Array.prototype.forEach.call(row.getElementsByTagName("c"), c => {
+        const i = colNum(c.getAttribute("r") || "A1") - 1, t = c.getAttribute("t");
+        const v = c.getElementsByTagName("v")[0];
+        let val = "";
+        if(t === "s" && v) val = ss[+v.textContent] || "";
+        else if(t === "inlineStr") val = Array.prototype.map.call(c.getElementsByTagName("t"), x => x.textContent).join("");
+        else if(v) val = v.textContent;
+        cells[i] = val;
+      });
+      rows.push(cells);
+    });
+    return rows;
+  });
+}
+function dirList(){ try{ return JSON.parse(recall("skDir") || "[]") || []; }catch(e){ return []; } }
+function niceName(n){ n = String(n || "").trim(); return (n && n === n.toUpperCase()) ? n.toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, a, b) => a + b.toUpperCase()) : n; }
+function dirKey(a){ return String(a || "").split(",")[0].trim().toLowerCase(); }
+function importCustomers(file){
+  return file.arrayBuffer().then(xlsxRows).then(rows => {
+    let hi = -1, H = {};
+    for(let i = 0; i < rows.length && i < 30; i++){
+      const m = {}; (rows[i] || []).forEach((v, j) => { if(v) m[String(v).trim().toLowerCase()] = j; });
+      if(m["address"] !== undefined && m["servicerequestid"] !== undefined){ hi = i; H = m; break; }
+    }
+    if(hi < 0) throw new Error("cols");
+    const g = (r, k) => (H[k] === undefined ? "" : String(r[H[k]] === undefined ? "" : r[H[k]]).trim());
+    const fresh = [];
+    rows.slice(hi + 1).forEach(r => {
+      if(!r || !g(r, "address")) return;
+      let when = 0; const dv = g(r, "date/time");
+      if(/^\d+(\.\d+)?$/.test(dv)){ const ms = Math.round((+dv - 25569) * 86400000), u = new Date(ms); when = new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes()).getTime(); }
+      else if(dv) when = new Date(dv).getTime() || 0;
+      fresh.push({sr: g(r, "servicerequestid"), job: g(r, "fsm job number"), ar: g(r, "addressid"), name: g(r, "name"), email: g(r, "email"), addr: g(r, "address"), when: when, type: g(r, "appointment type")});
+    });
+    if(!fresh.length) throw new Error("empty");
+    const map = {}; const cut = Date.now() - 21 * 86400000;
+    dirList().forEach(e => { if(e.when >= cut && e.sr) map[e.sr] = e; });
+    fresh.forEach(e => { if(e.sr) map[e.sr] = e; });
+    const all = Object.keys(map).map(k => map[k]);
+    store("skDir", JSON.stringify(all)); store("skDirAt", String(Date.now()));
+    return fresh.length;
+  });
+}
+function dirFind(j){
+  const list = dirList(); if(!list.length || !j) return null;
+  if(j.ref){ const a = list.filter(e => e.sr === j.ref)[0]; if(a) return a; }
+  const k = dirKey(j.addr); if(!k) return null;
+  const day = new Date(j.start).toDateString();
+  const same = list.filter(e => dirKey(e.addr) === k);
+  return same.filter(e => new Date(e.when).toDateString() === day)[0] || same.sort((a, b) => b.when - a.when)[0] || null;
+}
+function fillCustomer(c){
+  if(!c) return;
+  const put = (id, v) => { const el = $("#" + id); if(!el || !v) return; el.value = v; el.dispatchEvent(new Event("input", {bubbles: true})); };
+  put("c_customer", niceName(c.name));
+  put("c_email", String(c.email || "").toLowerCase());
+}
 function skRefresh(force){
   const url = skUrl();
   if(!url || skBusy) return Promise.resolve();
@@ -3189,13 +3325,13 @@ const SK_MSG = {
 };
 function paintSk(){
   const box = $("#tdSk"), tt = $("#tdSkTitle"); if(!box) return;
-  if(!skUrl()){ box.style.display = "none"; tt.style.display = "none"; return; }
+  tt.style.display = "flex";
   const now = Date.now();
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   jobsAll().then(all => {
     const recent = (all || []).filter(j => j.when >= day0.getTime() - 86400000).map(j => String(j.address || "").toLowerCase());
     const cur = (composedAddress() || "").toLowerCase();
-    const list = skCache().filter(e => {
+    const list = skAll().filter(e => {
       const key = String(e.addr).split(",")[0].trim().toLowerCase();
       if(!key) return true;
       if(cur && cur.indexOf(key) === 0) return false;
@@ -3209,13 +3345,13 @@ function paintSk(){
     });
     window.skShown = list;
     if(!rows.length){
-      if(skErr && SK_MSG[skErr] && !skCache().length){
+      if(skUrl() && skErr && SK_MSG[skErr] && !skAll().length){
         box.innerHTML = '<div class="warnbox"><b>' + SK_MSG[skErr][0] + '</b>' + SK_MSG[skErr][1] + '</div>';
-        box.style.display = ""; tt.style.display = "none";
-      } else { box.style.display = "none"; tt.style.display = "none"; }
+        box.style.display = "";
+      } else { box.style.display = "none"; }
       return;
     }
-    box.innerHTML = rows.join(""); box.style.display = ""; tt.style.display = "";
+    box.innerHTML = rows.join(""); box.style.display = "";
   }).catch(() => {});
 }
 $("#tdSk").addEventListener("click", e => {
@@ -3225,7 +3361,19 @@ $("#tdSk").addEventListener("click", e => {
   if(busy && !uploadedOnce && !confirm("Start this job? The current one is cleared.")) return;
   if(busy) resetJob();
   applyAddress(j.addr);
+  fillCustomer(dirFind(j));
   startJob();
+});
+$("#skFileBtn").addEventListener("click", () => { $("#skFile").value = ""; $("#skFile").click(); });
+$("#skFile").addEventListener("change", () => {
+  const f = $("#skFile").files[0]; if(!f) return;
+  importCustomers(f).then(n => { paintSk(); notice("Customers saved", n + " appointments from the file. They stay on this phone."); })
+    .catch(e => notice("Could not read the file", e && e.message === "cols" ? "Use the file from Download Appointments." : "Choose the .xlsx from Download Appointments."));
+});
+$("#skPasteBtn").addEventListener("click", () => {
+  const hint = () => notice("Allow paste", "Copy the Resource Schedule table in the portal, then tap Paste and allow it.");
+  if(navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(pastePortal).catch(hint);
+  else hint();
 });
 $("#skSave").addEventListener("click", () => {
   const v = ($("#sk_url").value || "").trim();
@@ -4069,10 +4217,38 @@ hmApply();
 
 /* ---------------- scan the router label (QR) or an extender barcode ----------------
    The square code on a Nokia router holds lines like (S)serial (ID)wifi name (KY)wifi key.
-   Needs BarcodeDetector (Chrome on Android). Elsewhere the buttons stay hidden and
-   everything is typed by hand, exactly as before. */
-const SCAN_OK = !!(window.BarcodeDetector && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+   Chrome on Android has BarcodeDetector built in. Everywhere else (iPhone) the same API comes
+   from barcode-detector.js + zxing_reader.wasm (ZXing compiled to WebAssembly), loaded only
+   when the scanner is opened and cached by sw.js for offline use. */
+const SCAN_OK = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 if(!SCAN_OK) document.body.classList.add("noscan");
+let scanLib = null;
+function scanLoadLib(){
+  if(scanLib) return scanLib;
+  scanLib = new Promise((ok, no) => {
+    const el = document.createElement("script");
+    el.src = "barcode-detector.js";
+    el.onload = () => {
+      const A = window.BarcodeDetectionAPI;
+      if(!A || !A.BarcodeDetector){ no(new Error("lib")); return; }
+      try{
+        A.prepareZXingModule({
+          overrides: {locateFile: (f, pre) => /\.wasm$/.test(f) ? "zxing_reader.wasm" : pre + f},
+          fireImmediately: true
+        });
+      }catch(e){}
+      ok(A.BarcodeDetector);
+    };
+    el.onerror = () => no(new Error("lib"));
+    document.head.appendChild(el);
+  });
+  scanLib.catch(() => { scanLib = null; });
+  return scanLib;
+}
+function scanFail(msg){
+  $("#scanSheet").innerHTML = '<div class="sc-h">' + msg + '</div>'
+    + '<div class="sc-b"><button class="btn btn-ghost" id="scanAgain" style="display:none"></button><button class="btn btn-magenta" id="scanShut">Close</button></div>';
+}
 let scanStream = null, scanTimer = 0, scanDet = null, scanMode = "router", scanFound = null, scanBusy = false;
 
 function parseLabel(raw){
@@ -4135,18 +4311,23 @@ function scanOpen(mode){
   scanPaint();
   $("#scanOv").classList.add("on");
   document.body.classList.add("locked");
+  const libP = window.BarcodeDetector ? Promise.resolve(window.BarcodeDetector) : scanLoadLib();
+  libP.catch(() => {});
   navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: "environment"}, width: {ideal: 1280}}, audio: false}).then(stream => {
     scanStream = stream;
     const v = $("#scanVid"); v.srcObject = stream; v.play().catch(() => {});
-    return BarcodeDetector.getSupportedFormats().catch(() => []);
-  }).then(sup => {
-    const want = ["qr_code", "code_128", "code_39", "code_93", "data_matrix", "ean_13", "itf"];
-    const use = want.filter(f => !sup.length || sup.indexOf(f) >= 0);
-    scanDet = new BarcodeDetector({formats: use.length ? use : undefined});
-    scanTick();
-  }).catch(() => {
-    $("#scanSheet").innerHTML = '<div class="sc-h">The camera is not available. Allow the camera for this app, or type the number.</div>'
-      + '<div class="sc-b"><button class="btn btn-ghost" id="scanAgain" style="display:none"></button><button class="btn btn-magenta" id="scanShut">Close</button></div>';
+    return libP.catch(() => { throw "lib"; });
+  }).then(D => {
+    if(!scanStream) return;
+    return (D.getSupportedFormats ? D.getSupportedFormats().catch(() => []) : Promise.resolve([])).then(sup => {
+      const want = ["qr_code", "code_128", "code_39", "code_93", "data_matrix", "ean_13", "itf"];
+      const use = want.filter(f => !sup.length || sup.indexOf(f) >= 0);
+      scanDet = new D({formats: use.length ? use : undefined});
+      scanTick();
+    });
+  }).catch(err => {
+    scanFail(err === "lib" ? "The scanner did not load. Reopen the app and try again, or type the number."
+                           : "The camera is not available. Allow the camera for this app, or type the number.");
   });
 }
 function scanSet(id, v){

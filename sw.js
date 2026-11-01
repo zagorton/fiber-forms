@@ -1,14 +1,17 @@
-const CACHE = "fiber-forms-v85";
+const CACHE = "fiber-forms-v88";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./privacy.html",
                 "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png",
                 "./maskable-192.png", "./maskable-512.png"];
+/* barcode scanner for iPhone: cached when present, a missing file never blocks the install */
+const OPTIONAL = ["./barcode-detector.js", "./zxing_reader.wasm"];
 
 /* cache: "reload" skips the browser's own HTTP cache, so a new version
    never gets stored with a stale copy of index.html inside it */
 self.addEventListener("install", e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(ASSETS.map(u => new Request(u, {cache: "reload"}))))
+      .then(c => c.addAll(ASSETS.map(u => new Request(u, {cache: "reload"})))
+        .then(() => Promise.all(OPTIONAL.map(u => c.add(new Request(u, {cache: "reload"})).catch(() => {})))))
       .then(() => self.skipWaiting())
   );
 });
@@ -52,6 +55,12 @@ self.addEventListener("fetch", e => {
   }
 
   e.respondWith(
-    caches.match(req, {ignoreSearch: true}).then(hit => hit || fetch(req))
+    caches.match(req, {ignoreSearch: true}).then(hit => hit || fetch(req).then(r => {
+      if (r && r.ok && OPTIONAL.some(u => url.pathname.endsWith(u.slice(1)))) {
+        const copy = r.clone();
+        caches.open(CACHE).then(c => c.put(req, copy));
+      }
+      return r;
+    }))
   );
 });
