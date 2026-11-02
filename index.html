@@ -1913,28 +1913,25 @@ function mailBody(){
   const L = [];
   L.push(first ? "Hi " + first + "," : "Hi,");
   L.push("");
+  L.push("Your T-Fiber equipment is installed. The checklist is attached.");
+  L.push("");
   L.push(waiting
-    ? "Your T-Fiber equipment is installed. The checklist is attached."
-    : "Your T-Fiber installation is complete. The checklist is attached.");
-  if(waiting){
-    L.push("");
-    L.push("Your internet isn't active yet. The fiber line still needs to be "
-         + "connected at the street. Please keep the modem plugged in, and "
-         + "service will be activated remotely once that's done.");
-  }
+    ? "Your internet isn't active yet. The fiber line still needs to be "
+      + "connected at the street. Please keep the modem plugged in, and we'll "
+      + "activate service remotely once that's done."
+    : "Your connection may take up to 24 hours to fully stabilize. Short drops "
+      + "or slower speeds during this time are normal.");
   if(name && name !== WIFI_NA){
     L.push("");
     L.push("Wi-Fi network: " + name);
     if(pw && pw !== WIFI_NA) L.push("Wi-Fi password: " + pw);
   }
-  if(!waiting){
-    L.push("");
-    L.push("The connection may drop for a few minutes to a few hours after "
-         + "activation. This is normal, just leave the modem plugged in.");
-  }
   L.push("");
-  L.push("Questions about billing, speeds or equipment? Contact T-Mobile Fiber "
-       + "support at 844-783-4237 (option 2) or Fiber.T-Mobile.com/support/faq.");
+  L.push("Wi-Fi name, password or extender: use the Nokia WiFi app.");
+  L.push("Apple: https://qrco.de/bg2TKl");
+  L.push("Android: https://play.google.com/store/apps/details?id=com.nokia.wifi&hl=en_US");
+  L.push("");
+  L.push("Questions? T-Mobile Fiber Support: 844-783-4237 or Fiber.T-Mobile.com/support/faq");
   L.push("");
   L.push("Thanks,");
   L.push("T-Fiber Installation");
