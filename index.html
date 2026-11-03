@@ -3421,14 +3421,16 @@ function paintSk(){
   const now = Date.now();
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   jobsAll().then(all => {
-    const recent = (all || []).filter(j => j.when >= day0.getTime() - 86400000).map(j => String(j.address || "").toLowerCase());
+    const recent = (all || []).filter(j => j.when >= day0.getTime() - 3 * 86400000).map(j => ({a: String(j.address || "").toLowerCase(), d: new Date(j.when).toDateString()}));
+    /* a job counts as done only if it was saved on the same day it is scheduled: a second visit on a later day stays open */
+    const doneFor = (e, key) => recent.some(h => h.a.indexOf(key) === 0 && h.d === new Date(e.start).toDateString());
     const cur = (composedAddress() || "").toLowerCase();
     const all0 = skAll();
     const list = all0.filter(e => {
       const key = String(e.addr).split(",")[0].trim().toLowerCase();
       if(!key) return true;
       if(cur && cur.indexOf(key) === 0) return false;
-      return !recent.some(a => a.indexOf(key) === 0);
+      return !doneFor(e, key);
     });
     const fmt = new Intl.DateTimeFormat("en-US", {hour: "numeric", minute: "2-digit"});
     const dfmt = new Intl.DateTimeFormat("en-US", {weekday: "short"});
@@ -3439,7 +3441,7 @@ function paintSk(){
       const key = String(e.addr).split(",")[0].trim().toLowerCase();
       if(!key) return "open";
       if(cur && cur.indexOf(key) === 0) return "now";
-      return recent.some(a => a.indexOf(key) === 0) ? "done" : "open";
+      return doneFor(e, key) ? "done" : "open";
     };
     all0.forEach(e => { e._n = 0; });
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
