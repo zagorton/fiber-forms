@@ -816,6 +816,14 @@ body.stepsnav #jobBar{flex-basis:100%}
 #mpSel a svg{width:22px;height:22px;fill:#fff}
 .nb{flex:none;width:26px;height:26px;border-radius:50%;background:var(--magenta);color:#fff;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 .nb.off{background:#9aa0a8}
+/* v106 swipe to remove a job from Next jobs */
+.swp{position:relative;overflow:hidden;background:#fff}
+.swp .rm{position:absolute;right:0;top:0;bottom:0;width:96px;border:none;background:#e0352b;color:#fff;font:700 16px/1 inherit;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.swp .step{position:relative;touch-action:pan-y;transition:transform .2s}
+.swp.drag .step{transition:none}
+.swp.open .step{transform:translateX(-96px)}
+body.swo #newJobFab{display:none !important}
+.swp:not(:last-child) .step{border-bottom:.5px solid var(--line)}
 </style>
 </head>
 <body>
@@ -3191,12 +3199,13 @@ function parseIcs(txt){
   return out;
 }
 function pasteCache(){ try{ return JSON.parse(recall("skPaste") || "[]") || []; }catch(e){ return []; } }
+function skHideAll(){ try{ return JSON.parse(recall("skHide") || "{}") || {}; }catch(e){ return {}; } }
 function skAll(){
-  const seen = {}, out = [], d0 = new Date().setHours(0, 0, 0, 0);
+  const seen = {}, out = [], d0 = new Date().setHours(0, 0, 0, 0), hid = skHideAll();
   skCache().concat(pasteCache()).forEach(e => {
     if(e.start < d0) return;
     const k = String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString();
-    if(seen[k]) return; seen[k] = 1; out.push(e);
+    if(hid[k] || seen[k]) return; seen[k] = 1; out.push(e);
   });
   return out.sort((a, b) => a.start - b.start);
 }
@@ -3283,7 +3292,7 @@ function pastePortal(txt){
     toastMsg(moved.length + (moved.length === 1 ? " job" : " jobs") + " added for today");
   };
   if(list.length){
-    store("skPaste", JSON.stringify(list));
+    store("skPaste", JSON.stringify(list)); store("skHide", "");
     paintSk();
     if(past.length) notice(list.length + (list.length === 1 ? " job" : " jobs") + " added", past.length + (past.length === 1 ? " more is" : " more are") + " from earlier days.", "Add as today", addPast);
     else toastMsg(list.length + (list.length === 1 ? " job" : " jobs"));
@@ -3459,7 +3468,7 @@ function paintSk(){
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
     const rows = list.map((e, i) => {
       const d = new Date(e.start), same = d.toDateString() === new Date().toDateString();
-      return '<button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>';
+      return '<div class="swp"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button></div>';
     });
     window.skShown = list;
     try{ mapUpdate(dayAll); }catch(err){}
@@ -3684,8 +3693,24 @@ document.addEventListener("visibilitychange", () => { if(document.hidden) mpStop
   });
   if(window.ResizeObserver) new ResizeObserver(() => { if(box.clientWidth !== MP.w || box.clientHeight !== MP.h) mpSoon(); }).observe(box);
 })();
+let swAt = 0;
+function swFlag(){ document.body.classList.toggle("swo", !!document.querySelector("#tdSk .swp.open")); }
+function swClose(except){ $$("#tdSk .swp.open").forEach(w => { if(w !== except) w.classList.remove("open"); }); swFlag(); }
 $("#tdSk").addEventListener("click", e => {
+  const rm = e.target.closest("[data-rm]");
+  if(rm){
+    const j = (window.skShown || [])[+rm.dataset.rm]; if(!j) return;
+    const h = skHideAll(), k = String(j.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(j.start).toDateString();
+    Object.keys(h).forEach(x => { if(Date.now() - h[x] > 7 * 86400000) delete h[x]; });
+    h[k] = Date.now(); store("skHide", JSON.stringify(h));
+    paintSk(); swFlag(); toastMsg("Removed");
+    return;
+  }
   const b = e.target.closest("[data-sk]"); if(!b) return;
+  const sw = b.closest(".swp");
+  if(Date.now() - swAt < 400){ return; }
+  if(sw && sw.classList.contains("open")){ sw.classList.remove("open"); swFlag(); return; }
+  swClose();
   const j = (window.skShown || [])[+b.dataset.sk]; if(!j) return;
   const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
   if(busy && !uploadedOnce && !confirm("Start this job? The current one is cleared.")) return;
@@ -3700,6 +3725,36 @@ $("#skClearBtn").addEventListener("click", () => {
   if(!confirm("Clear the pasted job list?")) return;
   store("skPaste", ""); paintSk();
 });
+(function(){
+  const box = $("#tdSk"); let g = null;
+  box.addEventListener("pointerdown", e => {
+    const st = e.target.closest(".swp .step"); if(!st) return;
+    swClose(st.parentNode);
+    g = {st: st, w: st.parentNode, x: e.clientX, y: e.clientY, base: st.parentNode.classList.contains("open") ? -96 : 0, on: false, dx: 0, id: e.pointerId};
+  });
+  box.addEventListener("pointermove", e => {
+    if(!g || e.pointerId !== g.id) return;
+    const dx = e.clientX - g.x, dy = e.clientY - g.y;
+    if(!g.on){
+      if(Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)){ if(Math.abs(dy) > 12) g = null; return; }
+      g.on = true; g.w.classList.add("drag");
+      try{ box.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    g.dx = Math.max(-96, Math.min(0, g.base + dx));
+    g.st.style.transform = "translateX(" + g.dx + "px)";
+  });
+  const end = e => {
+    if(!g || e.pointerId !== g.id) return;
+    if(g.on){
+      swAt = Date.now();
+      g.w.classList.remove("drag"); g.st.style.transform = "";
+      g.w.classList.toggle("open", g.dx < -48); swFlag();
+    }
+    g = null;
+  };
+  box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
+  document.addEventListener("pointerdown", e => { if(!e.target.closest("#tdSk")) swClose(); });
+})();
 $("#skFileBtn").addEventListener("click", () => { $("#skFile").value = ""; $("#skFile").click(); });
 $("#skFile").addEventListener("change", () => {
   const f = $("#skFile").files[0]; if(!f) return;
