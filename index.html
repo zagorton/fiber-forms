@@ -3271,15 +3271,27 @@ function pastePortal(txt){
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   let all = parsePortal(txt); if(!all.length) all = parseSheet(txt);
   const list = all.filter(e => e.start >= day0.getTime()).sort((a, b) => a.start - b.start);
-  if(!list.length){
-    if(all.length) notice("Earlier days", "These jobs are before today.");
-    else if(all.skipped) notice("No jobs for you", "None of these rows has your name in the technician column.");
-    else notice("No jobs found", "Copy the Resource Schedule table in the portal, then tap Paste.");
+  const past = all.filter(e => e.start < day0.getTime());
+  /* a repeat visit still carries the date of the first appointment: offer to put those jobs on today */
+  const addPast = () => {
+    const moved = past.map(e => { const d = new Date(e.start), t = new Date(); t.setHours(d.getHours(), d.getMinutes(), 0, 0); const dur = (e.end || e.start + 3600000) - e.start; return Object.assign({}, e, {start: t.getTime(), end: t.getTime() + dur, orig: e.start}); });
+    const keep = (() => { try{ return JSON.parse(recall("skPaste") || "[]") || []; }catch(err){ return []; } })();
+    const seen = {}, merged = [];
+    keep.concat(moved).forEach(e => { const k = String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString(); if(seen[k]) return; seen[k] = 1; merged.push(e); });
+    store("skPaste", JSON.stringify(merged.sort((a, b) => a.start - b.start)));
+    paintSk();
+    toastMsg(moved.length + (moved.length === 1 ? " job" : " jobs") + " added for today");
+  };
+  if(list.length){
+    store("skPaste", JSON.stringify(list));
+    paintSk();
+    if(past.length) notice(list.length + (list.length === 1 ? " job" : " jobs") + " added", past.length + (past.length === 1 ? " more is" : " more are") + " from earlier days.", "Add as today", addPast);
+    else toastMsg(list.length + (list.length === 1 ? " job" : " jobs"));
     return;
   }
-  store("skPaste", JSON.stringify(list));
-  paintSk();
-  toastMsg(list.length + (list.length === 1 ? " job" : " jobs"));
+  if(past.length) notice("Earlier days", "These jobs are before today.", "Add as today", addPast);
+  else if(all.skipped) notice("No jobs for you", "None of these rows has your name in the technician column.");
+  else notice("No jobs found", "Copy the Resource Schedule table in the portal, then tap Paste.");
 }
 /* customer file (.xlsx from the portal): read in the browser, kept on the phone */
 function u16(d, o){ return d[o] | (d[o + 1] << 8); }
@@ -3447,7 +3459,7 @@ function paintSk(){
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
     const rows = list.map((e, i) => {
       const d = new Date(e.start), same = d.toDateString() === new Date().toDateString();
-      return '<button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>';
+      return '<button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>';
     });
     window.skShown = list;
     try{ mapUpdate(dayAll); }catch(err){}
@@ -3601,7 +3613,7 @@ function mpSelPaint(){
   const dest = j.ll ? j.ll[0] + "," + j.ll[1] : encodeURIComponent(j.e.addr);
   const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const url = ios ? "https://maps.apple.com/?dirflg=d&daddr=" + dest : "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + dest;
-  el.innerHTML = '<span class="nb">' + j.n + '</span><span class="t">' + esc(String(j.e.addr).split(",")[0]) + '</span><span class="v">' + f.format(new Date(j.e.start))
+  el.innerHTML = '<span class="nb">' + j.n + '</span><span class="t">' + esc(String(j.e.addr).split(",")[0]) + '</span><span class="v">' + (j.e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(j.e.orig)) + " \u00b7 " : "") + f.format(new Date(j.e.start))
     + '</span><a href="' + url + '" target="_blank" rel="noopener" aria-label="Navigate"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8z"/></svg></a>';
   el.style.display = "flex";
 }
