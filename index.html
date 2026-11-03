@@ -1917,8 +1917,8 @@ function mailBody(){
   L.push("");
   L.push(waiting
     ? "Your internet isn't active yet. The fiber line still needs to be "
-      + "connected at the street. Please keep the modem plugged in, and we'll "
-      + "activate service remotely once that's done."
+      + "connected at the street. Please keep the modem plugged in, and service "
+      + "will be activated remotely once that's done."
     : "Your connection may take up to 24 hours to fully stabilize. Short drops "
       + "or slower speeds during this time are normal.");
   if(name && name !== WIFI_NA){
@@ -1927,9 +1927,14 @@ function mailBody(){
     if(pw && pw !== WIFI_NA) L.push("Wi-Fi password: " + pw);
   }
   L.push("");
-  L.push("Wi-Fi name, password or extender: use the Nokia WiFi app.");
-  L.push("Apple: https://apps.apple.com/us/app/nokia-wifi/id1345278192");
-  L.push("Android: https://play.google.com/store/apps/details?id=com.nokia.wifi&hl=en_US");
+  L.push("To change your Wi-Fi name or password, or to add an extender, "
+       + "use the Nokia WiFi app.");
+  L.push("");
+  L.push("Apple:");
+  L.push("https://apps.apple.com/us/app/nokia-wifi/id1345278192");
+  L.push("");
+  L.push("Android:");
+  L.push("https://play.google.com/store/apps/details?id=com.nokia.wifi&hl=en_US");
   L.push("");
   L.push("Questions about billing, speeds or equipment? Contact T-Mobile Fiber Support at 844-783-4237 or visit Fiber.T-Mobile.com/support/faq.");
   L.push("");
