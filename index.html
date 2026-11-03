@@ -3222,10 +3222,61 @@ function parsePortal(txt){
   }
   return out;
 }
+/* v102: rows copied from the boss's "Scheduled Installs" sheet: city, date time, FC key, address, name, phone, chamber, ... [JOB, technician] */
+const STREET_SFX = /^(st|street|ave|avenue|av|blvd|boulevard|ct|court|dr|drive|way|ter|terrace|ln|lane|rd|road|pl|place|cir|circle|trl|trail|hwy|highway|pkwy|parkway|loop|sq|square|pass|path|row|walk)\.?$/i;
+function splitAddrName(t){
+  const w = String(t).trim().split(/\s+/);
+  let k = -1;
+  for(let i = 1; i < w.length; i++) if(STREET_SFX.test(w[i])){ k = i; break; }
+  if(k < 0) return [w.join(" "), ""];
+  let e = k;
+  if(e + 2 < w.length && /^([NSEW]{1,2}|[A-Z]\d{0,3})$/.test(w[e + 1])) e++;
+  return [w.slice(0, e + 1).join(" "), w.slice(e + 1).join(" ")];
+}
+function parseSheet(txt){
+  const out = []; out.skipped = 0;
+  const me = ($("#c_tech").value || "").trim().split(/\s+/)[0].toLowerCase();
+  String(txt).split(/\r?\n/).forEach(ln => {
+    const dm = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/.exec(ln);
+    if(!dm) return;
+    let addr = "", name = "", job = "", fc = "", ch = "", tech = "";
+    const city = /^\s*([A-Za-z .'-]{3,30}),\s*([A-Z]{2})\b/.exec(ln);
+    if(ln.indexOf("\t") >= 0){
+      const c = ln.split("\t").map(x => x.trim());
+      const fi = c.findIndex(x => /^FC-\d+$/i.test(x));
+      if(fi < 0 || !c[fi + 1]) return;
+      fc = c[fi]; addr = c[fi + 1]; name = c[fi + 2] || "";
+      const ci = c.findIndex(x => /^USQPL-CH-\d+$/i.test(x)); if(ci >= 0) ch = c[ci];
+      const ji = c.findIndex(x => /^JOB-\d+$/i.test(x)); if(ji >= 0){ job = c[ji].slice(4); tech = (c[ji + 1] || "").split(/\s+/)[0]; }
+    } else {
+      const after = ln.slice(dm.index + dm[0].length), fm = /\bFC-\d+\b/i.exec(after);
+      if(!fm) return;
+      fc = fm[0];
+      let rest = after.slice(fm.index + fm[0].length);
+      const pm = /\s\d{10,11}\b/.exec(rest);
+      const sp = splitAddrName(pm ? rest.slice(0, pm.index) : rest.replace(/\s+USQPL-CH-.*$/i, ""));
+      addr = sp[0]; name = sp[1];
+      const cm = /USQPL-CH-(\d+)/i.exec(ln); if(cm) ch = "USQPL-CH-" + cm[1];
+      const jm = /JOB-(\d+)\s+(\S+)/i.exec(ln) || /JOB-(\d+)/i.exec(ln); if(jm){ job = jm[1]; tech = jm[2] || ""; }
+    }
+    if(!addr || !/^\d/.test(addr)) return;
+    if(me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0){ out.skipped++; return; }
+    const start = new Date(+dm[3], +dm[1] - 1, +dm[2], +dm[4], +dm[5]).getTime();
+    const place = city ? city[1].trim() + ", " + city[2] : "Palmdale, CA";
+    out.push({uid: fc || job, ref: "", start: start, end: start + 3600000, addr: addr + ", " + place, sum: "", name: name, ch: ch ? "CH-" + ch.replace(/\D/g, "") : "", job: job});
+  });
+  return out;
+}
 function pastePortal(txt){
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
-  const list = parsePortal(txt).filter(e => e.start >= day0.getTime()).sort((a, b) => a.start - b.start);
-  if(!list.length){ notice("No jobs found", "Copy the Resource Schedule table in the portal, then tap Paste."); return; }
+  let all = parsePortal(txt); if(!all.length) all = parseSheet(txt);
+  const list = all.filter(e => e.start >= day0.getTime()).sort((a, b) => a.start - b.start);
+  if(!list.length){
+    if(all.length) notice("Earlier days", "These jobs are before today.");
+    else if(all.skipped) notice("No jobs for you", "None of these rows has your name in the technician column.");
+    else notice("No jobs found", "Copy the Resource Schedule table in the portal, then tap Paste.");
+    return;
+  }
   store("skPaste", JSON.stringify(list));
   paintSk();
   toastMsg(list.length + (list.length === 1 ? " job" : " jobs"));
@@ -3627,6 +3678,8 @@ $("#tdSk").addEventListener("click", e => {
   if(busy) resetJob();
   applyAddress(j.addr);
   fillCustomer(dirFind(j));
+  if(j.name && !($("#c_customer").value || "").trim()) fillCustomer({name: j.name});
+  if(j.ch && !($("#w_ch").value || "").trim()){ const el = $("#w_ch"); el.value = j.ch; el.dispatchEvent(new Event("input", {bubbles: true})); }
   startJob();
 });
 $("#skClearBtn").addEventListener("click", () => {
