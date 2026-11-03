@@ -791,6 +791,7 @@ body.stepsnav #jobBar{flex-basis:100%}
 #tdMapBox{margin:0 0 12px;border-radius:var(--r);overflow:hidden;background:#fff}
 #tdMap{position:relative;height:300px;background:#e6e9ee;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
 #mpT,#mpM{position:absolute;left:0;top:0;right:0;bottom:0}
+#tdMap{isolation:isolate}#mpT{z-index:0}#mpM{z-index:1}
 #mpT img{position:absolute;max-width:none;opacity:0;transition:opacity .15s;pointer-events:none;-webkit-user-drag:none}
 #mpT img.on{opacity:1}
 #mpM{pointer-events:none}
