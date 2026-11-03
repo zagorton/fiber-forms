@@ -797,6 +797,7 @@ body.stepsnav #jobBar{flex-basis:100%}
 #mpM{pointer-events:none}
 .mk{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:var(--magenta);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);pointer-events:auto;z-index:2}
 .mk.sel{width:38px;height:38px;margin:-19px 0 0 -19px;font-size:17px;z-index:4;box-shadow:0 0 0 5px rgba(214,0,108,.28),0 2px 6px rgba(0,0,0,.35)}
+.mk.ap{box-shadow:0 0 0 7px rgba(214,0,108,.22),0 2px 6px rgba(0,0,0,.35)}
 .mk.done{background:#9aa0a8;box-shadow:0 1px 3px rgba(0,0,0,.25);z-index:1}
 .mk.done svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .mk.now{background:var(--ink);width:38px;height:38px;margin:-19px 0 0 -19px;font-size:17px;z-index:3;box-shadow:0 0 0 6px rgba(20,22,26,.18),0 2px 6px rgba(0,0,0,.4)}
@@ -993,7 +994,7 @@ body.stepsnav #jobBar{flex-basis:100%}
     </div>
   </div>
   <div id="tdActive"></div>
-  <div class="sec" id="tdSkTitle" style="display:flex;align-items:center;justify-content:space-between"><span>Next jobs</span><span style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" id="skFileBtn" type="button">File</button><button class="btn btn-ghost btn-sm" id="skPasteBtn" type="button">Paste</button></span><input type="file" id="skFile" accept=".xlsx" style="display:none"></div>
+  <div class="sec" id="tdSkTitle" style="display:flex;align-items:center;justify-content:space-between"><span>Next jobs</span><span style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" id="skClearBtn" type="button" style="display:none;color:#e0352b">Clear</button><button class="btn btn-ghost btn-sm" id="skFileBtn" type="button">File</button><button class="btn btn-ghost btn-sm" id="skPasteBtn" type="button">Paste</button></span><input type="file" id="skFile" accept=".xlsx" style="display:none"></div>
   <div id="tdMapBox" style="display:none">
     <div id="tdMap"><div id="mpT"></div><div id="mpM"></div><div id="mpDay"></div>
       <button id="mpFit" type="button" aria-label="Show all"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
@@ -3191,8 +3192,9 @@ function parseIcs(txt){
 }
 function pasteCache(){ try{ return JSON.parse(recall("skPaste") || "[]") || []; }catch(e){ return []; } }
 function skAll(){
-  const seen = {}, out = [];
+  const seen = {}, out = [], d0 = new Date().setHours(0, 0, 0, 0);
   skCache().concat(pasteCache()).forEach(e => {
+    if(e.start < d0) return;
     const k = String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString();
     if(seen[k]) return; seen[k] = 1; out.push(e);
   });
@@ -3364,6 +3366,7 @@ const SK_MSG = {
 function paintSk(){
   const box = $("#tdSk"), tt = $("#tdSkTitle"); if(!box) return;
   tt.style.display = "flex";
+  $("#skClearBtn").style.display = pasteCache().length ? "" : "none";
   const now = Date.now();
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   jobsAll().then(all => {
@@ -3477,20 +3480,35 @@ function geoAsk(q){
 let geoQ = [], geoBusy = false, geoCur = "";
 function geoWant(a){
   const v = geoAll()[geoKey(a)];
-  if(Array.isArray(v) || (v && v.f && Date.now() - v.f < 6 * 3600 * 1000)) return;
+  if(Array.isArray(v) || (v && v.f && Date.now() - v.f < 3 * 60 * 1000)) return;
   if(geoQ.indexOf(a) < 0 && geoCur !== a) geoQ.push(a);
   geoRun();
+}
+function geoGoogle(q){
+  return fetch("https://maps.googleapis.com/maps/api/geocode/json?region=us&components=country:US&address=" + encodeURIComponent(q) + "&key=" + encodeURIComponent(GD.apiKey))
+    .then(r => r.json())
+    .then(j => {
+      if(j && j.status === "OK" && j.results && j.results[0]){ const l = j.results[0].geometry.location; store("geoGErr", ""); return [+(+l.lat).toFixed(6), +(+l.lng).toFixed(6)]; }
+      store("geoGErr", (j && j.status) || "?"); return null;
+    }).catch(() => null);
+}
+/* Google first (when the Drive API key is set), then OpenStreetMap: full address, street without house number (approximate), city + zip (approximate) */
+function geoFind(a){
+  const loose = a.replace(/^\s*\d+[\w-]*\s+/, ""), zc = a.split(",").slice(1).join(",").trim();
+  const pause = () => new Promise(ok => setTimeout(ok, 1100));
+  const apx = x => x ? [x[0], x[1], 1] : null;
+  return (GD.apiKey ? geoGoogle(a) : Promise.resolve(null))
+    .then(r => r || geoAsk(a))
+    .then(r => r || (loose !== a ? pause().then(() => geoAsk(loose)).then(apx) : null))
+    .then(r => r || (zc && zc !== loose ? pause().then(() => geoAsk(zc)).then(apx) : null));
 }
 function geoRun(){
   if(geoBusy) return; geoBusy = true;
   const next = () => {
     const a = geoQ.shift(); geoCur = a || "";
     if(!a){ geoBusy = false; return; }
-    const loose = a.replace(/^\s*\d+[\w-]*\s+/, "");
-    geoAsk(a)
-      .then(r => r || (loose !== a ? new Promise(ok => setTimeout(ok, 1100)).then(() => geoAsk(loose)) : null))
-      .then(r => { geoSet(a, r || {f: Date.now()}); mpRefresh(); setTimeout(next, 1100); },
-            () => { geoBusy = false; geoQ = []; });
+    geoFind(a).then(r => { geoSet(a, r || {f: Date.now()}); mpRefresh(); setTimeout(next, GD.apiKey ? 300 : 1100); },
+                    () => { geoBusy = false; geoQ = []; });
   };
   next();
 }
@@ -3515,7 +3533,7 @@ function mpRefresh(){
   if(idSig !== MP.idSig){ MP.idSig = idSig; MP.touched = false; if(!MP.jobs.some(j => j.n === MP.sel)) MP.sel = 0; }
   if(sig !== MP.sig){
     MP.sig = sig;
-    $("#mpM").innerHTML = MP.jobs.filter(j => j.ll).map(j => '<div class="mk' + (j.s === "done" ? " done" : j.s === "now" ? " now" : "") + (j.n === MP.sel ? " sel" : "") + '" data-i="' + j.i + '">'
+    $("#mpM").innerHTML = MP.jobs.filter(j => j.ll).map(j => '<div class="mk' + (j.s === "done" ? " done" : j.s === "now" ? " now" : "") + (j.n === MP.sel ? " sel" : "") + (j.ll && j.ll[2] ? " ap" : "") + '" data-i="' + j.i + '">'
       + (j.s === "done" ? '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>' : j.n) + (j.s === "now" ? '<i class="tg">Now</i>' : "") + '</div>').join("")
       + (MP.me ? '<div class="mkme"></div>' : "");
     if(!MP.touched) mpFit(); else mpDraw();
@@ -3610,6 +3628,10 @@ $("#tdSk").addEventListener("click", e => {
   applyAddress(j.addr);
   fillCustomer(dirFind(j));
   startJob();
+});
+$("#skClearBtn").addEventListener("click", () => {
+  if(!confirm("Clear the pasted job list?")) return;
+  store("skPaste", ""); paintSk();
 });
 $("#skFileBtn").addEventListener("click", () => { $("#skFile").value = ""; $("#skFile").click(); });
 $("#skFile").addEventListener("change", () => {
