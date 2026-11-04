@@ -3288,6 +3288,8 @@ function pastePortal(txt){
     const seen = {}, merged = [];
     keep.concat(moved).forEach(e => { const k = String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString(); if(seen[k]) return; seen[k] = 1; merged.push(e); });
     store("skPaste", JSON.stringify(merged.sort((a, b) => a.start - b.start)));
+    /* adding a job again by hand un-hides it (it may have been swiped away before) */
+    const hd = skHideAll(); moved.forEach(e => { delete hd[String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString()]; }); store("skHide", JSON.stringify(hd));
     paintSk();
     toastMsg(moved.length + (moved.length === 1 ? " job" : " jobs") + " added for today");
   };
