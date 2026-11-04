@@ -825,18 +825,18 @@ body.stepsnav #jobBar{flex-basis:100%}
 body.swo #newJobFab,body.xop #newJobFab{display:none !important}
 .swp{scroll-margin-bottom:96px}
 /* v109 */
-#mpHint{position:absolute;left:0;right:0;top:0;bottom:0;z-index:6;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(20,22,26,.55);color:#fff;font-size:15px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+#mpHint{position:absolute;left:0;right:0;top:0;bottom:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;background:rgba(20,22,26,.55);color:#fff;font-size:15px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
 #mpHint.on{opacity:1}
-#mpHint svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#mpHint svg{display:block}
 .cnt{margin-left:8px;background:rgba(120,120,128,.14);border-radius:99px;padding:1px 8px;font-size:12px;font-weight:600;letter-spacing:0;color:var(--muted);vertical-align:1px}
-.plus{width:36px;height:36px;border-radius:50%;border:none;background:var(--magenta);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
-.plus svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round}
+.plus{width:38px;height:38px;border-radius:50%;border:none;background:linear-gradient(145deg,#ee1a85,#b8005a);box-shadow:0 4px 10px rgba(214,0,108,.35);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.plus svg{display:block}
 #skMenuBd{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:160;background:rgba(0,0,0,.28)}
 #skMenu{display:none;position:fixed;z-index:161;width:216px;background:rgba(255,255,255,.97);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden}
 body.pmo #skMenuBd,body.pmo #skMenu{display:block}
-#skMenu button{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:none;padding:13px 16px;font:inherit;font-size:16px;color:var(--ink);text-align:left;cursor:pointer;border-top:.5px solid var(--line)}
+#skMenu button{display:flex;align-items:center;gap:12px;width:100%;border:none;background:none;padding:13px 16px;font:inherit;font-size:16px;color:var(--ink);text-align:left;cursor:pointer;border-top:.5px solid var(--line)}
 #skMenu button:first-child{border-top:none}
-#skMenu button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#skMenu .ib{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
 #skMenu button.red{color:#e0352b;border-top:6px solid #f1f2f5}
 .xp{display:none;position:relative;background:#fff7fb;padding:2px 16px 14px 54px;border-bottom:.5px solid var(--line)}
 .swp.xo .xp{display:block}
@@ -844,10 +844,10 @@ body.pmo #skMenuBd,body.pmo #skMenu{display:block}
 .xh{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px}
 .xn{font-size:14px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .xs{flex:none;display:inline-flex;align-items:center;gap:5px;border:none;border-radius:99px;background:var(--magenta);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:8px 16px;cursor:pointer}
-.xs svg{width:12px;height:12px;fill:#fff}
+.xs svg{display:block}
 .xr{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px}
 .xc{display:inline-flex;align-items:center;gap:7px;background:#e8f5ee;color:#1b7f4a;border-radius:99px;padding:8px 14px;font-size:15px;font-weight:700;text-decoration:none}
-.xc svg,.xb svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.xc svg,.xb svg{display:block;flex:none}
 .xi2{display:flex;gap:8px}
 .xb{width:38px;height:38px;border-radius:12px;background:#f1f2f5;color:var(--ink);display:flex;align-items:center;justify-content:center;text-decoration:none}
 .xb.tx{background:#e8f0fc;color:#0a60d0}
@@ -858,7 +858,7 @@ body.pmo #skMenuBd,body.pmo #skMenu{display:block}
 </head>
 <body>
 <div id="skMenuBd"></div>
-<div id="skMenu"><button id="skMPaste" type="button">Paste jobs<svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="16" rx="2"/><path d="M9 5V3h6v2"/></svg></button><button id="skMFile" type="button">Import file<svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg></button><button id="skMClear" type="button" class="red">Clear list<svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg></button></div>
+<div id="skMenu"><button id="skMPaste" type="button"><span class="ib"></span>Paste jobs</button><button id="skMFile" type="button"><span class="ib"></span>Import file</button><button id="skMClear" type="button" class="red"><span class="ib"></span>Clear list</button></div>
 
 <div id="fileWarn" style="display:none;background:#b3541e;color:#fff;padding:12px 40px 12px 14px;
      font-size:14px;line-height:1.45;position:relative;
@@ -1036,12 +1036,12 @@ body.pmo #skMenuBd,body.pmo #skMenu{display:block}
     </div>
   </div>
   <div id="tdActive"></div>
-  <div class="sec" id="tdSkTitle" style="display:flex;align-items:center;justify-content:space-between"><span>Next jobs<i class="cnt" id="skCnt" style="display:none;font-style:normal"></i></span><button class="plus" id="skPlus" type="button" aria-label="Add jobs"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><input type="file" id="skFile" accept=".xlsx" style="display:none"></div>
+  <div class="sec" id="tdSkTitle" style="display:flex;align-items:center;justify-content:space-between"><span>Next jobs<i class="cnt" id="skCnt" style="display:none;font-style:normal"></i></span><button class="plus" id="skPlus" type="button" aria-label="Add jobs"></button><input type="file" id="skFile" accept=".xlsx" style="display:none"></div>
   <div id="tdMapBox" style="display:none">
     <div id="tdMap"><div id="mpT"></div><div id="mpM"></div><div id="mpDay"></div>
       <button id="mpFit" type="button" aria-label="Show all"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button id="mpMe" type="button" aria-label="My location" style="display:none"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
-      <div id="mpAttr">&copy; OpenStreetMap</div><div id="mpHint"><svg viewBox="0 0 48 48"><circle cx="16" cy="16" r="6"/><circle cx="32" cy="22" r="6"/><path d="M16 26v14M32 32v10"/></svg>Use two fingers to move the map</div></div>
+      <div id="mpAttr">&copy; OpenStreetMap</div><div id="mpHint"><svg viewBox="0 0 56 40" width="56" height="40"><g fill="rgba(255,255,255,.28)" stroke="#fff" stroke-width="1.6"><circle cx="14" cy="26" r="10"/><circle cx="42" cy="14" r="10"/></g><g fill="#fff"><circle cx="14" cy="26" r="4.5"/><circle cx="42" cy="14" r="4.5"/></g><path d="M22 20l12-4M30 14l4 2-3 3" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Use two fingers to move the map</span></div></div>
   </div>
   <div class="steps" id="tdSk" style="display:none"></div>
   <div class="sec" id="tdJobTitle" style="display:none">Steps</div>
@@ -3475,6 +3475,18 @@ const SK_MSG = {
   fail: ["Could not load the schedule", "Check the link and the signal, then try again."],
   offline: ["No signal", "The schedule updates when you are online."]
 };
+/* v112 two-tone icon set */
+const ICG={
+ paste:(a,b)=>`<rect x="5" y="4.5" width="14" height="16.5" rx="3.5" fill="${b}" stroke="none"/><rect x="8.5" y="2.5" width="7" height="4.5" rx="2" fill="${a}" stroke="none"/><path d="M8.5 12h7M8.5 15.5h4.5" stroke="${a}" stroke-width="1.9" stroke-linecap="round"/>`,
+ file:(a,b)=>`<path d="M6.5 3h7l4.5 4.5V18a3 3 0 0 1-3 3H6.5a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z" fill="${b}" stroke="none" transform="translate(.5 0)"/><path d="M14 3.2V8h4.8" fill="${a}" stroke="none" opacity=".9"/><path d="M12 11.5v6m0 0l-2.4-2.4M12 17.5l2.4-2.4" stroke="${a}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+ trash:(a,b)=>`<path d="M6 8h12l-1 11a2.5 2.5 0 0 1-2.5 2.2h-5A2.5 2.5 0 0 1 7 19z" fill="${b}" stroke="none"/><rect x="4.5" y="5" width="15" height="2.6" rx="1.3" fill="${a}" stroke="none"/><rect x="9" y="2.5" width="6" height="3" rx="1.5" fill="${a}" stroke="none"/><path d="M10 11.5v6M14 11.5v6" stroke="${a}" stroke-width="1.8" stroke-linecap="round"/>`,
+ call:(a,b)=>`<path d="M6.2 3.5l2.6-.4a1.6 1.6 0 0 1 1.7 1l1 2.6a1.6 1.6 0 0 1-.5 1.8l-1.3 1a11 11 0 0 0 4.9 4.9l1-1.3a1.6 1.6 0 0 1 1.8-.5l2.6 1a1.6 1.6 0 0 1 1 1.7l-.4 2.6a2.4 2.4 0 0 1-2.4 2A15.5 15.5 0 0 1 4.2 5.9a2.4 2.4 0 0 1 2-2.4z" fill="${a}" stroke="none"/><path d="M14.5 3.5a6 6 0 0 1 6 6" stroke="${b}" stroke-width="1.9" stroke-linecap="round" fill="none"/>`,
+ text:(a,b)=>`<path d="M5.5 4h13A3.5 3.5 0 0 1 22 7.5v6a3.5 3.5 0 0 1-3.5 3.5H11l-4.6 3.6c-.6.5-1.4 0-1.4-.7V17A3.5 3.5 0 0 1 2 13.500v-6A3.5 3.5 0 0 1 5.500 4z" fill="${a}" stroke="none"/><circle cx="8" cy="10.5" r="1.3" fill="${b}"/><circle cx="12" cy="10.5" r="1.3" fill="${b}"/><circle cx="16" cy="10.5" r="1.3" fill="${b}"/>`,
+ nav:(a,b)=>`<path d="M20.6 3.4c.6-.3 1.200.3.9 1l-7.200 16.200c-.3.7-1.300.600-1.500-.1l-1.900-6.800-6.800-1.900c-.7-.2-.8-1.200-.1-1.500z" fill="${a}" stroke="none"/><path d="M11.800 12.200l5-5" stroke="${b}" stroke-width="1.800" stroke-linecap="round"/>`,
+ play:(a,b)=>`<path d="M8 5.500c0-1 1.100-1.600 1.900-1l9 6.500c.7.500.7 1.500 0 2l-9 6.500c-.8.600-1.900 0-1.900-1z" fill="${a}" stroke="none"/>`,
+ plus:(a,b)=>`<path d="M12 5v14M5 12h14" stroke="${a}" stroke-width="2.600" stroke-linecap="round"/>`
+};
+function ico(k, a, b, n){ return '<svg viewBox="0 0 24 24" width="' + (n || 20) + '" height="' + (n || 20) + '">' + ICG[k](a, b || a) + '</svg>'; }
 let SK_OPEN = "";
 function telDigits(t){ let d = String(t || "").replace(/\D/g, ""); if(d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d : ""; }
 function fmtTel(t){ const d = telDigits(t); return d ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : String(t || ""); }
@@ -3523,12 +3535,12 @@ function paintSk(){
     };
     all0.forEach(e => { e._n = 0; });
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
-    const IC = {call: '<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>', text: '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>', nav: '<svg viewBox="0 0 24 24"><path d="M12 3l7 17-7-4-7 4z"/></svg>'};
+    const IC = {call: ico("call", "#1b7f4a", "#7fd1a2", 18), text: ico("text", "#0a60d0", "#ffffff", 22), nav: ico("nav", "#14161a", "#ffffff", 22), play: ico("play", "#ffffff", "#ffffff", 13)};
     if(SK_OPEN && !list.some(e => skKey(e) === SK_OPEN)){ SK_OPEN = ""; MP.sel = 0; }
     const rows = list.map((e, i) => {
       const d = new Date(e.start), same = d.toDateString() === new Date().toDateString();
       const k = skKey(e), tel = telDigits(e.tel), info = [e.name, e.ch].filter(Boolean).join(" \u00b7 ");
-      const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>Start</button></div>'
+      const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button">' + IC.play + 'Start</button></div>'
         + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
         + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
       return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
@@ -3861,6 +3873,8 @@ function autoDrop(){
   document.addEventListener("pointerdown", e => { if(!e.target.closest("#tdSk")) swClose(); });
 })();
 const pmClose = () => document.body.classList.remove("pmo");
+$("#skPlus").innerHTML = ico("plus", "#fff", "#fff", 22);
+[["skMPaste", "paste", "#0a60d0", "#b9d1f7", "#e8f0fc"], ["skMFile", "file", "#0a60d0", "#b9d1f7", "#e8f0fc"], ["skMClear", "trash", "#e0352b", "#f6b4ae", "#fdecea"]].forEach(m => { const ib = $("#" + m[0] + " .ib"); ib.innerHTML = ico(m[1], m[2], m[3], 20); ib.style.background = m[4]; });
 $("#skPlus").addEventListener("click", () => {
   const r = $("#skPlus").getBoundingClientRect(), m = $("#skMenu");
   m.style.top = (r.bottom + 8) + "px"; m.style.right = Math.max(12, window.innerWidth - r.right) + "px";
