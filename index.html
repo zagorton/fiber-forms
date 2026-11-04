@@ -856,11 +856,38 @@ body.pmo #skMenuBd,body.pmo #skMenu{display:block}
 .xb.tx{background:#e8f0fc;color:#0a60d0}
 #toastMsg button{background:none;border:none;color:#ff7ab8;font:inherit;font-weight:700;margin-left:16px;padding:0;cursor:pointer}
 #toastMsg.un{pointer-events:auto}
+/* v116 quick panel for a done job */
+#qpBd{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:170;background:rgba(0,0,0,.4)}
+#qp{display:none;position:fixed;left:0;right:0;bottom:0;z-index:171;background:#fff;border-radius:24px 24px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+body.qpo #qpBd,body.qpo #qp{display:block}
+#qp .gr{width:40px;height:4px;border-radius:2px;background:#d4d6db;margin:0 auto 12px}
+#qp .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+#qp .ad{font-size:18px;font-weight:700}
+#qp .cu{font-size:13px;color:var(--muted);margin-top:1px}
+#qp .tt{text-align:right;font-size:26px;font-weight:700;color:#1b7f4a;font-variant-numeric:tabular-nums}
+#qp .tt.ch{color:var(--magenta)}
+#qp .tt small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+#qp .ac{display:flex;gap:10px;margin:14px 0 6px}
+#qp .ac a{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.03em}
+#qp .ac a i{display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:14px;font-style:normal}
+#qp .st{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+#qp .st b{display:block;font-size:15px;font-weight:600}
+#qp .st small{font-size:12px;color:var(--muted)}
+#qp .st small.ch{color:var(--magenta)}
+#qp .sp{display:flex;align-items:center;gap:6px}
+#qp .sp button{width:40px;height:40px;border-radius:12px;border:none;background:#f1f2f5;color:var(--ink);font-size:22px;line-height:1;cursor:pointer;padding:0}
+#qp .sp button.pl{background:var(--ink);color:#fff}
+#qp .sp output{min-width:56px;text-align:center;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+#qp .ft{display:flex;align-items:center;gap:10px;margin-top:12px}
+#qp .ft button.more{flex:1;text-align:left;border:none;background:none;color:var(--accent);font:inherit;font-size:14px;font-weight:600;padding:8px 0;cursor:pointer}
+#qp .ft button.sv{width:100%;height:46px;border-radius:14px;border:none;background:#e6e8ec;color:#9aa0a8;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+#qp .ft button.sv.on{background:var(--magenta);color:#fff}
 .swp:not(:last-child) .step{border-bottom:.5px solid var(--line)}
 </style>
 </head>
 <body>
 <div id="skMenuBd"></div>
+<div id="qpBd"></div><div id="qp"></div>
 <div id="skMenu"><button id="skMPaste" type="button"><span class="ib"></span>Paste jobs</button><button id="skMFile" type="button"><span class="ib"></span>Import file</button><button id="skMClear" type="button" class="red"><span class="ib"></span>Clear list</button></div>
 
 <div id="fileWarn" style="display:none;background:#b3541e;color:#fff;padding:12px 40px 12px 14px;
@@ -3491,6 +3518,65 @@ const ICG={
 };
 function ico(k, a, b, n){ return '<svg viewBox="0 0 24 24" width="' + (n || 20) + '" height="' + (n || 20) + '">' + ICG[k](a, b || a) + '</svg>'; }
 let SK_OPEN = "";
+/* v116: quick panel for a job done today: contact the customer, fix feet / splices / extenders */
+let QP = null;
+function telFor(j){
+  if(j.tel && telDigits(j.tel)) return telDigits(j.tel);
+  const k = dirKey(j.address);
+  const hit = pasteCache().concat(skCache()).filter(e => e.tel && dirKey(e.addr) === k)[0];
+  return hit ? telDigits(hit.tel) : "";
+}
+function qpSmsUrl(j, tel){
+  const first = niceName(String(j.customer || "").trim().split(/\s+/)[0]), me = (recall("techName") || "").trim().split(/\s+/)[0];
+  const body = "Hi" + (first ? " " + first : "") + ", this is " + (me || "your technician") + " with T-Mobile. The crew has fixed the outside cable, but they couldn't activate your modem. Could you please confirm if your modem is turned on and the yellow cable is connected to the white fiber box?\nThank you!";
+  return "sms:" + tel + (/iPad|iPhone|iPod/.test(navigator.userAgent) ? "&" : "?") + "body=" + encodeURIComponent(body);
+}
+function qpFig(){
+  const f = {install: PAY.install, line: Math.ceil(QP.ft / 30) * PAY.per30ft, splice: QP.spl * PAY.splice, extender: QP.ext * PAY.extender, second: 0};
+  f.total = f.install + f.line + f.splice + f.extender; return f;
+}
+function openQuick(id){
+  jobsGet(id).then(j => {
+    if(!j) return;
+    QP = {j: j, id: id, ft: j.ft || 0, spl: j.splices || 0, ext: j.extenders || 0, tel: telFor(j), was: j.total || 0};
+    qpPaint(); document.body.classList.add("qpo");
+  });
+}
+function qpPaint(){
+  const j = QP.j, f = j.isSecond ? {total: j.total} : qpFig(), chg = !j.isSecond && (QP.ft !== (j.ft || 0) || QP.spl !== (j.splices || 0) || QP.ext !== (j.extenders || 0));
+  const tm = new Date(j.when).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
+  const mine = (a, b) => a !== b ? " ch" : "";
+  const row = (k, lab, sub, val, ch) => '<div class="st"><div><b>' + lab + '</b><small class="' + (ch ? "ch" : "") + '">' + sub + '</small></div><div class="sp"><button type="button" data-d="' + k + ':-1">\u2212</button><output>' + val + '</output><button type="button" class="pl" data-d="' + k + ':1">+</button></div></div>';
+  $("#qp").innerHTML = '<div class="gr"></div><div class="hd"><div><div class="ad">' + esc(String(j.address || "").split(",")[0]) + '</div><div class="cu">' + (j.customer ? esc(j.customer) + " \u00b7 " : "") + (j.uploaded ? "sent " : "saved ") + tm + '</div></div><div class="tt' + (chg ? " ch" : "") + '">$' + f.total + (chg ? '<small>was $' + QP.was + '</small>' : "") + '</div></div>'
+    + '<div class="ac">' + (QP.tel ? '<a href="tel:' + QP.tel + '"><i style="background:#e8f5ee">' + ico("call", "#1b7f4a", "#7fd1a2", 22) + '</i>CALL</a><a href="' + qpSmsUrl(j, QP.tel) + '"><i style="background:#e8f0fc">' + ico("text", "#0a60d0", "#ffffff", 22) + '</i>TEXT</a>' : "")
+    + '<a href="' + navUrl({addr: j.address}) + '"><i style="background:#f1f2f5">' + ico("nav", "#14161a", "#ffffff", 22) + '</i>GO</a></div>'
+    + (j.isSecond ? "" : '<div>' + row("ft", "Line extension", "30 ft = $" + PAY.per30ft, QP.ft + " ft", QP.ft !== (j.ft || 0)) + row("spl", "Splices", "$" + PAY.splice + " each", QP.spl, QP.spl !== (j.splices || 0)) + row("ext", "Extenders", "$" + PAY.extender + " each", QP.ext, QP.ext !== (j.extenders || 0)) + '</div>')
+    + '<div class="ft"><button type="button" class="sv' + (chg ? " on" : "") + '" data-s="1">' + (chg ? "Save" : "Done") + '</button></div>';
+}
+function qpClose(){ document.body.classList.remove("qpo"); QP = null; }
+$("#qpBd").addEventListener("click", qpClose);
+$("#qp").addEventListener("click", e => {
+  if(!QP) return;
+  const d = e.target.closest("[data-d]");
+  if(d){
+    const p = d.dataset.d.split(":"), k = p[0], dir = +p[1];
+    if(k === "ft") QP.ft = Math.max(0, Math.min(5000, QP.ft + dir * 10));
+    else if(k === "spl") QP.spl = Math.max(0, Math.min(99, QP.spl + dir));
+    else QP.ext = Math.max(0, Math.min(99, QP.ext + dir));
+    qpPaint(); return;
+  }
+  if(e.target.closest("[data-s]")){
+    const j = QP.j;
+    if(j.isSecond || (QP.ft === (j.ft || 0) && QP.spl === (j.splices || 0) && QP.ext === (j.extenders || 0))){ qpClose(); return; }
+    const f = qpFig(), ch = String(j.ch || "").trim();
+    const L = ["Notes:", ""]; L.push("Line extension - " + (QP.ft > 100 ? "extra" : QP.ft + " ft"));
+    if(ch) L.push(ch + " drop re-entry + splice");
+    L.push("Splice at the house - inside+outside " + QP.spl); L.push("WiFi extender - " + QP.ext);
+    const rec = Object.assign({}, j, {ft: QP.ft, splices: QP.spl, extenders: QP.ext, install: f.install, line: f.line, splice: f.splice, extender: f.extender, second: 0, total: f.total, notes: L.join("\n")});
+    jobsPut(rec).then(() => { qpClose(); renderHistory(); paintWeekMini(); try{ paintToday(); }catch(err){} toastMsg("Saved"); })
+      .catch(err => notice("Could not save", String(err && err.message || err)));
+  }
+});
 function telDigits(t){ let d = String(t || "").replace(/\D/g, ""); if(d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d : ""; }
 function fmtTel(t){ const d = telDigits(t); return d ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : String(t || ""); }
 function navUrl(e){
@@ -4298,7 +4384,7 @@ function saveJob(uploaded, fileCount, addrOverride, final){
     when: currentJobWhen, address: addr,
     customer: ($("#c_customer").value || "").trim(),
     notes: $("#w_notes").value,
-    ch: ($("#w_ch").value || "").trim(), nox: state.checks.w_nox === "yes",
+    ch: ($("#w_ch").value || "").trim(), nox: state.checks.w_nox === "yes", tel: ($("#c_phone").value || "").trim(),
     ft: f.ft, splices: f.splices, extenders: f.extenders, isSecond: f.isSecond,
     install: f.install, line: f.line, splice: f.splice,
     extender: f.extender, second: f.second, total: f.total,
@@ -5164,7 +5250,7 @@ function paintToday(){
     const shown = today.slice().reverse().slice(0, cap);
     $("#tdDone").innerHTML = shown.map(j => {
       const tm = new Date(j.when).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
-      return '<button class="step' + (j.uploaded ? " ok" : "") + '" data-edit="' + j.id + '"><span class="o"></span><span class="t">' + esc(j.address || "")
+      return '<button class="step' + (j.uploaded ? " ok" : "") + '" data-q="' + j.id + '"><span class="o"></span><span class="t">' + esc(j.address || "")
         + "<small>" + (j.customer ? esc(j.customer) + " \u00b7 " : "") + (j.uploaded ? "sent " : "saved ") + tm + "</small></span>"
         + '<span class="v">$' + j.total + "</span></button>"; }).join("")
       + (today.length > cap ? '<button class="step tdmore" data-more="1"><span class="t" style="text-align:center;color:var(--accent)">Show all ' + today.length + ' jobs</span></button>'
@@ -5175,7 +5261,7 @@ $("#tdSteps").addEventListener("click", e => { const b = e.target.closest("[data
 $("#tdActive").addEventListener("click", e => { if(e.target.closest("[data-resume]")){ resumeNow = true; setView("close"); driveUpload(); return; } const g = e.target.closest("[data-go]"); if(g){ if(g.dataset.go === "close" && uploadedOnce){ sovShowClosed(); return; } setView(g.dataset.go); return; } if(e.target.closest("[data-start]")) startJob(); });
 let tdAll = false;
 $("#tdDone").addEventListener("click", e => { const m = e.target.closest("[data-more]"); if(m){ tdAll = m.dataset.more === "1"; paintToday(); return; } });
-$("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if(b) openEdit(+b.dataset.edit); });
+$("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-q]"); if(b) openQuick(+b.dataset.q); });
 
 function setView(v){
   if(v === "today" && state.view && state.view !== "today" && state.view !== "result") autoDrop();
