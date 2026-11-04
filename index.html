@@ -3363,8 +3363,8 @@ function addJobs2(all, hist){
   /* an earlier-day row whose job was already done on its own day is not offered again */
   all = all.filter(e => {
     const k = skKey(e); if(seenK[k]) return false; seenK[k] = 1;
-    if(e.start < day0.getTime()){
-      const key = String(e.addr).split(",")[0].trim().toLowerCase(), day = new Date(e.start).toDateString();
+    if(e.orig || e.start < day0.getTime()){
+      const key = String(e.addr).split(",")[0].trim().toLowerCase(), day = new Date(e.orig || e.start).toDateString();
       if(hist.some(x => String(x.address || "").toLowerCase().indexOf(key) === 0 && new Date(x.when).toDateString() === day)) return false;
     }
     return true;
@@ -3450,8 +3450,12 @@ function xlsxRows(buf, allSheets){
 /* the boss's workbook: one tab per day, columns FiberCity, DATE, IssueKey, Address, Name, Phone, Chamber/Ring, ... JOB ORDER, TECHNICIAN */
 function scheduleFromRows(rows){
   const me = ($("#c_tech").value || "").trim().split(/\s+/)[0].toLowerCase();
-  const out = []; out.skipped = 0; let H = null;
+  const out = []; out.skipped = 0; let H = null, tab = 0;
+  const day0 = new Date().setHours(0, 0, 0, 0);
   rows.forEach(r => {
+    /* each tab starts with a title like "11/4/2026 Scheduled Installs": that is the day the rows are meant for */
+    const tm = /^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+Scheduled/i.exec(String((r && r[0]) || ""));
+    if(tm){ tab = new Date(+tm[3], +tm[1] - 1, +tm[2]).getTime(); H = null; return; }
     const low = (r || []).map(v => String(v === undefined ? "" : v).trim().toLowerCase());
     if(low.indexOf("issuekey") >= 0 && low.indexOf("address") >= 0 && low.indexOf("technician") >= 0){ H = {}; low.forEach((v, j) => { if(v) H[v] = j; }); return; }
     if(!H) return;
@@ -3461,10 +3465,16 @@ function scheduleFromRows(rows){
     if(/^\d+(\.\d+)?$/.test(dv)){ const u = new Date(Math.round((+dv - 25569) * 86400000)); start = new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes()).getTime(); }
     else start = new Date(dv).getTime() || 0;
     if(!start) return;
+    let orig = 0;
+    if(tab){
+      if(tab < day0) return;                                   /* a tab of a past day */
+      const sd = new Date(start).setHours(0, 0, 0, 0);
+      if(sd < tab){ orig = start; const t = new Date(start); start = new Date(tab).setHours(t.getHours(), t.getMinutes(), 0, 0); }   /* carried over to this tab's day */
+    }
     const tech = g("technician").split(/\s+/)[0];
     if(me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0){ out.skipped++; return; }
     const city = g("fibercity"), cm = /^(.+?),\s*([A-Z]{2})\b/.exec(city), ch = /CH-(\d+)/i.exec(g("chamber/ring")), job = /(\d+)/.exec(g("job order"));
-    out.push({uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : ""});
+    out.push({orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : ""});
   });
   return out;
 }
