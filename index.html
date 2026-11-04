@@ -3655,7 +3655,7 @@ function telDigits(t){ let d = String(t || "").replace(/\D/g, ""); if(d.length =
 function fmtTel(t){ const d = telDigits(t); return d ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : String(t || ""); }
 function navUrl(e){
   /* coordinates only when the house number was really found; a street-level guess would be re-labelled by the map app as a neighbouring house, so then the typed address goes as text */
-  const g = geoLL(e.addr), ll = g && !g[2] ? g : null, txt = encodeURIComponent(e.addr), ua = navigator.userAgent;
+  const g = geoLL(e.addr), ll = g && !g[2] ? g : null, txt = encodeURIComponent(e.addr + (g && g[3] && !/\b\d{5}(-\d{4})?\s*$/.test(e.addr) ? " " + g[3] : "")), ua = navigator.userAgent;
   const dest = ll ? ll[0] + "," + ll[1] : txt;
   if(/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "https://maps.apple.com/?dirflg=d&daddr=" + dest;
   /* Android: geo: link opens the system chooser with every map app on the phone */
@@ -3797,7 +3797,7 @@ function geoAsk(q){
       /* exact only when the house number itself was found; otherwise the point is just somewhere on the street */
       const hit = num ? a.filter(x => x.address && String(x.address.house_number || "").toLowerCase() === num.toLowerCase())[0] : null;
       const r = hit || a[0];
-      return [+(+r.lat).toFixed(6), +(+r.lon).toFixed(6)].concat(hit ? [] : [1]);
+      return [+(+r.lat).toFixed(6), +(+r.lon).toFixed(6), hit ? 0 : 1, String((r.address && r.address.postcode) || "").slice(0, 5)];
     });
 }
 let geoQ = [], geoBusy = false, geoCur = "";
@@ -3811,7 +3811,7 @@ function geoGoogle(q){
   return fetch("https://maps.googleapis.com/maps/api/geocode/json?region=us&components=country:US&address=" + encodeURIComponent(q) + "&key=" + encodeURIComponent(GD.apiKey))
     .then(r => r.json())
     .then(j => {
-      if(j && j.status === "OK" && j.results && j.results[0]){ const g = j.results[0], l = g.geometry.location, lt = g.geometry.location_type; store("geoGErr", ""); return [+(+l.lat).toFixed(6), +(+l.lng).toFixed(6)].concat(!g.partial_match && (lt === "ROOFTOP" || lt === "RANGE_INTERPOLATED") ? [] : [1]); }
+      if(j && j.status === "OK" && j.results && j.results[0]){ const g = j.results[0], l = g.geometry.location, lt = g.geometry.location_type; store("geoGErr", ""); const pc = (g.address_components || []).filter(c => (c.types || []).indexOf("postal_code") >= 0)[0]; return [+(+l.lat).toFixed(6), +(+l.lng).toFixed(6), !g.partial_match && (lt === "ROOFTOP" || lt === "RANGE_INTERPOLATED") ? 0 : 1, pc ? String(pc.short_name).slice(0, 5) : ""]; }
       store("geoGErr", (j && j.status) || "?"); return null;
     }).catch(() => null);
 }
@@ -3819,7 +3819,7 @@ function geoGoogle(q){
 function geoFind(a){
   const loose = a.replace(/^\s*\d+[\w-]*\s+/, ""), zc = a.split(",").slice(1).join(",").trim();
   const pause = () => new Promise(ok => setTimeout(ok, 1100));
-  const apx = x => x ? [x[0], x[1], 1] : null;
+  const apx = x => x ? [x[0], x[1], 1, x[3] || ""] : null;
   return (GD.apiKey ? geoGoogle(a) : Promise.resolve(null))
     .then(r => r || geoAsk(a))
     .then(r => r || (loose !== a ? pause().then(() => geoAsk(loose)).then(apx) : null))
