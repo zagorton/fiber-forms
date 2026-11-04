@@ -3810,8 +3810,10 @@ function jobSig(){
 function startEntry(j, silent){
   if(!j) return;
   const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
-  if(!silent && busy && !uploadedOnce && !confirm("Start this job? The current one is cleared.")) return;
-  if(busy) resetJob();
+  /* the current job is only what the list filled in: drop it quietly, no confirm, nothing saved to Week */
+  const untouched = !!startSnap && !uploadedOnce && !photos.length && jobSig() === startSnap;
+  if(!silent && busy && !untouched && !uploadedOnce && !confirm("Start this job? The current one is cleared.")) return;
+  if(busy) resetJob(untouched);
   applyAddress(j.addr);
   fillCustomer(dirFind(j));
   if(j.name && !($("#c_customer").value || "").trim()) fillCustomer({name: j.name});
