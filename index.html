@@ -3276,6 +3276,14 @@ function parseSheet(txt){
   });
   return out;
 }
+/* a new Paste adds to the list; the same street on the same day is replaced by the newer row */
+function skKey(e){ return String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString(); }
+function pasteMerge(old, add){
+  const seen = {}, out = [];
+  add.concat(old).forEach(e => { const k = skKey(e); if(seen[k]) return; seen[k] = 1; out.push(e); });
+  return out.sort((a, b) => a.start - b.start);
+}
+function skUnhide(arr){ const h = skHideAll(); arr.forEach(e => { delete h[skKey(e)]; }); store("skHide", JSON.stringify(h)); }
 function pastePortal(txt){
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   let all = parsePortal(txt); if(!all.length) all = parseSheet(txt);
@@ -3284,17 +3292,13 @@ function pastePortal(txt){
   /* a repeat visit still carries the date of the first appointment: offer to put those jobs on today */
   const addPast = () => {
     const moved = past.map(e => { const d = new Date(e.start), t = new Date(); t.setHours(d.getHours(), d.getMinutes(), 0, 0); const dur = (e.end || e.start + 3600000) - e.start; return Object.assign({}, e, {start: t.getTime(), end: t.getTime() + dur, orig: e.start}); });
-    const keep = (() => { try{ return JSON.parse(recall("skPaste") || "[]") || []; }catch(err){ return []; } })();
-    const seen = {}, merged = [];
-    keep.concat(moved).forEach(e => { const k = String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString(); if(seen[k]) return; seen[k] = 1; merged.push(e); });
-    store("skPaste", JSON.stringify(merged.sort((a, b) => a.start - b.start)));
-    /* adding a job again by hand un-hides it (it may have been swiped away before) */
-    const hd = skHideAll(); moved.forEach(e => { delete hd[String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString()]; }); store("skHide", JSON.stringify(hd));
+    store("skPaste", JSON.stringify(pasteMerge(pasteCache(), moved)));
+    skUnhide(moved);
     paintSk();
     toastMsg(moved.length + (moved.length === 1 ? " job" : " jobs") + " added for today");
   };
   if(list.length){
-    store("skPaste", JSON.stringify(list)); store("skHide", "");
+    store("skPaste", JSON.stringify(pasteMerge(pasteCache(), list))); skUnhide(list);
     paintSk();
     if(past.length) notice(list.length + (list.length === 1 ? " job" : " jobs") + " added", past.length + (past.length === 1 ? " more is" : " more are") + " from earlier days.", "Add as today", addPast);
     else toastMsg(list.length + (list.length === 1 ? " job" : " jobs"));
