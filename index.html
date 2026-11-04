@@ -3351,8 +3351,25 @@ function pasteMerge(old, add){
 }
 function skUnhide(arr){ const h = skHideAll(); arr.forEach(e => { delete h[skKey(e)]; }); store("skHide", JSON.stringify(h)); }
 function pastePortal(txt){
-  const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   let all = parsePortal(txt); if(!all.length) all = parseSheet(txt);
+  addJobs(all);
+}
+function addJobs(all){
+  jobsAll().then(h => addJobs2(all, h || [])).catch(() => addJobs2(all, []));
+}
+function addJobs2(all, hist){
+  const day0 = new Date(), seenK = {}; day0.setHours(0, 0, 0, 0);
+  const sk = all.skipped, n0 = all.length;
+  /* an earlier-day row whose job was already done on its own day is not offered again */
+  all = all.filter(e => {
+    const k = skKey(e); if(seenK[k]) return false; seenK[k] = 1;
+    if(e.start < day0.getTime()){
+      const key = String(e.addr).split(",")[0].trim().toLowerCase(), day = new Date(e.start).toDateString();
+      if(hist.some(x => String(x.address || "").toLowerCase().indexOf(key) === 0 && new Date(x.when).toDateString() === day)) return false;
+    }
+    return true;
+  });
+  all.skipped = sk; const hadRows = n0 > 0;
   const list = all.filter(e => e.start >= day0.getTime()).sort((a, b) => a.start - b.start);
   const past = all.filter(e => e.start < day0.getTime());
   /* a repeat visit still carries the date of the first appointment: offer to put those jobs on today */
@@ -3372,6 +3389,7 @@ function pastePortal(txt){
   }
   if(past.length) notice("Earlier days", "These jobs are before today.", "Add as today", addPast);
   else if(all.skipped) notice("No jobs for you", "None of these rows has your name in the technician column.");
+  else if(hadRows) notice("Nothing new", "These jobs are already done.");
   else notice("No jobs found", "Copy the Resource Schedule table in the portal, then tap Paste.");
 }
 /* customer file (.xlsx from the portal): read in the browser, kept on the phone */
@@ -3400,11 +3418,12 @@ function zipRead(ent){
   return new Response(ds.readable).arrayBuffer().then(b => new TextDecoder().decode(b));
 }
 function colNum(ref){ let n = 0; const m = /^[A-Z]+/.exec(ref); (m ? m[0] : "").split("").forEach(ch => { n = n * 26 + ch.charCodeAt(0) - 64; }); return n; }
-function xlsxRows(buf){
+function xlsxRows(buf, allSheets){
   return Promise.resolve().then(() => {
     const z = zipEntries(buf);
-    const sheetName = z["xl/worksheets/sheet1.xml"] ? "xl/worksheets/sheet1.xml" : Object.keys(z).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort()[0];
-    return Promise.all([zipRead(z["xl/sharedStrings.xml"]), zipRead(z[sheetName])]);
+    const names = Object.keys(z).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort((a, b) => parseInt(a.replace(/\D/g, ""), 10) - parseInt(b.replace(/\D/g, ""), 10));
+    const use = allSheets ? names : [z["xl/worksheets/sheet1.xml"] ? "xl/worksheets/sheet1.xml" : names[0]];
+    return Promise.all([zipRead(z["xl/sharedStrings.xml"])].concat(use.map(n => zipRead(z[n]))));
   }).then(r => {
     const dp = new DOMParser();
     const ss = [];
@@ -3412,7 +3431,7 @@ function xlsxRows(buf){
       ss.push(Array.prototype.map.call(si.getElementsByTagName("t"), t => t.textContent).join(""));
     });
     const rows = [];
-    Array.prototype.forEach.call(dp.parseFromString(r[1], "text/xml").getElementsByTagName("row"), row => {
+    r.slice(1).forEach(xml => Array.prototype.forEach.call(dp.parseFromString(xml, "text/xml").getElementsByTagName("row"), row => {
       const cells = [];
       Array.prototype.forEach.call(row.getElementsByTagName("c"), c => {
         const i = colNum(c.getAttribute("r") || "A1") - 1, t = c.getAttribute("t");
@@ -3424,9 +3443,30 @@ function xlsxRows(buf){
         cells[i] = val;
       });
       rows.push(cells);
-    });
+    }));
     return rows;
   });
+}
+/* the boss's workbook: one tab per day, columns FiberCity, DATE, IssueKey, Address, Name, Phone, Chamber/Ring, ... JOB ORDER, TECHNICIAN */
+function scheduleFromRows(rows){
+  const me = ($("#c_tech").value || "").trim().split(/\s+/)[0].toLowerCase();
+  const out = []; out.skipped = 0; let H = null;
+  rows.forEach(r => {
+    const low = (r || []).map(v => String(v === undefined ? "" : v).trim().toLowerCase());
+    if(low.indexOf("issuekey") >= 0 && low.indexOf("address") >= 0 && low.indexOf("technician") >= 0){ H = {}; low.forEach((v, j) => { if(v) H[v] = j; }); return; }
+    if(!H) return;
+    const g = k => (H[k] === undefined || r[H[k]] === undefined ? "" : String(r[H[k]]).trim());
+    const addr = g("address"), dv = g("date"); if(!addr || !/^\d/.test(addr) || !dv) return;
+    let start = 0;
+    if(/^\d+(\.\d+)?$/.test(dv)){ const u = new Date(Math.round((+dv - 25569) * 86400000)); start = new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes()).getTime(); }
+    else start = new Date(dv).getTime() || 0;
+    if(!start) return;
+    const tech = g("technician").split(/\s+/)[0];
+    if(me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0){ out.skipped++; return; }
+    const city = g("fibercity"), cm = /^(.+?),\s*([A-Z]{2})\b/.exec(city), ch = /CH-(\d+)/i.exec(g("chamber/ring")), job = /(\d+)/.exec(g("job order"));
+    out.push({uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : ""});
+  });
+  return out;
 }
 function dirList(){ try{ return JSON.parse(recall("skDir") || "[]") || []; }catch(e){ return []; } }
 function niceName(n){ n = String(n || "").trim(); return (n && n === n.toUpperCase()) ? n.toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, a, b) => a + b.toUpperCase()) : n; }
@@ -4004,8 +4044,11 @@ $("#skMClear").addEventListener("click", () => {
 });
 $("#skFile").addEventListener("change", () => {
   const f = $("#skFile").files[0]; if(!f) return;
-  importCustomers(f).then(n => { paintSk(); notice("Customers saved", n + " appointments from the file. They stay on this phone."); })
-    .catch(e => notice("Could not read the file", e && e.message === "cols" ? "Use the file from Download Appointments." : "Choose the .xlsx from Download Appointments."));
+  f.arrayBuffer().then(buf => xlsxRows(buf, true).then(rows => {
+    const sch = scheduleFromRows(rows);
+    if(sch.length || sch.skipped){ addJobs(sch); return; }
+    return importCustomers(f).then(n => { paintSk(); notice("Customers saved", n + " appointments from the file. They stay on this phone."); });
+  })).catch(e => notice("Could not read the file", e && e.message === "cols" ? "Use the schedule from the boss or the file from Download Appointments." : "Choose the .xlsx file."));
 });
 $("#skMPaste").addEventListener("click", () => {
   pmClose();
