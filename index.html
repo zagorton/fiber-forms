@@ -3479,8 +3479,11 @@ let SK_OPEN = "";
 function telDigits(t){ let d = String(t || "").replace(/\D/g, ""); if(d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d : ""; }
 function fmtTel(t){ const d = telDigits(t); return d ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : String(t || ""); }
 function navUrl(e){
-  const ll = geoLL(e.addr), dest = ll ? ll[0] + "," + ll[1] : encodeURIComponent(e.addr);
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) ? "https://maps.apple.com/?dirflg=d&daddr=" + dest : "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + dest;
+  const ll = geoLL(e.addr), dest = ll ? ll[0] + "," + ll[1] : encodeURIComponent(e.addr), ua = navigator.userAgent;
+  if(/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "https://maps.apple.com/?dirflg=d&daddr=" + dest;
+  /* Android: geo: link opens the system chooser with every map app on the phone */
+  if(/Android/.test(ua)) return "geo:0,0?q=" + dest;
+  return "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + dest;
 }
 function skOpen(k, keep){
   SK_OPEN = (!keep && SK_OPEN === k) ? "" : k;
@@ -3527,7 +3530,7 @@ function paintSk(){
       const k = skKey(e), tel = telDigits(e.tel), info = [e.name, e.ch].filter(Boolean).join(" \u00b7 ");
       const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>Start</button></div>'
         + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
-        + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<a class="xb" href="' + navUrl(e) + '" target="_blank" rel="noopener" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
+        + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
       return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
     });
     window.skShown = list;
