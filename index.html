@@ -789,7 +789,7 @@ body.stepsnav #jobBar{flex-basis:100%}
 /* type scale 13/15/17/20/28 · space 4/8/12/16/24/32 · radius 12/16/20/28 */
 /* v98 route map on Today */
 #tdMapBox{margin:0 0 12px;border-radius:var(--r);overflow:hidden;background:#fff}
-#tdMap{position:relative;height:300px;background:#e6e9ee;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+#tdMap{position:relative;height:190px;background:#e6e9ee;overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none}
 #mpT,#mpM{position:absolute;left:0;top:0;right:0;bottom:0}
 #tdMap{isolation:isolate}#mpT{z-index:0}#mpM{z-index:1}
 #mpT img{position:absolute;max-width:none;opacity:0;transition:opacity .15s;pointer-events:none;-webkit-user-drag:none}
@@ -822,11 +822,43 @@ body.stepsnav #jobBar{flex-basis:100%}
 .swp .step{position:relative;touch-action:pan-y;transition:transform .2s}
 .swp.drag .step{transition:none}
 .swp.open .step{transform:translateX(-96px)}
-body.swo #newJobFab{display:none !important}
+body.swo #newJobFab,body.xop #newJobFab{display:none !important}
+.swp{scroll-margin-bottom:96px}
+/* v109 */
+#mpHint{position:absolute;left:0;right:0;top:0;bottom:0;z-index:6;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(20,22,26,.55);color:#fff;font-size:15px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+#mpHint.on{opacity:1}
+#mpHint svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cnt{margin-left:8px;background:rgba(120,120,128,.14);border-radius:99px;padding:1px 8px;font-size:12px;font-weight:600;letter-spacing:0;color:var(--muted);vertical-align:1px}
+.plus{width:36px;height:36px;border-radius:50%;border:none;background:var(--magenta);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.plus svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round}
+#skMenuBd{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:160;background:rgba(0,0,0,.28)}
+#skMenu{display:none;position:fixed;z-index:161;width:216px;background:rgba(255,255,255,.97);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden}
+body.pmo #skMenuBd,body.pmo #skMenu{display:block}
+#skMenu button{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:none;padding:13px 16px;font:inherit;font-size:16px;color:var(--ink);text-align:left;cursor:pointer;border-top:.5px solid var(--line)}
+#skMenu button:first-child{border-top:none}
+#skMenu button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#skMenu button.red{color:#e0352b;border-top:6px solid #f1f2f5}
+.xp{display:none;position:relative;background:#fff7fb;padding:2px 16px 14px 54px;border-bottom:.5px solid var(--line)}
+.swp.xo .xp{display:block}
+.swp.xo .step{background:#fff7fb}
+.xh{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px}
+.xn{font-size:14px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xs{flex:none;display:inline-flex;align-items:center;gap:5px;border:none;border-radius:99px;background:var(--magenta);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:8px 16px;cursor:pointer}
+.xs svg{width:12px;height:12px;fill:#fff}
+.xr{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px}
+.xc{display:inline-flex;align-items:center;gap:7px;background:#e8f5ee;color:#1b7f4a;border-radius:99px;padding:8px 14px;font-size:15px;font-weight:700;text-decoration:none}
+.xc svg,.xb svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.xi2{display:flex;gap:8px}
+.xb{width:38px;height:38px;border-radius:12px;background:#f1f2f5;color:var(--ink);display:flex;align-items:center;justify-content:center;text-decoration:none}
+.xb.tx{background:#e8f0fc;color:#0a60d0}
+#toastMsg button{background:none;border:none;color:#ff7ab8;font:inherit;font-weight:700;margin-left:16px;padding:0;cursor:pointer}
+#toastMsg.un{pointer-events:auto}
 .swp:not(:last-child) .step{border-bottom:.5px solid var(--line)}
 </style>
 </head>
 <body>
+<div id="skMenuBd"></div>
+<div id="skMenu"><button id="skMPaste" type="button">Paste jobs<svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="16" rx="2"/><path d="M9 5V3h6v2"/></svg></button><button id="skMFile" type="button">Import file<svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></svg></button><button id="skMClear" type="button" class="red">Clear list<svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg></button></div>
 
 <div id="fileWarn" style="display:none;background:#b3541e;color:#fff;padding:12px 40px 12px 14px;
      font-size:14px;line-height:1.45;position:relative;
@@ -865,6 +897,8 @@ body.swo #newJobFab{display:none !important}
     <div class="f"><label for="c_email">Email</label>
       <input type="text" id="c_email" autocomplete="email" autocapitalize="none" spellcheck="false" inputmode="email"
              placeholder="name@example.com"></div>
+    <div class="f"><label for="c_phone">Phone</label>
+      <input type="text" id="c_phone" autocomplete="tel" inputmode="tel" placeholder="(818) 555-0123"></div>
     <div class="f"><label for="c_street">Address &mdash; paste the whole thing</label>
       <input type="text" id="c_street" autocomplete="off" autocapitalize="words"
              placeholder="1420 N Central Ave Apt 7, Glendale, CA 91202">
@@ -1002,13 +1036,12 @@ body.swo #newJobFab{display:none !important}
     </div>
   </div>
   <div id="tdActive"></div>
-  <div class="sec" id="tdSkTitle" style="display:flex;align-items:center;justify-content:space-between"><span>Next jobs</span><span style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" id="skClearBtn" type="button" style="display:none;color:#e0352b">Clear</button><button class="btn btn-ghost btn-sm" id="skFileBtn" type="button">File</button><button class="btn btn-ghost btn-sm" id="skPasteBtn" type="button">Paste</button></span><input type="file" id="skFile" accept=".xlsx" style="display:none"></div>
+  <div class="sec" id="tdSkTitle" style="display:flex;align-items:center;justify-content:space-between"><span>Next jobs<i class="cnt" id="skCnt" style="display:none;font-style:normal"></i></span><button class="plus" id="skPlus" type="button" aria-label="Add jobs"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><input type="file" id="skFile" accept=".xlsx" style="display:none"></div>
   <div id="tdMapBox" style="display:none">
     <div id="tdMap"><div id="mpT"></div><div id="mpM"></div><div id="mpDay"></div>
       <button id="mpFit" type="button" aria-label="Show all"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button id="mpMe" type="button" aria-label="My location" style="display:none"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
-      <div id="mpAttr">&copy; OpenStreetMap</div></div>
-    <div id="mpSel" style="display:none"></div>
+      <div id="mpAttr">&copy; OpenStreetMap</div><div id="mpHint"><svg viewBox="0 0 48 48"><circle cx="16" cy="16" r="6"/><circle cx="32" cy="22" r="6"/><path d="M16 26v14M32 32v10"/></svg>Use two fingers to move the map</div></div>
   </div>
   <div class="steps" id="tdSk" style="display:none"></div>
   <div class="sec" id="tdJobTitle" style="display:none">Steps</div>
@@ -3248,13 +3281,14 @@ function parseSheet(txt){
   String(txt).split(/\r?\n/).forEach(ln => {
     const dm = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/.exec(ln);
     if(!dm) return;
-    let addr = "", name = "", job = "", fc = "", ch = "", tech = "";
+    let addr = "", name = "", job = "", fc = "", ch = "", tech = "", tel = "";
     const city = /^\s*([A-Za-z .'-]{3,30}),\s*([A-Z]{2})\b/.exec(ln);
     if(ln.indexOf("\t") >= 0){
       const c = ln.split("\t").map(x => x.trim());
       const fi = c.findIndex(x => /^FC-\d+$/i.test(x));
       if(fi < 0 || !c[fi + 1]) return;
       fc = c[fi]; addr = c[fi + 1]; name = c[fi + 2] || "";
+      for(let q = fi + 2; q < c.length; q++){ const t = telDigits(c[q]); if(t && /^[\d\s().+-]+$/.test(c[q])){ tel = t; break; } }
       const ci = c.findIndex(x => /^USQPL-CH-\d+$/i.test(x)); if(ci >= 0) ch = c[ci];
       const ji = c.findIndex(x => /^JOB-\d+$/i.test(x)); if(ji >= 0){ job = c[ji].slice(4); tech = (c[ji + 1] || "").split(/\s+/)[0]; }
     } else {
@@ -3262,9 +3296,9 @@ function parseSheet(txt){
       if(!fm) return;
       fc = fm[0];
       let rest = after.slice(fm.index + fm[0].length);
-      const pm = /\s\d{10,11}\b/.exec(rest);
+      const pm = /\s(?:\(\d{3}\)\s?\d{3}[\s.-]?\d{4}|\d{3}[\s.-]\d{3}[\s.-]\d{4}|\d{10,11})(?!\d)/.exec(rest);
       const sp = splitAddrName(pm ? rest.slice(0, pm.index) : rest.replace(/\s+USQPL-CH-.*$/i, ""));
-      addr = sp[0]; name = sp[1];
+      addr = sp[0]; name = sp[1]; if(pm) tel = telDigits(pm[0]);
       const cm = /USQPL-CH-(\d+)/i.exec(ln); if(cm) ch = "USQPL-CH-" + cm[1];
       const jm = /JOB-(\d+)\s+(\S+)/i.exec(ln) || /JOB-(\d+)/i.exec(ln); if(jm){ job = jm[1]; tech = jm[2] || ""; }
     }
@@ -3272,7 +3306,7 @@ function parseSheet(txt){
     if(me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0){ out.skipped++; return; }
     const start = new Date(+dm[3], +dm[1] - 1, +dm[2], +dm[4], +dm[5]).getTime();
     const place = city ? city[1].trim() + ", " + city[2] : "Palmdale, CA";
-    out.push({uid: fc || job, ref: "", start: start, end: start + 3600000, addr: addr + ", " + place, sum: "", name: name, ch: ch ? "CH-" + ch.replace(/\D/g, "") : "", job: job});
+    out.push({uid: fc || job, ref: "", start: start, end: start + 3600000, addr: addr + ", " + place, sum: "", name: name, tel: tel, ch: ch ? "CH-" + ch.replace(/\D/g, "") : "", job: job});
   });
   return out;
 }
@@ -3441,10 +3475,24 @@ const SK_MSG = {
   fail: ["Could not load the schedule", "Check the link and the signal, then try again."],
   offline: ["No signal", "The schedule updates when you are online."]
 };
+let SK_OPEN = "";
+function telDigits(t){ let d = String(t || "").replace(/\D/g, ""); if(d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d : ""; }
+function fmtTel(t){ const d = telDigits(t); return d ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : String(t || ""); }
+function navUrl(e){
+  const ll = geoLL(e.addr), dest = ll ? ll[0] + "," + ll[1] : encodeURIComponent(e.addr);
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ? "https://maps.apple.com/?dirflg=d&daddr=" + dest : "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + dest;
+}
+function skOpen(k, keep){
+  SK_OPEN = (!keep && SK_OPEN === k) ? "" : k;
+  $$("#tdSk .swp").forEach(w => w.classList.toggle("xo", !!SK_OPEN && w.dataset.k === SK_OPEN));
+  const e = (window.skShown || []).filter(x => skKey(x) === SK_OPEN)[0];
+  MP.sel = e && e._n ? e._n : 0;
+  document.body.classList.toggle("xop", !!SK_OPEN);
+  mpSelPaint();
+}
 function paintSk(){
   const box = $("#tdSk"), tt = $("#tdSkTitle"); if(!box) return;
   tt.style.display = "flex";
-  $("#skClearBtn").style.display = pasteCache().length ? "" : "none";
   const now = Date.now();
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   jobsAll().then(all => {
@@ -3472,11 +3520,19 @@ function paintSk(){
     };
     all0.forEach(e => { e._n = 0; });
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
+    const IC = {call: '<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>', text: '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>', nav: '<svg viewBox="0 0 24 24"><path d="M12 3l7 17-7-4-7 4z"/></svg>'};
+    if(SK_OPEN && !list.some(e => skKey(e) === SK_OPEN)){ SK_OPEN = ""; MP.sel = 0; }
     const rows = list.map((e, i) => {
       const d = new Date(e.start), same = d.toDateString() === new Date().toDateString();
-      return '<div class="swp"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button></div>';
+      const k = skKey(e), tel = telDigits(e.tel), info = [e.name, e.ch].filter(Boolean).join(" \u00b7 ");
+      const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>Start</button></div>'
+        + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
+        + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<a class="xb" href="' + navUrl(e) + '" target="_blank" rel="noopener" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
+      return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
     });
     window.skShown = list;
+    document.body.classList.toggle("xop", !!SK_OPEN);
+    const cn = $("#skCnt"); cn.textContent = list.length; cn.style.display = list.length ? "" : "none";
     try{ mapUpdate(dayAll); }catch(err){}
     if(!rows.length){
       if(skUrl() && skErr && SK_MSG[skErr] && !skAll().length){
@@ -3621,16 +3677,7 @@ function mpRefresh(){
   mpSelPaint();
 }
 function mpSelPaint(){
-  const el = $("#mpSel"), j = MP.jobs.find(x => x.n === MP.sel);
   $$("#mpM .mk").forEach(m => m.classList.toggle("sel", !!MP.jobs[+m.dataset.i] && MP.jobs[+m.dataset.i].n === MP.sel));
-  if(!j){ el.style.display = "none"; return; }
-  const f = new Intl.DateTimeFormat("en-US", {hour: "numeric", minute: "2-digit"});
-  const dest = j.ll ? j.ll[0] + "," + j.ll[1] : encodeURIComponent(j.e.addr);
-  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const url = ios ? "https://maps.apple.com/?dirflg=d&daddr=" + dest : "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + dest;
-  el.innerHTML = '<span class="nb">' + j.n + '</span><span class="t">' + esc(String(j.e.addr).split(",")[0]) + '</span><span class="v">' + (j.e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(j.e.orig)) + " \u00b7 " : "") + f.format(new Date(j.e.start))
-    + '</span><a href="' + url + '" target="_blank" rel="noopener" aria-label="Navigate"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8z"/></svg></a>';
-  el.style.display = "flex";
 }
 function mpGo(){
   if(MP.watch || !navigator.geolocation) return;
@@ -3654,17 +3701,7 @@ document.addEventListener("visibilitychange", () => { if(document.hidden) mpStop
     const r = rect(), mx = a.reduce((s, q) => s + q.x, 0) / a.length - r.left, my = a.reduce((s, q) => s + q.y, 0) / a.length - r.top;
     return {mx: mx, my: my, d: a.length > 1 ? Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) : 0};
   };
-  box.addEventListener("pointerdown", e => {
-    if(e.target.closest("button")) return;
-    try{ box.setPointerCapture(e.pointerId); }catch(err){}
-    P[e.pointerId] = {x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: Date.now(), el: e.target, moved: 0};
-  });
-  box.addEventListener("pointermove", e => {
-    const q = P[e.pointerId]; if(!q) return;
-    const a = stat();
-    q.x = e.clientX; q.y = e.clientY; q.moved = Math.max(q.moved, Math.hypot(q.x - q.x0, q.y - q.y0));
-    const b = stat();
-    if(q.moved < 6 && Object.keys(P).length < 2) return;
+  const move = (a, b) => {
     MP.touched = true;
     const S0 = 256 * Math.pow(2, MP.z), wx = MP.mx + (a.mx - MP.w / 2) / S0, wy = MP.my + (a.my - MP.h / 2) / S0;
     if(a.d && b.d) MP.z = Math.max(3, Math.min(19, MP.z + Math.log2(b.d / a.d)));
@@ -3672,14 +3709,53 @@ document.addEventListener("visibilitychange", () => { if(document.hidden) mpStop
     MP.mx = Math.max(0, Math.min(1, wx - (b.mx - MP.w / 2) / S1));
     MP.my = Math.max(0, Math.min(1, wy - (b.my - MP.h / 2) / S1));
     mpSoon();
+  };
+  /* touch: one finger scrolls the page (hint), two fingers move the map */
+  const T = {on: false, s: null, p: null}, hint = $("#mpHint");
+  const tstat = ts => { const r = rect(), a = ts[0], b = ts[1]; return {mx: (a.clientX + b.clientX) / 2 - r.left, my: (a.clientY + b.clientY) / 2 - r.top, d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)}; };
+  const showHint = () => { hint.classList.add("on"); clearTimeout(showHint.t); showHint.t = setTimeout(() => hint.classList.remove("on"), 1400); };
+  box.addEventListener("touchstart", e => {
+    if(e.touches.length >= 2){ e.preventDefault(); T.on = true; MP.multi = 1; T.s = tstat(e.touches); hint.classList.remove("on"); }
+    else if(!T.on){ T.p = {x: e.touches[0].clientX, y: e.touches[0].clientY}; }
+  }, {passive: false});
+  box.addEventListener("touchmove", e => {
+    if(e.touches.length >= 2){
+      e.preventDefault(); const b = tstat(e.touches);
+      if(!T.on || !T.s){ T.on = true; MP.multi = 1; T.s = b; return; }
+      move(T.s, b); T.s = b; return;
+    }
+    if(T.on){ e.preventDefault(); T.s = null; return; }
+    const t = e.touches[0];
+    if(T.p && Math.hypot(t.clientX - T.p.x, t.clientY - T.p.y) > 10) showHint();
+  }, {passive: false});
+  const tend = e => { if(!e.touches.length){ T.on = false; T.s = null; T.p = null; setTimeout(() => { MP.multi = 0; }, 350); } else if(e.touches.length < 2) T.s = null; };
+  box.addEventListener("touchend", tend); box.addEventListener("touchcancel", tend);
+  box.addEventListener("pointerdown", e => {
+    if(e.target.closest("button")) return;
+    if(e.pointerType !== "touch"){ try{ box.setPointerCapture(e.pointerId); }catch(err){} }
+    P[e.pointerId] = {x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: Date.now(), el: e.target, moved: 0};
+  });
+  box.addEventListener("pointermove", e => {
+    const q = P[e.pointerId]; if(!q) return;
+    const a = stat();
+    q.x = e.clientX; q.y = e.clientY; q.moved = Math.max(q.moved, Math.hypot(q.x - q.x0, q.y - q.y0));
+    if(e.pointerType === "touch") return;
+    const b = stat();
+    if(q.moved < 6) return;
+    move(a, b);
   });
   const up = e => {
     const q = P[e.pointerId]; if(!q) return;
     delete P[e.pointerId];
-    if(q.moved < 8 && Date.now() - q.t < 600 && e.type === "pointerup"){
+    if(q.moved < 8 && Date.now() - q.t < 600 && e.type === "pointerup" && !MP.multi){
       const m = q.el && q.el.closest && q.el.closest(".mk");
-      if(m){ const j = MP.jobs[+m.dataset.i]; if(j){ MP.sel = MP.sel === j.n ? 0 : j.n; mpSelPaint(); } }
-      else if(MP.sel){ MP.sel = 0; mpSelPaint(); }
+      if(m){
+        const j = MP.jobs[+m.dataset.i];
+        if(j){
+          if((window.skShown || []).some(x => skKey(x) === skKey(j.e))){ skOpen(skKey(j.e)); const w = $("#tdSk .swp.xo"); if(w) w.scrollIntoView({block: "nearest", behavior: "smooth"}); }
+          else { skOpen("", true); MP.sel = j.n; mpSelPaint(); toastMsg((j.s === "done" ? "Done \u00b7 " : "Now \u00b7 ") + String(j.e.addr).split(",")[0]); }
+        }
+      } else if(SK_OPEN || MP.sel){ skOpen("", true); }
     }
   };
   box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
@@ -3712,25 +3788,43 @@ $("#tdSk").addEventListener("click", e => {
     paintSk(); swFlag(); toastMsg("Removed");
     return;
   }
+  const go = e.target.closest("[data-go]");
+  if(go){ startEntry((window.skShown || [])[+go.dataset.go]); return; }
   const b = e.target.closest("[data-sk]"); if(!b) return;
   const sw = b.closest(".swp");
   if(Date.now() - swAt < 400){ return; }
   if(sw && sw.classList.contains("open")){ sw.classList.remove("open"); swFlag(); return; }
   swClose();
   const j = (window.skShown || [])[+b.dataset.sk]; if(!j) return;
+  skOpen(skKey(j));
+});
+let lastStart = null, startSnap = "";
+function jobSig(){
+  const v = {};
+  $$("input[type=text]").forEach(i => { if(i.value && i.id !== "c_daytime" && i.id !== "f_date") v[i.id] = i.value; });
+  return JSON.stringify([v, $("#w_notes").value, state.checks, state.router, state.isp, state.strokes.length, photos.length]);
+}
+function startEntry(j, silent){
+  if(!j) return;
   const busy = composedAddress() || photos.length || ($("#c_customer").value || "").trim();
-  if(busy && !uploadedOnce && !confirm("Start this job? The current one is cleared.")) return;
+  if(!silent && busy && !uploadedOnce && !confirm("Start this job? The current one is cleared.")) return;
   if(busy) resetJob();
   applyAddress(j.addr);
   fillCustomer(dirFind(j));
   if(j.name && !($("#c_customer").value || "").trim()) fillCustomer({name: j.name});
+  if(j.tel){ const el = $("#c_phone"); if(el && !(el.value || "").trim()){ el.value = fmtTel(j.tel); el.dispatchEvent(new Event("input", {bubbles: true})); } }
   if(j.ch && !($("#w_ch").value || "").trim()){ const el = $("#w_ch"); el.value = j.ch; el.dispatchEvent(new Event("input", {bubbles: true})); }
   startJob();
-});
-$("#skClearBtn").addEventListener("click", () => {
-  if(!confirm("Clear the pasted job list?")) return;
-  store("skPaste", ""); paintSk();
-});
+  lastStart = j; startSnap = jobSig();
+}
+/* back to Today from a job where nothing was entered but what the list filled in: close it quietly */
+function autoDrop(){
+  if(!startSnap || uploadedOnce || photos.length) return;
+  if(jobSig() !== startSnap) return;
+  const j = lastStart; startSnap = "";
+  resetJob(true);
+  toastMsg("Nothing filled in. Job closed.", () => startEntry(j, true));
+}
 (function(){
   const box = $("#tdSk"); let g = null;
   box.addEventListener("pointerdown", e => {
@@ -3761,13 +3855,28 @@ $("#skClearBtn").addEventListener("click", () => {
   box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
   document.addEventListener("pointerdown", e => { if(!e.target.closest("#tdSk")) swClose(); });
 })();
-$("#skFileBtn").addEventListener("click", () => { $("#skFile").value = ""; $("#skFile").click(); });
+const pmClose = () => document.body.classList.remove("pmo");
+$("#skPlus").addEventListener("click", () => {
+  const r = $("#skPlus").getBoundingClientRect(), m = $("#skMenu");
+  m.style.top = (r.bottom + 8) + "px"; m.style.right = Math.max(12, window.innerWidth - r.right) + "px";
+  $("#skMClear").style.display = pasteCache().length ? "" : "none";
+  document.body.classList.add("pmo");
+});
+$("#skMenuBd").addEventListener("click", pmClose);
+$("#skMFile").addEventListener("click", () => { pmClose(); $("#skFile").value = ""; $("#skFile").click(); });
+$("#skMClear").addEventListener("click", () => {
+  pmClose();
+  const bk = [recall("skPaste"), recall("skHide")];
+  store("skPaste", ""); paintSk();
+  toastMsg("List cleared", () => { store("skPaste", bk[0] || ""); store("skHide", bk[1] || ""); paintSk(); });
+});
 $("#skFile").addEventListener("change", () => {
   const f = $("#skFile").files[0]; if(!f) return;
   importCustomers(f).then(n => { paintSk(); notice("Customers saved", n + " appointments from the file. They stay on this phone."); })
     .catch(e => notice("Could not read the file", e && e.message === "cols" ? "Use the file from Download Appointments." : "Choose the .xlsx from Download Appointments."));
 });
-$("#skPasteBtn").addEventListener("click", () => {
+$("#skMPaste").addEventListener("click", () => {
+  pmClose();
   const hint = () => notice("Allow paste", "Copy the Resource Schedule table in the portal, then tap Paste and allow it.");
   if(navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(pastePortal).catch(hint);
   else hint();
@@ -3798,8 +3907,9 @@ $("#startNext").addEventListener("click", () => {
 });
 
 /* wipes everything about this customer, keeps the technician's own settings */
-function resetJob(){
-  saveJob(uploadedOnce, photos.length, null, true);
+function resetJob(noSave){
+  startSnap = "";
+  if(!noSave) saveJob(uploadedOnce, photos.length, null, true);
   currentJobId = null; currentJobWhen = null; tgPostedFor = ""; driveSent = {}; store("driveSent", ""); store("driveTotal", ""); closedView = false; lastFolderId = ""; store("arrived", ""); arrPaint();
   photos.forEach(p => URL.revokeObjectURL(p.url));
   photos.length = 0;
@@ -3808,7 +3918,7 @@ function resetJob(){
   renderPhotos();
 
   clearIds(CFG.checklist.fields.map(f => f.id)
-           .concat(["c_routerSn", "c_routerMac", "c_email", "w_ft", "w_ch", "w_spl", "w_ext"])
+           .concat(["c_routerSn", "c_routerMac", "c_email", "c_phone", "w_ft", "w_ch", "w_spl", "w_ext"])
            .concat(CFG.fcs2.fields.map(f => f.id)));
   state.strokes = []; state.touched = {}; state.checks = {};
   $$(".chip[data-group]").forEach(c => c.classList.remove("on"));
@@ -4857,11 +4967,16 @@ function paintReview(){
 
 /* closed state of the Close the job screen */
 let closedView = false, lastFolderId = "";
-function toastMsg(t){
+function toastMsg(t, fn){
   let e = document.getElementById("toastMsg");
   if(!e){ e = document.createElement("div"); e.id = "toastMsg"; document.body.appendChild(e); }
-  e.textContent = t; e.className = "on";
-  clearTimeout(toastMsg.t); toastMsg.t = setTimeout(() => { e.className = ""; }, 2600);
+  e.textContent = t; e.className = "on" + (fn ? " un" : "");
+  if(fn){
+    const b = document.createElement("button"); b.type = "button"; b.textContent = "Undo";
+    b.onclick = () => { clearTimeout(toastMsg.t); e.className = ""; fn(); };
+    e.appendChild(b);
+  }
+  clearTimeout(toastMsg.t); toastMsg.t = setTimeout(() => { e.className = ""; }, fn ? 6000 : 2600);
 }
 ["gesturestart","gesturechange","gestureend"].forEach(n => document.addEventListener(n, e => e.preventDefault()));
 $("#notesHead").addEventListener("click", e => {
@@ -5041,6 +5156,7 @@ $("#tdDone").addEventListener("click", e => { const m = e.target.closest("[data-
 $("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if(b) openEdit(+b.dataset.edit); });
 
 function setView(v){
+  if(v === "today" && state.view && state.view !== "today" && state.view !== "result") autoDrop();
   if(v === "photos" || v === "work") v = "close";
   if(v === "checklist" || v === "fcs2") freshStamp();
   ["today","checklist","fcs2","close","result"].forEach(k => {
@@ -5090,7 +5206,7 @@ function clearIds(ids){
 }
 $("#clearChk").addEventListener("click", () => {
   if(!confirm("Clear the checklist?")) return;
-  clearIds(CFG.checklist.fields.map(f => f.id).concat(["c_routerSn","c_routerMac","c_email","w_ft","w_ch","w_spl","w_ext"]));
+  clearIds(CFG.checklist.fields.map(f => f.id).concat(["c_routerSn","c_routerMac","c_email","c_phone","w_ft","w_ch","w_spl","w_ext"]));
   state.checks = {};
   $$(".chip[data-group]").forEach(c => c.classList.remove("on"));
   $("#c_daytime").value = nowStamp();
