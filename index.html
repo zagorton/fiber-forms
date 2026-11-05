@@ -815,7 +815,11 @@ body.stepsnav #jobBar{flex-basis:100%}
 #mpSel a{flex:none;width:42px;height:42px;border-radius:50%;background:var(--magenta);display:flex;align-items:center;justify-content:center}
 #mpSel a svg{width:22px;height:22px;fill:#fff}
 .nb{flex:none;width:26px;height:26px;border-radius:50%;background:var(--magenta);color:#fff;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
-.nb.off{background:#9aa0a8}
+.nb.off,.nb.oth{background:#9aa0a8}
+.swp .tg2{flex:none;font-size:12px;font-weight:600;color:#6b7280;background:#eef0f4;border-radius:8px;padding:2px 8px;margin-right:8px}
+#noteSheet .nx{position:absolute;right:16px;top:14px;width:32px;height:32px;border-radius:50%;border:none;background:#eef0f4;color:#4b5563;font-size:18px;font-weight:700;line-height:1;display:none;cursor:pointer}
+#noteSheet.cl .nx{display:block}
+#noteSheet .pw{font-size:26px;font-weight:700;margin:6px 0 0}
 /* v106 swipe to remove a job from Next jobs */
 .swp{position:relative;overflow:hidden;background:#fff}
 .swp .rm{position:absolute;right:0;top:0;bottom:auto;height:var(--rowh,58px);width:96px;border:none;background:#e0352b;color:#fff;font:700 16px/1 inherit;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -1190,7 +1194,7 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
 </div>
 
 <button id="newJobFab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New job</button>
-<div id="noteSheet"><div class="nb" id="noteBd"></div><div class="ns"><i class="gr"></i><h3 id="noteT"></h3><p id="noteB"></p><button class="btn btn-magenta" id="noteGo">OK</button></div></div>
+<div id="noteSheet"><div class="nb" id="noteBd"></div><div class="ns"><i class="gr"></i><button class="nx" id="noteX" type="button" aria-label="Close">&times;</button><h3 id="noteT"></h3><p id="noteB"></p><button class="btn btn-magenta" id="noteGo">OK</button></div></div>
 <nav id="tabbar"><button id="tbToday" class="on"><span class="ti"><svg viewBox="0 0 24 24"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/></svg></span>Today</button>
   <button id="tbWeek"><span class="ti"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>Week</button>
   <button id="tbSettings"><span class="ti"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span>Settings</button></nav>
@@ -1398,8 +1402,9 @@ function showStorage(){
 
 /* ---- notice sheet: replaces the browser alert ---- */
 let noteFn = null;
-function notice(title, body, btn, fn){
+function notice(title, body, btn, fn, closable){
   const o = $("#noteSheet"); if(!o) return;
+  o.classList.toggle("cl", !!closable);
   $("#noteT").textContent = title || "";
   const b = $("#noteB"); b.textContent = body || ""; b.style.display = body ? "" : "none";
   $("#noteGo").textContent = btn || "OK";
@@ -3356,7 +3361,7 @@ function skKey(e){ return String(e.addr).split(",")[0].trim().toLowerCase() + "|
 function pasteMerge(old, add){
   const seen = {}, out = [];
   add.concat(old).forEach(e => { const k = skKey(e); if(seen[k]) return; seen[k] = 1; out.push(e); });
-  return out.sort((a, b) => a.start - b.start);
+  return out.sort((a, b) => a.start - b.start || (a.who ? 1 : 0) - (b.who ? 1 : 0));
 }
 function skUnhide(arr){ const h = skHideAll(); arr.forEach(e => { delete h[skKey(e)]; }); store("skHide", JSON.stringify(h)); }
 function pastePortal(txt){
@@ -3369,15 +3374,18 @@ function addJobs(all){
 function addJobs2(all, hist){
   const day0 = new Date(), seenK = {}; day0.setHours(0, 0, 0, 0);
   const sk = all.skipped, n0 = all.length;
+  let oth = all.others || [];
   /* an earlier-day row whose job was already done on its own day is not offered again */
-  all = all.filter(e => {
+  const clean = e => {
     const k = skKey(e); if(seenK[k]) return false; seenK[k] = 1;
     if(e.orig || e.start < day0.getTime()){
       const key = String(e.addr).split(",")[0].trim().toLowerCase(), day = new Date(e.orig || e.start).toDateString();
       if(hist.some(x => String(x.address || "").toLowerCase().indexOf(key) === 0 && new Date(x.when).toDateString() === day)) return false;
     }
     return true;
-  });
+  };
+  all = all.filter(clean);
+  oth = oth.filter(clean);
   all.skipped = sk; const hadRows = n0 > 0;
   const list = all.filter(e => e.start >= day0.getTime()).sort((a, b) => a.start - b.start);
   const past = all.filter(e => e.start < day0.getTime());
@@ -3389,14 +3397,26 @@ function addJobs2(all, hist){
     paintSk();
     toastMsg(moved.length + (moved.length === 1 ? " job" : " jobs") + " added for today");
   };
+  /* the partner's jobs from the same file: offered, never added on their own */
+  const othNow = oth.filter(e => e.start >= day0.getTime());
+  const othWho = Array.from(new Set(othNow.map(e => String(e.who || "").split(/\s+/)[0]).filter(Boolean))).join(", ");
+  const addOth = () => {
+    store("skPaste", JSON.stringify(pasteMerge(pasteCache(), othNow))); skUnhide(othNow);
+    paintSk();
+    toastMsg(othNow.length + (othNow.length === 1 ? " job" : " jobs") + " added");
+  };
+  const othTxt = othNow.length ? othNow.length + (othNow.length === 1 ? " job" : " jobs") : "";
+  const othAsk = () => notice(othWho || "Partner", othTxt, "Add", addOth, true);
   if(list.length){
     store("skPaste", JSON.stringify(pasteMerge(pasteCache(), list))); skUnhide(list);
     paintSk();
-    if(past.length) notice(list.length + (list.length === 1 ? " job" : " jobs") + " added", past.length + (past.length === 1 ? " more is" : " more are") + " from earlier days.", "Add as today", addPast);
+    if(othNow.length) othAsk();
+    else if(past.length) notice(list.length + (list.length === 1 ? " job" : " jobs") + " added", past.length + (past.length === 1 ? " more is" : " more are") + " from earlier days.", "Add as today", addPast);
     else toastMsg(list.length + (list.length === 1 ? " job" : " jobs"));
     return;
   }
-  if(past.length) notice("Earlier days", "These jobs are before today.", "Add as today", addPast);
+  if(othNow.length) othAsk();
+  else if(past.length) notice("Earlier days", "These jobs are before today.", "Add as today", addPast);
   else if(all.skipped) notice("No jobs for you", "None of these rows has your name in the technician column.");
   else if(hadRows) notice("Nothing new", "These jobs are already done.");
   else notice("No jobs found", "Copy the Resource Schedule table in the portal, then tap Paste.");
@@ -3459,7 +3479,7 @@ function xlsxRows(buf, allSheets){
 /* the boss's workbook: one tab per day, columns FiberCity, DATE, IssueKey, Address, Name, Phone, Chamber/Ring, ... JOB ORDER, TECHNICIAN */
 function scheduleFromRows(rows){
   const me = ($("#c_tech").value || "").trim().split(/\s+/)[0].toLowerCase();
-  const out = []; out.skipped = 0; let H = null, tab = 0;
+  const out = []; out.skipped = 0; out.others = []; let H = null, tab = 0;
   const day0 = new Date().setHours(0, 0, 0, 0);
   rows.forEach(r => {
     /* each tab starts with a title like "11/4/2026 Scheduled Installs": that is the day the rows are meant for */
@@ -3481,9 +3501,10 @@ function scheduleFromRows(rows){
       if(sd < tab){ orig = start; const t = new Date(start); start = new Date(tab).setHours(t.getHours(), t.getMinutes(), 0, 0); }   /* carried over to this tab's day */
     }
     const tech = g("technician").split(/\s+/)[0];
-    if(me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0){ out.skipped++; return; }
+    const other = me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0;
+    if(other) out.skipped++;
     const city = g("fibercity"), cm = /^(.+?),\s*([A-Z]{2})\b/.exec(city), ch = /CH-(\d+)/i.exec(g("chamber/ring")), job = /(\d+)/.exec(g("job order"));
-    out.push({orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : ""});
+    (other ? out.others : out).push({who: other ? tech : undefined, orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : ""});
   });
   return out;
 }
@@ -3721,7 +3742,7 @@ function paintSk(){
       const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button">' + IC.play + 'Start</button></div>'
         + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
         + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
-      return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span><span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
+      return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb' + (e.who ? ' oth' : '') + '">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span>' + (e.who ? '<span class="tg2">' + esc(e.who) + '</span>' : '') + '<span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
     });
     window.skShown = list;
     document.body.classList.toggle("xop", !!SK_OPEN);
@@ -4108,6 +4129,7 @@ setTimeout(() => { try{ $("#sk_url").value = skUrl(); skPaintStatus(); paintSk()
 
 $("#noteGo").addEventListener("click", noteClose);
 $("#noteBd").addEventListener("click", () => { noteFn = null; noteClose(); });
+$("#noteX").addEventListener("click", () => { noteFn = null; noteClose(); });
 $("#startNext").addEventListener("click", () => {
   if(!confirm("Clear photos, checklist and FCS2, and start the next job?")) return;
   resetJob();
