@@ -818,7 +818,7 @@ body.stepsnav #jobBar{flex-basis:100%}
 .nb.off{background:#9aa0a8}
 /* v106 swipe to remove a job from Next jobs */
 .swp{position:relative;overflow:hidden;background:#fff}
-.swp .rm{position:absolute;right:0;top:0;bottom:0;width:96px;border:none;background:#e0352b;color:#fff;font:700 16px/1 inherit;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.swp .rm{position:absolute;right:0;top:0;bottom:auto;height:var(--rowh,58px);width:96px;border:none;background:#e0352b;color:#fff;font:700 16px/1 inherit;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .swp .step{position:relative;touch-action:pan-y;transition:transform .2s}
 .swp.drag .step{transition:none}
 .swp.open .step{transform:translateX(-96px)}
@@ -1258,6 +1258,7 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
     </div>
     <div class="sec">Notes for Skedulo</div>
     <div class="card" style="padding:4px"><textarea id="e_notes" rows="6" style="background:#fff"></textarea></div>
+    <div class="card" id="e_retCard"><div class="swrow" id="e_ret"><div class="t">Return visit<small>Put this address back on Today</small></div></div></div>
     <p class="foot-note">Updates history and Excel. Files already on Drive stay as they are.</p>
   </div>
 </div>
@@ -2577,11 +2578,19 @@ function addFromGallery(files){
   const t = arrivedAt();
   const have = {}; photos.forEach(p => { have[p.when.getTime()] = 1; });
   const all = Array.prototype.slice.call(files || []);
-  const keep = all.filter(f => !(t && f.lastModified && f.lastModified < t - 5 * 60000)
-                               && !(f.lastModified && have[f.lastModified]));
-  const skipped = all.length - keep.length;
+  const dup = all.filter(f => f.lastModified && have[f.lastModified]);
+  const rest = all.filter(f => dup.indexOf(f) < 0);
+  const old = rest.filter(f => t && f.lastModified && f.lastModified < t - 5 * 60000);
+  const keep = rest.filter(f => old.indexOf(f) < 0);
   addFiles(keep);
-  if(skipped) photoNote(skipped + (skipped === 1 ? " photo" : " photos") + " skipped (older or already added)", true);
+  if(dup.length) photoNote(dup.length + (dup.length === 1 ? " photo" : " photos") + " already added", true);
+  /* older than this job's start: never dropped silently, the technician decides */
+  if(old.length){
+    /* the file input is cleared right after this call, so keep copies of the bytes */
+    Promise.all(old.map(f => f.arrayBuffer().then(b => new File([b], f.name, {type: f.type, lastModified: f.lastModified})))).then(cp => {
+      notice(cp.length + (cp.length === 1 ? " older photo" : " older photos"), "Taken before this job started. Add them anyway?", "Add", () => addFiles(cp));
+    }).catch(() => {});
+  }
 }
 $("#galBtn").addEventListener("click", () => $("#galInput").click());
 
@@ -3651,7 +3660,11 @@ $("#qp").addEventListener("click", e => {
       .catch(err => notice("Could not save", String(err && err.message || err)));
   }
 });
-function telDigits(t){ let d = String(t || "").replace(/\D/g, ""); if(d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d : ""; }
+function telDigits(t){
+  t = String(t == null ? "" : t).trim();
+  if(/^\d+(\.\d+)?e\+?\d+$/i.test(t)) t = Number(t).toFixed(0);   /* Excel keeps long numbers as 1.6614037353E10 */
+  else if(/^\d+\.0+$/.test(t)) t = t.replace(/\.0+$/, "");
+  let d = t.replace(/\D/g, ""); if(d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d : ""; }
 function fmtTel(t){ const d = telDigits(t); return d ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : String(t || ""); }
 function navUrl(e){
   /* coordinates only when the house number was really found; a street-level guess would be re-labelled by the map app as a neighbouring house, so then the typed address goes as text */
@@ -4646,6 +4659,7 @@ function openEdit(id){
     $("#e_notes").value = notes;
     editNotesTouched = true;      /* keep the stored notes until a figure changes */
     $("#editTitle").textContent = "Edit job";
+    $("#e_retCard").style.display = "";
     $("#e_date").value = dateInput(new Date(j.when));
     $("#e_addr").value = j.address || "";
     $("#e_cust").value = j.customer || "";
@@ -4670,13 +4684,26 @@ $("#editOverlay").addEventListener("click", e => {
   paintEditSwitches(); refreshEdit();
 });
 $("#editCancel").addEventListener("click", () => $("#editOverlay").classList.remove("on"));
+/* a repeat visit to a finished job: the address goes back on Today (history stays as it is) */
+$("#e_ret").addEventListener("click", () => {
+  const j = editJob; if(!j || j.isNew) return;
+  const addr = ($("#e_addr").value || "").trim() || j.address; if(!addr) return;
+  const now = Date.now();
+  const e = {uid: "rv" + (j.id || now), ref: "", start: now, end: now + 3600000, addr: addr, sum: "", name: ($("#e_cust").value || "").trim(), tel: telDigits(j.tel), ch: ($("#e_ch").value || "").trim(), job: ""};
+  store("skPaste", JSON.stringify(pasteMerge(pasteCache(), [e])));
+  skUnhide([e]);
+  $("#editOverlay").classList.remove("on");
+  try{ paintSk(); }catch(x){}
+  setView("today");
+  toastMsg("Back on Today");
+});
 let editDay0 = "";
 const dateInput = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 function openAdd(){
   const [, , mon] = weekBounds(weekOffset);
   const day = weekOffset === 0 ? new Date() : mon;
   editJob = {isNew: true};
-  $("#editTitle").textContent = "Add job";
+  $("#editTitle").textContent = "Add job"; $("#e_retCard").style.display = "none";
   ["e_ft","e_spl","e_ext","e_ch","e_addr","e_cust"].forEach(id => $("#"+id).value = "");
   $("#e_date").value = dateInput(day);
   editDay0 = "";
