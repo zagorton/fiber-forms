@@ -173,6 +173,16 @@ textarea:focus{outline:none;background:#fff;border-color:var(--accent);
   padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:30;
   display:flex;flex-direction:column;gap:9px}
 #upBox{display:none;flex-direction:column;gap:8px}
+.mkrow{display:flex;gap:10px;align-items:stretch}
+.mkrow #makeBtn{flex:1;min-width:0}
+.portalBtn{flex:none;width:84px;border:none;border-radius:14px;background:#fde8f2;color:#d6006c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit;font-weight:700;font-size:11px;line-height:1;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.portalBtn svg{width:24px;height:24px}
+.portalWide{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border:none;border-radius:14px;background:#fde8f2;color:#d6006c;font-family:inherit;font-weight:700;font-size:17px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.portalWide svg{width:24px;height:24px}
+.portalWide:active{background:#f9d3e6}
+.portalWide.ok{background:#e3f4ea;color:#1b7f4a}
+.portalBtn:active{transform:scale(.96);background:#f9d3e6}
+.portalBtn.ok{background:#e3f4ea;color:#1b7f4a}
 .dest{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);
   white-space:nowrap;overflow:hidden;padding:0 2px}
 .dest b{color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis}
@@ -240,6 +250,16 @@ body.locked{overflow:hidden;position:fixed;width:100%}
 .bars button.sel .col i{background:#d6006c}
 .bars .d{font-size:13px}
 .bars button.sel .d{color:#d6006c;font-weight:700}
+.hsearch{display:flex;align-items:center;gap:12px;background:#fff;border-radius:var(--r);padding:8px 10px 8px 12px;margin:12px 0 0;transition:box-shadow .15s}
+.hsearch:focus-within{box-shadow:0 0 0 2px rgba(10,96,208,.28)}
+.hsearch .ic{width:32px;height:32px;border-radius:10px;background:#e8f0fc;display:flex;align-items:center;justify-content:center;flex:none}
+.hsearch .ic svg{width:19px;height:19px;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round}
+.hsearch input{flex:1;min-width:0;height:36px;border:none;background:transparent;padding:0;font:inherit;font-size:17px;color:var(--ink);outline:none!important;box-shadow:none!important;-webkit-appearance:none;appearance:none}
+.hsearch input::placeholder{color:#a0a4ad}
+.hsearch input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.hsearch button{flex:none;width:28px;height:28px;border:none;border-radius:50%;background:#e4e6eb;color:#6b7078;display:flex;align-items:center;justify-content:center;padding:0;-webkit-tap-highlight-color:transparent}
+.hsearch button svg{width:12px;height:12px;stroke:currentColor;stroke-width:3;stroke-linecap:round;fill:none}
+#histOverlay.sr :is(.weeknav,.sum,.bars,#histExport){display:none!important}
 .weeknav{display:flex;align-items:center;gap:8px;margin:14px 0 12px}
 .weeknav button{width:40px;height:40px;border-radius:50%;border:none;background:#fff;
   color:var(--accent);font-size:24px;line-height:1;cursor:pointer;flex:none;
@@ -857,12 +877,16 @@ body.pmo #skMenuBd,body.pmo #skMenu{display:block}
 .xn{font-size:14px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .xs{flex:none;display:inline-flex;align-items:center;gap:5px;border:none;border-radius:99px;background:var(--magenta);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:8px 16px;cursor:pointer}
 .xs svg{display:block}
+.tdact{margin:0 4px 12px}
 .xr{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px}
 .xc{display:inline-flex;align-items:center;gap:7px;background:#e8f5ee;color:#1b7f4a;border-radius:99px;padding:8px 14px;font-size:15px;font-weight:700;text-decoration:none}
 .xc svg,.xb svg{display:block;flex:none}
 .xi2{display:flex;gap:8px}
 .xb{width:38px;height:38px;border-radius:12px;background:#f1f2f5;color:var(--ink);display:flex;align-items:center;justify-content:center;text-decoration:none}
 .xb.tx{background:#e8f0fc;color:#0a60d0}
+.xb.cp{background:#fff1e0}
+.xb{border:none;font-family:inherit;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.xb:focus,.xb:focus-visible{outline:none}
 #toastMsg button{background:none;border:none;color:#ff7ab8;font:inherit;font-weight:700;margin-left:16px;padding:0;cursor:pointer}
 #toastMsg.un{pointer-events:auto}
 /* v116 quick panel for a done job */
@@ -1107,6 +1131,7 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
       <div class="rv"><span>Earned</span><b id="clcPay" class="amtc"></b></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+      <button class="portalWide" data-portal="1" type="button"><svg viewBox="0 0 24 24"><rect x="3.500" y="6" width="14.500" height="14.500" rx="3.500" fill="#f9c5de"/><path d="M13 11l7.500-7.500M14.500 3.500h6v6" fill="none" stroke="#d6006c" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></svg><span>CX-Portal</span></button>
       <button class="btn btn-magenta" id="clcNext">Done</button>
       <button class="btn btn-quiet" id="clcAgain">Fix and resend</button>
     </div>
@@ -1153,7 +1178,7 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
     <div class="pchips" id="payLine"></div>
   </div>
 
-  <div class="sec" id="notesHead" style="cursor:pointer">Notes for Skedulo <span id="clTgState"></span><svg id="notesChev" viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;margin-left:4px;transition:transform .25s"><path d="M6 9l6 6 6-6"/></svg>
+  <div class="sec" id="notesHead" style="cursor:pointer">Notes <span id="clTgState"></span><svg id="notesChev" viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;margin-left:4px;transition:transform .25s"><path d="M6 9l6 6 6-6"/></svg>
     <button class="btn btn-ghost btn-sm aside" id="copyNotes" style="margin-left:auto"><svg viewBox="0 0 24 24" style="width:15px;height:15px"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 9V6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15H9"/></svg>Copy</button></div>
   <div class="card" id="notesCard" style="padding:4px;display:none">
     <textarea id="w_notes" rows="6" style="background:#fff"></textarea>
@@ -1212,12 +1237,16 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
       <div class="tg on" id="formsBtn"><span class="ck"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="l">Checklist + FCS2</span></div>
     </div>
   </div>
-  <button class="btn btn-magenta" id="makeBtn">Create PDF</button>
+  <div class="mkrow">
+    <button class="btn btn-magenta" id="makeBtn">Create PDF</button>
+    <button class="portalBtn" id="copyPortal" data-portal="1" type="button" aria-label="Copy job and open CX-Portal" style="display:none"><svg viewBox="0 0 24 24"><rect x="3.500" y="6" width="14.500" height="14.500" rx="3.500" fill="#f9c5de"/><path d="M13 11l7.500-7.500M14.500 3.500h6v6" fill="none" stroke="#d6006c" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></svg><span>CX-Portal</span></button>
+  </div>
 </div>
 
 <div class="overlay sheet" id="histOverlay">
   <div class="sheet-head"><button class="done" id="histAdd" aria-label="Add job" style="justify-self:start;font-size:28px;line-height:1;padding:0 12px">+</button><h3>Week</h3><button class="done" id="histClose">Done</button></div>
   <div class="sheet-body">
+    <div class="hsearch"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></span><input type="search" id="histQ" placeholder="Search address" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search"><button id="histQx" type="button" aria-label="Clear" style="display:none"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="weeknav">
       <button id="histPrev" aria-label="Previous week">&lsaquo;</button>
       <div><b id="histRange"></b><small id="histSub"></small></div>
@@ -1265,7 +1294,7 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
         <div class="chips swbox"><div class="chip sw" id="e_second"></div></div>
       </div>
     </div>
-    <div class="sec">Notes for Skedulo</div>
+    <div class="sec">Notes</div>
     <div class="card" style="padding:4px"><textarea id="e_notes" rows="6" style="background:#fff"></textarea></div>
     <div class="card" id="e_retCard"><div class="swrow" id="e_ret"><div class="t">Return visit<small>Put this address back on Today</small></div></div></div>
     <p class="foot-note">Updates history and Excel. Files already on Drive stay as they are.</p>
@@ -1319,15 +1348,6 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
         </div>
         <p class="sg-note">Create a bot in @BotFather and paste its token. Add the bot to your group, send /start@botname there, then tap Find group.</p>
       </details>
-    </div>
-
-    <div class="sgroup">
-      <div class="sg-h"><span class="sic priv"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>
-        <div><b>Schedule</b></div><span id="skStatus"></span></div>
-      <div class="f"><label for="sk_url">Skedulo calendar link</label>
-        <input type="text" id="sk_url" name="sk_x1" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true" data-1p-ignore style="-webkit-text-security:disc" placeholder="Paste the iCalendar link"></div>
-      <div class="sg-btns"><button class="btn btn-ghost btn-sm" id="skSave">Save and check</button></div>
-      <p class="sg-note">Copy the iCalendar link in Skedulo.</p>
     </div>
 
     <div class="sgroup">
@@ -3241,52 +3261,11 @@ function driveUpload(){
 }
 
 
-/* ---------------- Skedulo schedule (iCalendar) ---------------------------- */
-let skBusy = false, skErr = "";
-function skUrl(){ return recall("skUrl").trim(); }
-function skCache(){ try{ return JSON.parse(recall("skJobs") || "[]") || []; }catch(e){ return []; } }
-function tzMs(y, mo, d, h, mi, se, tz){
-  const guess = Date.UTC(y, mo - 1, d, h, mi, se);
-  try{
-    const f = new Intl.DateTimeFormat("en-US", {timeZone: tz, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric"});
-    const o = {}; f.formatToParts(new Date(guess)).forEach(x => { o[x.type] = +x.value; });
-    const as = Date.UTC(o.year, o.month - 1, o.day, o.hour, o.minute, o.second);
-    return guess - (as - guess);
-  }catch(e){ return new Date(y, mo - 1, d, h, mi, se).getTime(); }
-}
-function icsDate(v, params){
-  const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/.exec(v.trim());
-  if(!m) return 0;
-  const y = +m[1], mo = +m[2], d = +m[3], h = +(m[4] || 0), mi = +(m[5] || 0), se = +(m[6] || 0);
-  if(m[7]) return Date.UTC(y, mo - 1, d, h, mi, se);
-  const tz = /TZID=([^;:]+)/i.exec(params || "");
-  return tz ? tzMs(y, mo, d, h, mi, se, tz[1]) : new Date(y, mo - 1, d, h, mi, se).getTime();
-}
-function icsText(v){ return String(v || "").replace(/\\[nN]/g, ", ").replace(/\\([,;\\])/g, "$1").trim(); }
-function parseIcs(txt){
-  const lines = String(txt).replace(/\r?\n[ \t]/g, "").split(/\r?\n/);
-  const out = []; let ev = null;
-  lines.forEach(ln => {
-    if(ln === "BEGIN:VEVENT"){ ev = {}; return; }
-    if(ln === "END:VEVENT"){ if(ev && ev.start && !/CANCEL/i.test(ev.status || "")) out.push(ev); ev = null; return; }
-    if(!ev) return;
-    const i = ln.indexOf(":"); if(i < 0) return;
-    const head = ln.slice(0, i), val = ln.slice(i + 1);
-    const name = head.split(";")[0].toUpperCase(), params = head.slice(name.length);
-    if(name === "UID") ev.uid = val;
-    else if(name === "SUMMARY") ev.sum = icsText(val);
-    else if(name === "LOCATION") ev.loc = icsText(val);
-    else if(name === "STATUS") ev.status = val;
-    else if(name === "DTSTART") ev.start = icsDate(val, params);
-    else if(name === "DTEND") ev.end = icsDate(val, params);
-  });
-  return out;
-}
 function pasteCache(){ try{ return JSON.parse(recall("skPaste") || "[]") || []; }catch(e){ return []; } }
 function skHideAll(){ try{ return JSON.parse(recall("skHide") || "{}") || {}; }catch(e){ return {}; } }
 function skAll(){
   const seen = {}, out = [], d0 = new Date().setHours(0, 0, 0, 0), hid = skHideAll();
-  skCache().concat(pasteCache()).forEach(e => {
+  pasteCache().forEach(e => {
     if(e.start < d0) return;
     const k = String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString();
     if(hid[k] || seen[k]) return; seen[k] = 1; out.push(e);
@@ -3550,42 +3529,6 @@ function fillCustomer(c){
   put("c_customer", niceName(c.name));
   put("c_email", String(c.email || "").toLowerCase());
 }
-function skRefresh(force){
-  const url = skUrl();
-  if(!url || skBusy) return Promise.resolve();
-  const at = +recall("skAt") || 0;
-  if(!force && Date.now() - at < 5 * 60 * 1000) return Promise.resolve();
-  if(navigator.onLine === false){ skErr = "offline"; return Promise.resolve(); }
-  skBusy = true;
-  return fetch(url, {cache: "no-store"}).then(r => { if(!r.ok) throw new Error("http " + r.status); return r.text(); })
-    .then(t => {
-      if(t.indexOf("BEGIN:VCALENDAR") < 0) throw new Error("notcal");
-      const day0 = new Date(); day0.setHours(0, 0, 0, 0);
-      const lim = day0.getTime() + 8 * 86400000;
-      const allEv = parseIcs(t);
-      store("skTotal", String(allEv.length));
-      store("skLast", String(allEv.reduce((m, e) => Math.max(m, e.start || 0), 0)));
-      const list = allEv.filter(e => e.start >= day0.getTime() && e.start < lim)
-        .sort((a, b) => a.start - b.start)
-        .map(e => ({uid: e.uid || "", start: e.start, end: e.end || 0, addr: e.loc || e.sum || "", sum: e.sum || ""}));
-      store("skJobs", JSON.stringify(list)); store("skAt", String(Date.now())); skErr = "";
-    })
-    .catch(e => { skErr = (e instanceof TypeError) ? "blocked" : (e.message === "notcal" ? "notcal" : "fail"); })
-    .then(() => { skBusy = false; try{ paintSk(); skPaintStatus(); }catch(e){} });
-}
-function skPaintStatus(){
-  const el = $("#skStatus"); if(!el) return;
-  if(!skUrl()){ el.innerHTML = '<span class="pill">Not set</span>'; return; }
-  if(skErr === "blocked") el.innerHTML = '<span class="pill">Blocked</span>';
-  else if(skErr) el.innerHTML = '<span class="pill">Error</span>';
-  else el.innerHTML = '<span class="pill ready">&#10003; ' + skCache().length + ' jobs</span>';
-}
-const SK_MSG = {
-  blocked: ["Skedulo does not allow the app to read the calendar", "The link is saved, but the phone blocked the request. Tell me and we will use Google Calendar instead."],
-  notcal: ["This is not a calendar link", "Copy the iCalendar link in Skedulo → More → Settings."],
-  fail: ["Could not load the schedule", "Check the link and the signal, then try again."],
-  offline: ["No signal", "The schedule updates when you are online."]
-};
 /* v112 two-tone icon set */
 const ICG={
  paste:(a,b)=>`<rect x="5" y="4.5" width="14" height="16.5" rx="3.5" fill="${b}" stroke="none"/><rect x="8.5" y="2.5" width="7" height="4.5" rx="2" fill="${a}" stroke="none"/><path d="M8.5 12h7M8.5 15.5h4.5" stroke="${a}" stroke-width="1.9" stroke-linecap="round"/>`,
@@ -3595,8 +3538,14 @@ const ICG={
  text:(a,b)=>`<path d="M5.5 4h13A3.5 3.5 0 0 1 22 7.5v6a3.5 3.5 0 0 1-3.5 3.5H11l-4.6 3.6c-.6.5-1.4 0-1.4-.7V17A3.5 3.5 0 0 1 2 13.500v-6A3.5 3.5 0 0 1 5.500 4z" fill="${a}" stroke="none"/><circle cx="8" cy="10.5" r="1.3" fill="${b}"/><circle cx="12" cy="10.5" r="1.3" fill="${b}"/><circle cx="16" cy="10.5" r="1.3" fill="${b}"/>`,
  nav:(a,b)=>`<path d="M20.6 3.4c.6-.3 1.200.3.9 1l-7.200 16.200c-.3.7-1.300.600-1.500-.1l-1.900-6.800-6.800-1.900c-.7-.2-.8-1.200-.1-1.500z" fill="${a}" stroke="none"/><path d="M11.800 12.200l5-5" stroke="${b}" stroke-width="1.800" stroke-linecap="round"/>`,
  play:(a,b)=>`<path d="M8 5.500c0-1 1.100-1.600 1.900-1l9 6.500c.7.500.7 1.500 0 2l-9 6.500c-.8.600-1.900 0-1.900-1z" fill="${a}" stroke="none"/>`,
+ copy:(a,b)=>`<rect x="3.500" y="3.500" width="12" height="12" rx="3.200" fill="${b}" stroke="none"/><rect x="8.500" y="8.500" width="12" height="12" rx="3.200" fill="${a}" stroke="none"/><path d="M12 14.500h5M14.500 12v5" stroke="${b}" stroke-width="0" fill="none"/>`,
  plus:(a,b)=>`<path d="M12 5v14M5 12h14" stroke="${a}" stroke-width="2.600" stroke-linecap="round"/>`
 };
+function copyText(t, msg){
+  const ok = () => toastMsg(msg || "Copied");
+  const old = () => { try{ const x = document.createElement("textarea"); x.value = t; x.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(x); x.select(); const r = document.execCommand("copy"); x.remove(); if(r) ok(); }catch(e){} };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, old); else old();
+}
 function ico(k, a, b, n){ return '<svg viewBox="0 0 24 24" width="' + (n || 20) + '" height="' + (n || 20) + '">' + ICG[k](a, b || a) + '</svg>'; }
 let SK_OPEN = "";
 /* v116: quick panel for a job done today: contact the customer, fix feet / splices / extenders */
@@ -3604,7 +3553,7 @@ let QP = null, qpDragAt = 0;
 function telFor(j){
   if(j.tel && telDigits(j.tel)) return telDigits(j.tel);
   const k = dirKey(j.address);
-  const hit = pasteCache().concat(skCache()).filter(e => e.tel && dirKey(e.addr) === k)[0];
+  const hit = pasteCache().filter(e => e.tel && dirKey(e.addr) === k)[0];
   return hit ? telDigits(hit.tel) : "";
 }
 function qpSmsUrl(j, tel){
@@ -3672,7 +3621,7 @@ $("#qp").addEventListener("click", e => {
     const j = QP.j;
     if(j.isSecond || (QP.ft === (j.ft || 0) && QP.spl === (j.splices || 0) && QP.ext === (j.extenders || 0))){ qpClose(); return; }
     const f = qpFig(), ch = String(j.ch || "").trim();
-    const L = ["Notes:", ""]; L.push("Line extension - " + (QP.ft > 100 ? "extra" : QP.ft + " ft"));
+    const L = ["Notes:", ""]; L.push("Line extension - " + (QP.ft + " ft"));
     if(ch) L.push(ch + " drop re-entry + splice");
     L.push("Splice at the house - inside+outside " + QP.spl); L.push("WiFi extender - " + QP.ext);
     const rec = Object.assign({}, j, {ft: QP.ft, splices: QP.spl, extenders: QP.ext, install: f.install, line: f.line, splice: f.splice, extender: f.extender, second: 0, total: f.total, notes: L.join("\n")});
@@ -3757,14 +3706,14 @@ function paintSk(){
     };
     all0.forEach(e => { e._n = 0; });
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
-    const IC = {call: ico("call", "#1b7f4a", "#7fd1a2", 18), text: ico("text", "#0a60d0", "#ffffff", 22), nav: ico("nav", "#14161a", "#ffffff", 22), play: ico("play", "#ffffff", "#ffffff", 13)};
+    const IC = {call: ico("call", "#1b7f4a", "#7fd1a2", 18), text: ico("text", "#0a60d0", "#ffffff", 22), nav: ico("nav", "#14161a", "#ffffff", 22), copy: ico("copy", "#d9731a", "#f6c590", 22), play: ico("play", "#ffffff", "#ffffff", 13)};
     if(SK_OPEN && !list.some(e => skKey(e) === SK_OPEN)){ SK_OPEN = ""; MP.sel = 0; }
     const rows = list.map((e, i) => {
       const d = new Date(e.start), same = d.toDateString() === new Date().toDateString();
       const k = skKey(e), tel = telDigits(e.tel), info = [e.name, e.ch].filter(Boolean).join(" \u00b7 ");
       const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button">' + IC.play + 'Start</button></div>'
         + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
-        + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
+        + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<button class="xb cp" data-cp="' + i + '" type="button" aria-label="Copy address">' + IC.copy + '</button><a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
       return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb' + (e.who ? ' oth' : '') + '">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span>' + (e.who ? '<span class="tg2">' + esc(e.who) + '</span>' : '') + '<span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
     });
     window.skShown = list;
@@ -3774,10 +3723,7 @@ function paintSk(){
     const ofr = offerRow();
     if(!rows.length){
       if(ofr){ box.innerHTML = ofr; box.style.display = ""; return; }
-      if(skUrl() && skErr && SK_MSG[skErr] && !skAll().length){
-        box.innerHTML = '<div class="warnbox"><b>' + SK_MSG[skErr][0] + '</b>' + SK_MSG[skErr][1] + '</div>';
-        box.style.display = "";
-      } else { box.style.display = "none"; }
+      box.style.display = "none";
       return;
     }
     box.innerHTML = ofr + rows.join(""); box.style.display = "";
@@ -4034,6 +3980,8 @@ $("#tdSk").addEventListener("click", e => {
     paintSk(); swFlag(); toastMsg("Removed");
     return;
   }
+  const cp = e.target.closest("[data-cp]");
+  if(cp){ const j = (window.skShown || [])[+cp.dataset.cp]; if(j) copyText(String(j.addr || ""), "Address copied"); return; }
   const go = e.target.closest("[data-go]");
   if(go){ startEntry((window.skShown || [])[+go.dataset.go]); return; }
   const b = e.target.closest("[data-sk]"); if(!b) return;
@@ -4134,23 +4082,6 @@ $("#skMPaste").addEventListener("click", () => {
   if(navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(pastePortal).catch(hint);
   else hint();
 });
-$("#skSave").addEventListener("click", () => {
-  const v = ($("#sk_url").value || "").trim();
-  store("skUrl", v); store("skAt", "0"); store("skJobs", ""); skErr = "";
-  if(!v){ skPaintStatus(); paintSk(); return; }
-  skRefresh(true).then(() => {
-    if(skErr && SK_MSG[skErr]) notice(SK_MSG[skErr][0], SK_MSG[skErr][1]);
-    else {
-      const n = skCache().length, tot = +recall("skTotal") || 0, last = +recall("skLast") || 0;
-      let m = n + (n === 1 ? " job" : " jobs") + " in the next 7 days.";
-      if(!n) m += tot ? "\nThe calendar has " + tot + " events, the latest on " + new Date(last).toLocaleDateString("en-US", {month: "short", day: "numeric"}) + "." : "\nThe calendar is empty for now.";
-      notice("Schedule connected", m);
-    }
-  });
-});
-document.addEventListener("visibilitychange", () => { if(!document.hidden) skRefresh(false); });
-window.addEventListener("online", () => skRefresh(false));
-setTimeout(() => { try{ $("#sk_url").value = skUrl(); skPaintStatus(); paintSk(); skRefresh(false); }catch(e){} }, 800);
 
 $("#noteGo").addEventListener("click", noteClose);
 $("#noteBd").addEventListener("click", () => { noteFn = null; noteClose(); });
@@ -4447,7 +4378,7 @@ function buildNotes(){
   const f = jobFigures();
   const ch = ($("#w_ch").value || "").trim();
   const L = ["Notes:", ""];
-  L.push("Line extension - " + (f.ft > 100 ? "extra" : f.ft + " ft"));
+  L.push("Line extension - " + (f.ft + " ft"));
   if(ch) L.push(ch + " drop re-entry + splice");
   L.push("Splice at the house - inside+outside " + f.splices);
   L.push("WiFi extender - " + f.extenders);
@@ -4576,7 +4507,42 @@ function weekJobs(off){
     .sort((x,y) => x.when - y.when));
 }
 
+function histQuery(){ const e = $("#histQ"); return e ? (e.value || "").trim().toLowerCase() : ""; }
+function renderSearch(q){
+  const host = $("#histList"), words = q.split(/\s+/).filter(Boolean), thisYear = new Date().getFullYear();
+  jobsAll().then(list => {
+    const hit = (list || []).filter(j => {
+      const hay = [j.address, j.customer, j.ch, j.notes].join(" ").toLowerCase();
+      return words.every(w => hay.indexOf(w) >= 0);
+    }).sort((x, y) => y.when - x.when);
+    if(!hit.length){ host.innerHTML = '<div class="sec">&nbsp;</div><div class="empty">Nothing found</div>'; return; }
+    const rows = hit.slice(0, 60);
+    let html = '<div class="sec">' + hit.length + (hit.length === 1 ? " job" : " jobs") + '</div><div class="jlist">';
+    rows.forEach(j => {
+      const d = new Date(j.when), meta = [];
+      meta.push(d.toLocaleDateString("en-US", {month: "short", day: "numeric"}) + (d.getFullYear() !== thisYear ? ", " + d.getFullYear() : ""));
+      if(j.customer) meta.push(esc(j.customer));
+      const w = [];
+      if(j.ft) w.push(j.ft + " ft");
+      if(j.splices) w.push(j.splices + (j.splices === 1 ? " splice" : " splices"));
+      if(j.extenders) w.push(j.extenders + (j.extenders === 1 ? " extender" : " extenders"));
+      if(w.length) meta.push(w.join(", "));
+      if(j.isSecond) meta.push("2nd visit");
+      html += '<div class="jrow" data-edit="' + j.id + '"><div class="m"><div class="a">' + esc(j.address || "") + '</div>'
+            + '<div class="s">' + meta.join(" \u00b7 ") + '</div></div>'
+            + '<div class="p">$' + (j.total || 0) + '</div>'
+            + '<button class="del" data-del="' + j.id + '" aria-label="Delete">' + ICON_TRASH + '</button></div>';
+    });
+    html += "</div>";
+    if(hit.length > rows.length) html += '<div class="hint" style="text-align:center;margin-top:10px">Showing the latest ' + rows.length + '. Type more to narrow.</div>';
+    host.innerHTML = html;
+  }).catch(e => { host.innerHTML = '<div class="empty" style="color:var(--warn)">Could not read history</div>'; console.error(e); });
+}
 function renderHistory(){
+  const q = histQuery();
+  $("#histOverlay").classList.toggle("sr", !!q);
+  $("#histQx").style.display = q ? "flex" : "none";
+  if(q){ renderSearch(q); return; }
   const [, sat, mon] = weekBounds(weekOffset);
   $("#histRange").textContent = fmtDay(mon) + " \u2013 " + fmtDay(sat);
   $("#histSub").textContent = weekOffset === 0 ? "This week"
@@ -4670,7 +4636,7 @@ function editFigures(){
 function editNotesText(f){
   const ch = ($("#e_ch").value || "").trim();
   const L = ["Notes:", ""];
-  L.push("Line extension - " + (f.ft > 100 ? "extra" : f.ft + " ft"));
+  L.push("Line extension - " + (f.ft + " ft"));
   if(ch) L.push(ch + " drop re-entry + splice");
   L.push("Splice at the house - inside+outside " + f.splices);
   L.push("WiFi extender - " + f.extenders);
@@ -4793,7 +4759,7 @@ $("#editSave").addEventListener("click", () => {
     .catch(err => notice("Could not save", String(err && err.message || err)));
 });
 $("#openHistory").addEventListener("click", () => {
-  weekOffset = 0; histDay = -1;
+  weekOffset = 0; histDay = -1; $("#histQ").value = "";
   $("#histOverlay").classList.add("on");
   document.body.classList.add("locked");
   tabbarSync();
@@ -4806,6 +4772,11 @@ $("#histClose").addEventListener("click", () => {
   tabbarSync();
 });
 $("#histAdd").addEventListener("click", openAdd);
+{
+  let hqT = 0;
+  $("#histQ").addEventListener("input", () => { clearTimeout(hqT); hqT = setTimeout(renderHistory, 150); });
+  $("#histQx").addEventListener("click", () => { $("#histQ").value = ""; renderHistory(); $("#histQ").focus(); });
+}
 $("#histBars").addEventListener("click", e => {
   const b = e.target.closest("[data-day]"); if(!b) return;
   const w = +b.dataset.day; histDay = (histDay === w) ? -1 : w; renderHistory();
@@ -5328,6 +5299,15 @@ function tdSendHtml(){
     + (tgReady() && tgCfg().auto ? '<div class="tdq"><span><i class="' + (st.phase === "tg" ? "sp" : "wt") + '"></i>Telegram</span><small>' + (st.phase === "tg" ? "posting" : "next") + '</small></div>' : "") + '</div>'
     + '<p class="tdkeep">Keep the app open</p></div>';
 }
+const PORTAL_WIDE = '<button class="portalWide" data-portal="1" type="button" style="width:100%;margin-top:10px"><svg viewBox="0 0 24 24"><rect x="3.500" y="6" width="14.500" height="14.500" rx="3.500" fill="#f9c5de"/><path d="M13 11l7.500-7.500M14.500 3.500h6v6" fill="none" stroke="#d6006c" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></svg><span>CX-Portal</span></button>';
+function tdActHtml(addr){
+  if(!addr) return "";
+  const tel = telDigits($("#c_phone") ? $("#c_phone").value : "");
+  return '<div class="xr tdact">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + ico("call", "#1b7f4a", "#7fd1a2", 18) + esc(fmtTel(tel)) + '</a>' : '<span></span>')
+    + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + ico("text", "#0a60d0", "#ffffff", 22) + '</a>' : '')
+    + '<button class="xb cp" data-cpa="1" type="button" aria-label="Copy address">' + ico("copy", "#d9731a", "#f6c590", 22) + '</button>'
+    + '<a class="xb" href="' + navUrl({addr: addr}) + '" aria-label="Navigate">' + ico("nav", "#14161a", "#ffffff", 22) + '</a></span></div>';
+}
 function tdRouteHtml(rows, nxt, addr, name){
   const cur = nxt ? rows.indexOf(nxt) : -1;
   const sub = [["Fill the address and details", "Filled"], ["Hand the phone to the customer", "Signed"], [photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") + " ready" : "Add photos and send", "Sent"]];
@@ -5338,7 +5318,7 @@ function tdRouteHtml(rows, nxt, addr, name){
     const o = r.ok ? '<span class="nd">' + TD_CHECK + '</span>' : (i === cur ? '<span class="nd c"><u></u><u class="b"></u><em>' + (i + 1) + '</em></span>' : '<span class="nd l">' + (i + 1) + '</span>');
     return '<button class="tdr ' + st + '" data-go="' + r.go + '">' + o + '<span class="tx"><b>' + r.t + '</b><small>' + (r.ok ? sub[i][1] : sub[i][0]) + '</small></span>' + (i === cur ? '<svg class="tdnudge" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>' : "") + '</button>';
   }).join("");
-  return '<div class="tdroute"><div class="hd"><b>' + esc(addr || name || "Current job") + '</b>' + (name && addr ? '<small>' + esc(name) + '</small>' : "") + '</div>'
+  return '<div class="tdroute"><div class="hd"><b>' + esc(addr || name || "Current job") + '</b>' + (name && addr ? '<small>' + esc(name) + '</small>' : "") + '</div>' + tdActHtml(addr)
     + '<div class="trk"><div class="ln"></div><div class="lg" style="height:' + (Math.min(done, 2) * 76) + 'px"></div>' + (cur > 0 ? '<div class="dts" style="top:' + (cur * 76) + 'px">' + dots + '</div>' : "") + rowsH + '</div></div>';
 }
 function tdActiveHtml(rows, okN, nxt, has, addr, name){
@@ -5347,7 +5327,7 @@ function tdActiveHtml(rows, okN, nxt, has, addr, name){
   if(sendSt) return h;
   { const sn = Object.keys(driveSent).length;
     if(has && !uploadedOnce && sn){ const tot = Math.max(+recall("driveTotal") || 0, sn); return h + '<div class="tdpause"><div class="r"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 15V4"/><path d="M7.5 8.5L12 4l4.5 4.5"/><path d="M5 19h14"/></svg></span><span><b>Upload paused</b><small>' + esc(addr || name || "Job") + ' \u00b7 ' + sn + ' of ' + tot + ' files</small></span></div><div class="bar"><i style="width:' + Math.round(sn / tot * 100) + '%"></i></div><button class="btn btn-magenta" data-resume="1">Resume</button></div>'; } }
-  if(has && uploadedOnce) return h + '<button class="tdclosed" data-go="close"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="tx"><b>' + esc(addr || name || "Job") + '</b><small>Finish the job</small></span><svg class="ch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
+  if(has && uploadedOnce) return h + '<button class="tdclosed" data-go="close"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="tx"><b>' + esc(addr || name || "Job") + '</b><small>Finish the job</small></span><svg class="ch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>' + PORTAL_WIDE;
   if(has) return h + tdRouteHtml(rows, nxt, addr, name);
   return h;
 }
@@ -5370,7 +5350,7 @@ function paintToday(){
   const nxt = rows.find(r => !r.ok);
   const has = addr || name || photos.length;
   $("#tdActive").innerHTML = tdActiveHtml(rows, okN, nxt, has, addr, name);
-  try{ paintSk(); skRefresh(false); }catch(e){}
+  try{ paintSk(); }catch(e){}
   $("#tdSteps").innerHTML = rows.map(r =>
     '<button class="step' + (r.ok ? " ok" : "") + '" data-go="' + r.go + '"><span class="o"></span>'
     + '<span class="t">' + r.t + '</span><span class="v">' + r.v + '</span></button>').join("");
@@ -5418,7 +5398,7 @@ function paintToday(){
   }).catch(() => {});
 }
 $("#tdSteps").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) setView(b.dataset.go); });
-$("#tdActive").addEventListener("click", e => { if(e.target.closest("[data-resume]")){ resumeNow = true; setView("close"); driveUpload(); return; } const g = e.target.closest("[data-go]"); if(g){ if(g.dataset.go === "close" && uploadedOnce){ sovShowClosed(); return; } setView(g.dataset.go); return; } if(e.target.closest("[data-start]")) startJob(); });
+$("#tdActive").addEventListener("click", e => { if(e.target.closest("[data-cpa]")){ copyText(composedAddress() || "", "Address copied"); return; } if(e.target.closest("[data-resume]")){ resumeNow = true; setView("close"); driveUpload(); return; } const g = e.target.closest("[data-go]"); if(g){ if(g.dataset.go === "close" && uploadedOnce){ sovShowClosed(); return; } setView(g.dataset.go); return; } if(e.target.closest("[data-start]")) startJob(); });
 let tdAll = false;
 $("#tdDone").addEventListener("click", e => { const m = e.target.closest("[data-more]"); if(m){ tdAll = m.dataset.more === "1"; paintToday(); return; } });
 $("#tdDone").addEventListener("click", e => { const b = e.target.closest("[data-q]"); if(b) openQuick(+b.dataset.q); });
@@ -5431,6 +5411,7 @@ function setView(v){
     $("#v-"+k).style.display = (k === v) ? "block" : "none";
   });
   $("#upBox").style.display = (v === "close") ? "flex" : "none";
+  $("#copyPortal").style.display = (v === "close") ? "flex" : "none";
   navPaint(v);
   if(v === "today"){
     state.view = v;
@@ -5519,6 +5500,46 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
     navigator.serviceWorker.register("sw.js").catch(function(){});
   });
 }
+
+/* ---- v129: copy the job for the ArcLink helper script and open the portal ---- */
+(function(){
+
+  const v = id => { const e = document.getElementById(id); return e ? String(e.value || "").trim() : ""; };
+  const r3 = n => Math.round(n * 1000) / 1000;
+  function build(){
+    return "FIBERFORMS:" + JSON.stringify({
+      street: v("c_street"), city: v("c_city"), customer: v("c_customer"),
+      ont: v("f_ontSerial") || v("c_routerSn"), mac: v("c_routerMac"),
+      ft: v("w_ft"), spl: v("w_spl"), ext: v("w_ext"),
+      sig: (state.strokes || []).map(st => st.filter((_, i) => i % 2 === 0 || i === st.length - 1).map(p => [r3(p[0]), r3(p[1])])),
+      sw: Math.round(state.padW || 0), sh: Math.round(state.padH || 0)
+    });
+  }
+  const PORTAL = "https://arclink.portal.arianhapus.com/booked-appointments/calendar";
+  function openPortal(){
+    setTimeout(() => {
+      try{
+        if(/Android/i.test(navigator.userAgent)) location.href = "intent://" + PORTAL.replace("https://", "") + "#Intent;scheme=https;package=org.mozilla.firefox;S.browser_fallback_url=" + encodeURIComponent(PORTAL) + ";end";
+        else window.open(PORTAL, "_blank");
+      }catch(e){}
+    }, 250);
+  }
+  function legacy(t){
+    try{ const x = document.createElement("textarea"); x.value = t; x.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(x); x.select(); const ok = document.execCommand("copy"); x.remove(); return ok; }catch(e){ return false; }
+  }
+  function done(ok, b){
+    const lab = b.querySelector("span");
+    b.classList.toggle("ok", !!ok); lab.textContent = ok ? "Copied" : "Failed";
+    setTimeout(() => { lab.textContent = "CX-Portal"; b.classList.remove("ok"); }, 1600);
+    if(ok) openPortal();
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-portal]"); if(!b) return;
+    const t = build();
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => done(true, b), () => done(legacy(t), b));
+    else done(legacy(t), b);
+  });
+})();
 </script>
 </body>
 </html>
