@@ -972,6 +972,38 @@ body.hm #tdPillAmt{filter:blur(6px)}
 #tabbar button{flex:none;flex-direction:row;min-height:48px;padding:0 22px;border-radius:999px;font-size:14px;font-weight:600;color:#d5d7dd}
 #tabbar button.on{background:#fff;color:#14161a;font-weight:700}
 #tabbar .ti{display:none}
+
+/* ---- v131 ---- */
+.fsec{display:flex;align-items:center;gap:8px;cursor:pointer;min-height:32px}
+.fsec .fsum{margin-left:auto;font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:62%}
+.fsec.need .fsum{color:var(--magenta)}
+.fsec svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.fsec.open svg{transform:rotate(180deg)}
+.fcard{display:none}.fsec.open + .fcard{display:block}
+.jvh{padding:14px 4px 12px}.jvh small{display:block;font-size:14px;font-weight:600;color:var(--muted)}
+.jvh b{display:block;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-top:4px;overflow-wrap:anywhere}
+.jvc{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.jvn{min-width:0}.jvn b{display:block;font-size:17px;font-weight:700}.jvn small{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.jva{display:flex;gap:8px;flex:none}.jva .xb{width:44px;height:44px;border-radius:50%}
+.sc-x{flex:none;border:none;background:none;width:44px;height:44px;font-size:24px;line-height:1;color:inherit;opacity:.7;cursor:pointer;padding:0}
+
+/* v132 */
+.xc{white-space:nowrap;font-size:14px;padding:8px 12px;gap:6px;flex:none}
+.xr{flex-wrap:nowrap}
+.xi2{flex:none}
+#v-checklist .sec[data-f="v"],#v-checklist .sec[data-f="v"] + .fcard,
+#v-checklist .sec:not([data-f]):not(#notesHead):has(+ .card #c_speedwifi),#v-checklist .card:has(#c_speedwifi),#v-checklist .card:has(#c_speedwifi) + .foot-note,
+#notesHead,#notesCard,#v-fcs2 .sec.hid,#v-fcs2 .sec.hid + .card{display:none !important}
+.afold{display:none}.afo .afold{display:block}.afo .row.afold{display:flex}
+.arow{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.arow b{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.arow small{margin-left:auto;font-size:14px;font-weight:600;color:var(--muted);max-width:68%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arow svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;color:var(--muted);transition:transform .2s}
+.afo .arow svg{transform:rotate(180deg)}
+.sgroup.sfold:not(.open) > :not(.sg-h){display:none !important}
+.sgroup.sfold .sg-h{cursor:pointer}
+.sgroup.sfold .sg-h .sch{width:16px;height:16px;flex:none;stroke:var(--muted);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;margin-left:8px;transition:transform .2s}
+.sgroup.sfold.open .sg-h .sch{transform:rotate(180deg)}
 </style>
 </head>
 <body>
@@ -1314,6 +1346,11 @@ body.hm #tdPillAmt{filter:blur(6px)}
   </div>
 </div>
 
+<div class="overlay sheet" id="jobOverlay">
+  <div class="sheet-head"><button class="done" id="jvBack" style="justify-self:start">Back</button><h3>Job</h3><button class="done" id="jvEdit">Edit</button></div>
+  <div class="sheet-body" id="jvBody"></div>
+</div>
+
 <div class="overlay sheet" id="editOverlay">
   <div class="sheet-head"><button class="done" id="editCancel" style="justify-self:start">Cancel</button><h3 id="editTitle">Edit job</h3><button class="done" id="editSave">Save</button></div>
   <div class="sheet-body">
@@ -1327,18 +1364,14 @@ body.hm #tdPillAmt{filter:blur(6px)}
         <input type="text" id="e_cust" autocomplete="off" autocapitalize="words" placeholder="optional"></div>
     </div>
     <div class="card">
-      <div class="row">
-        <div class="f"><label for="e_ft">Line extension, ft</label>
-          <input type="text" id="e_ft" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-        <div class="f"><label for="e_ch">Chamber #</label>
-          <input type="text" id="e_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
-      </div>
-      <div class="row">
-        <div class="f"><label for="e_spl">Splices</label>
-          <input type="text" id="e_spl" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-        <div class="f"><label for="e_ext">Wi-Fi extenders</label>
-          <input type="text" id="e_ext" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-      </div>
+      <div class="wrow"><label for="e_ft">Line extension, ft</label>
+        <div class="stp"><button type="button" data-stp="e_ft:-5" aria-label="Less feet">&minus;</button><input type="text" id="e_ft" autocomplete="off" inputmode="numeric" placeholder="0"><button type="button" data-stp="e_ft:5" aria-label="More feet">+</button></div></div>
+      <div class="wrow"><label for="e_spl">Splices</label>
+        <div class="stp"><button type="button" data-stp="e_spl:-1" aria-label="Fewer splices">&minus;</button><input type="text" id="e_spl" autocomplete="off" inputmode="numeric" placeholder="0"><button type="button" data-stp="e_spl:1" aria-label="More splices">+</button></div></div>
+      <div class="wrow"><label for="e_ext">Wi-Fi extenders</label>
+        <div class="stp"><button type="button" data-stp="e_ext:-1" aria-label="Fewer extenders">&minus;</button><input type="text" id="e_ext" autocomplete="off" inputmode="numeric" placeholder="0"><button type="button" data-stp="e_ext:1" aria-label="More extenders">+</button></div></div>
+      <div class="wrow"><label for="e_ch">Chamber #</label>
+        <input type="text" id="e_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
     </div>
     <div class="card">
       <div class="swrow" data-e="second">
@@ -1348,6 +1381,7 @@ body.hm #tdPillAmt{filter:blur(6px)}
     </div>
     <div class="sec">Notes</div>
     <div class="card" style="padding:4px"><textarea id="e_notes" rows="6" style="background:#fff"></textarea></div>
+    <div class="card" id="e_tgCard" style="display:none"><div class="swrow" id="e_tgRow"><div class="t">Post correction to Telegram<small>When feet, splices or extenders change</small></div><div class="chips swbox"><div class="chip sw on" id="e_tg"></div></div></div></div>
     <div class="card" id="e_retCard"><div class="swrow" id="e_ret"><div class="t">Return visit<small>Put this address back on Today</small></div></div></div>
     <p class="foot-note">Updates history and Excel. Files already on Drive stay as they are.</p>
   </div>
@@ -3766,11 +3800,12 @@ function paintSk(){
     };
     all0.forEach(e => { e._n = 0; });
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
+    { let nn = dayAll.length; list.forEach(e => { if(!e._n) e._n = ++nn; }); }
     const IC = {call: ico("call", "#1b7f4a", "#7fd1a2", 18), text: ico("text", "#0a60d0", "#ffffff", 22), nav: ico("nav", "#14161a", "#ffffff", 22), copy: ico("copy", "#d9731a", "#f6c590", 22), play: ico("play", "#ffffff", "#ffffff", 13)};
     if(SK_OPEN && !list.some(e => skKey(e) === SK_OPEN)){ SK_OPEN = ""; MP.sel = 0; }
     const rows = list.map((e, i) => {
       const d = new Date(e.start), same = d.toDateString() === new Date().toDateString();
-      const k = skKey(e), tel = telDigits(e.tel), info = [e.name, e.ch].filter(Boolean).join(" \u00b7 ");
+      const k = skKey(e), tel = telDigits(e.tel), info = e.name || "";
       const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button">' + IC.play + 'Start</button></div>'
         + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
         + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<button class="xb cp" data-cp="' + i + '" type="button" aria-label="Copy address">' + IC.copy + '</button><a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
@@ -4525,11 +4560,14 @@ function saveJob(uploaded, fileCount, addrOverride, final){
     ft: f.ft, splices: f.splices, extenders: f.extenders, isSecond: f.isSecond,
     install: f.install, line: f.line, splice: f.splice,
     extender: f.extender, second: f.second, total: f.total,
-    uploaded: !!uploaded, files: fileCount || 0
+    uploaded: !!uploaded, files: fileCount || 0,
+    v: 131, sn: ($("#c_routerSn").value || "").trim(), exts: ($("#c_extender").value || "").trim(),
+    speed: ["c_speedhard", "c_speedwifi"].map(id => { const e = document.getElementById(id); return e ? (e.value || "").trim() : ""; }).filter(Boolean).join(" \u00b7 "),
+    svc: state.checks.svc === "Waiting" ? "Waiting on fiber" : "Working"
   };
   if(currentJobId != null){
     rec.id = currentJobId;
-    return jobsPut(rec).catch(e => console.error("job save failed", e));
+    return jobsGet(currentJobId).then(o => { if(o && o.portalAt) rec.portalAt = o.portalAt; return jobsPut(rec); }).catch(e => console.error("job save failed", e));
   }
   const pr = jobsAdd(rec).then(id => { if(!final) currentJobId = id; })
                          .catch(e => console.error("job save failed", e))
@@ -4674,8 +4712,40 @@ $("#histList").addEventListener("click", e => {
     return;
   }
   const r = e.target.closest("[data-edit]");
-  if(r) openEdit(+r.dataset.edit);
+  if(r) openJobView(+r.dataset.edit);
 });
+/* v131: read-only view of a saved job; Edit opens the editor on top */
+let jvId = null;
+function jvRow(l, v){ return v ? '<div class="rv"><span>' + l + '</span><b>' + v + '</b></div>' : ""; }
+function openJobView(id){
+  jobsGet(id).then(j => {
+    if(!j) return;
+    jvId = id;
+    const d = new Date(j.when), tel = telFor(j), pay = [];
+    if(j.install) pay.push("Install <i>$" + j.install + "</i>");
+    if(j.line) pay.push("Line " + (j.ft || 0) + " ft <i>$" + j.line + "</i>");
+    if(j.splice) pay.push("Splices <i>$" + j.splice + "</i>");
+    if(j.extender) pay.push("Extenders <i>$" + j.extender + "</i>");
+    if(j.second) pay.push("2nd visit <i>$" + j.second + "</i>");
+    let h = '<div class="jvh"><small>' + esc(fmtLong(d)) + '</small><b>' + esc(j.address || "") + '</b></div>';
+    h += '<div class="card jvc"><div class="jvn"><b>' + esc(j.customer || "Customer") + '</b>' + (tel ? '<small>' + esc(fmtTel(tel)) + '</small>' : "") + '</div><div class="jva">'
+      + (tel ? '<a class="xb" style="background:#e8f5ee" href="tel:' + tel + '" aria-label="Call">' + ico("call", "#1b7f4a", "#7fd1a2", 20) + '</a>' : "")
+      + '<button class="xb cp" data-jcp="1" type="button" aria-label="Copy address">' + ico("copy", "#d9731a", "#f6c590", 22) + '</button>'
+      + '<a class="xb" href="' + navUrl({addr: j.address || ""}) + '" aria-label="Navigate">' + ico("nav", "#14161a", "#ffffff", 22) + '</a></div></div>';
+    h += '<div class="card">' + jvRow("Line extension", (j.ft || 0) + " ft") + jvRow("Splices", String(j.splices || 0)) + jvRow("Wi-Fi extenders", String(j.extenders || 0))
+      + jvRow("Chamber", esc(j.ch || "")) + jvRow("ONT serial", esc(j.sn || "")) + jvRow("Extender serial", esc(j.exts || "")) + jvRow("Speed", esc(j.speed || "")) + jvRow("Service", esc(j.svc || ""))
+      + (j.isSecond ? jvRow("Visit", "2nd visit") : "") + '</div>';
+    h += '<div class="total" style="margin-top:12px"><small>Earned</small><b>$' + (j.total || 0) + '</b><div class="pchips">' + pay.map(x => '<span>' + x + '</span>').join("") + '</div></div>';
+    h += '<div class="card" style="margin-top:12px">' + jvRow("Google Drive", j.uploaded ? (j.files || 0) + " files" : "not uploaded")
+      + ((j.portalAt || j.v >= 131) ? jvRow("CX-Portal", j.portalAt ? "opened " + new Date(j.portalAt).toLocaleDateString("en-US", {month: "short", day: "numeric"}) : "not opened") : "") + '</div>';
+    if((j.notes || "").trim()) h += '<div class="sec">Notes</div><div class="card" style="white-space:pre-wrap;font-size:15px">' + esc(j.notes.trim()) + '</div>';
+    const body = $("#jvBody"); body.innerHTML = h; body.dataset.addr = j.address || "";
+    $("#jobOverlay").classList.add("on");
+  });
+}
+$("#jvBack").addEventListener("click", () => { $("#jobOverlay").classList.remove("on"); jvId = null; });
+$("#jvEdit").addEventListener("click", () => { if(jvId != null) openEdit(jvId); });
+$("#jvBody").addEventListener("click", e => { if(e.target.closest("[data-jcp]")) copyText($("#jvBody").dataset.addr || "", "Address copied"); });
 
 /* --- edit a saved job --- */
 let editJob = null, editNotesTouched = false, editSecond = false, editNox = false;
@@ -4732,6 +4802,7 @@ function openEdit(id){
     $("#e_notes").value = notes;
     editNotesTouched = true;      /* keep the stored notes until a figure changes */
     $("#editTitle").textContent = "Edit job";
+    $("#e_tgCard").style.display = tgReady() ? "" : "none"; $("#e_tg").classList.add("on");
     $("#e_retCard").style.display = "";
     $("#e_date").value = dateInput(new Date(j.when));
     $("#e_addr").value = j.address || "";
@@ -4773,6 +4844,7 @@ $("#e_ret").addEventListener("click", () => {
 let editDay0 = "";
 const dateInput = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 function openAdd(){
+  try{ $("#e_tgCard").style.display = "none"; }catch(e){}
   const [, , mon] = weekBounds(weekOffset);
   const day = weekOffset === 0 ? new Date() : mon;
   editJob = {isNew: true};
@@ -4812,8 +4884,16 @@ $("#editSave").addEventListener("click", () => {
         tgSend(txt).catch(() => tgQueue(txt));
       }
     }catch(e){}
+    try{
+      const o = editJob;
+      if(!wasNew && tgReady() && $("#e_tg").classList.contains("on") && (f.ft !== (o.ft || 0) || f.splices !== (o.splices || 0) || f.extenders !== (o.extenders || 0) || !!editSecond !== !!o.isSecond)){
+        const txt = addr + "\n\nCorrection\n" + (rec.notes || "").trim().replace(/^Notes:\s*/, "") + "\n\n\u2705 $" + rec.total + " (was $" + (o.total || 0) + ")";
+        tgSend(txt).then(() => toastMsg("Correction sent")).catch(() => tgQueue(txt));
+      }
+    }catch(e){}
     $("#editOverlay").classList.remove("on");
     renderHistory(); paintWeekMini(); try{ paintToday(); }catch(e){}
+    try{ if(jvId != null && $("#jobOverlay").classList.contains("on")) openJobView(jvId); }catch(e){}
   };
   (editJob.id != null ? jobsPut(rec) : jobsAdd(rec)).then(done)
     .catch(err => notice("Could not save", String(err && err.message || err)));
@@ -4826,6 +4906,7 @@ $("#openHistory").addEventListener("click", () => {
   renderHistory();
 });
 $("#histClose").addEventListener("click", () => {
+  $("#jobOverlay").classList.remove("on"); jvId = null;
   paintWeekMini();
   $("#histOverlay").classList.remove("on");
   document.body.classList.remove("locked");
@@ -5055,7 +5136,7 @@ function scanFail(msg){
   $("#scanSheet").innerHTML = '<div class="sc-h">' + msg + '</div>'
     + '<div class="sc-b"><button class="btn btn-ghost" id="scanAgain" style="display:none"></button><button class="btn btn-magenta" id="scanShut">Close</button></div>';
 }
-let scanStream = null, scanTimer = 0, scanDet = null, scanMode = "router", scanFound = null, scanBusy = false;
+let scanStream = null, scanTimer = 0, scanDet = null, scanMode = "router", scanFound = null, scanBusy = false, scanExts = [];
 
 function parseLabel(raw){
   const o = {};
@@ -5076,8 +5157,12 @@ function scanPick(raw){
   if(lab) return {ext: lab.serial};
   return /^[A-Za-z0-9:\-]{6,40}$/.test(t) ? {ext: t.toUpperCase()} : null;
 }
+let scanSeenAt = 0;
 function scanSheetHtml(){
-  if(!scanFound) return '<div class="sc-h">' + (scanMode === "router" ? "Point at the square code on the router label" : "Point at the barcode on the extender") + "</div>";
+  if(!scanFound) return '<div class="sc-h">' + (scanMode === "router" ? "Point at the square code on the router label" : (scanExts.length ? "Point at the next extender" : "Point at the barcode on the extender")) + "</div>";
+  if(scanMode === "ext") return '<div class="sc-h">Extenders \u00b7 ' + scanExts.length + '</div>'
+    + scanExts.map((x, i) => '<div class="sc-r"><span>' + (i + 1) + '</span><b>' + esc(x) + '</b><button type="button" class="sc-x" data-xrm="' + i + '" aria-label="Remove">\u00d7</button></div>').join("")
+    + '<div class="sc-b"><button class="btn btn-ghost" id="scanAgain">Scan next</button><button class="btn btn-magenta" id="scanUse">Done</button></div>';
   const r = scanFound, rows = [];
   if(r.serial) rows.push(["Serial", r.serial]);
   if(r.wifi) rows.push(["Wi-Fi name", r.wifi]);
@@ -5097,7 +5182,14 @@ function scanTick(){
       scanBusy = false;
       for(let i = 0; i < list.length; i++){
         const r = scanPick(list[i].rawValue);
-        if(r){ scanFound = r; try{ navigator.vibrate && navigator.vibrate(40); }catch(e){} scanPaint(); return; }
+        if(r){
+          if(scanMode === "ext" && r.ext){
+            const rs = ($("#c_routerSn").value || "").trim().toUpperCase();
+            if(r.ext === rs || scanExts.indexOf(r.ext) >= 0){ if(Date.now() - scanSeenAt < 1500) continue; }
+            else scanExts.push(r.ext);
+            scanSeenAt = Date.now();
+          }
+          scanFound = r; try{ navigator.vibrate && navigator.vibrate(40); }catch(e){} scanPaint(); return; }
       }
     }).catch(() => { scanBusy = false; });
   }
@@ -5113,6 +5205,7 @@ function scanClose(){
 function scanOpen(mode){
   if(!SCAN_OK) return;
   scanMode = mode; scanFound = null;
+  scanExts = mode === "ext" ? ($("#c_extender").value || "").split(",").map(x => x.trim().toUpperCase()).filter(Boolean) : [];
   $("#scanTitle").textContent = mode === "router" ? "Scan the router label" : "Scan the extender";
   scanPaint();
   $("#scanOv").classList.add("on");
@@ -5144,6 +5237,12 @@ function scanSet(id, v){
 }
 function scanUse(){
   const r = scanFound; if(!r) return;
+  if(scanMode === "ext"){
+    const el = $("#c_extender"); el.value = scanExts.join(", ");
+    el.dispatchEvent(new Event("input", {bubbles: true})); el.dispatchEvent(new Event("change", {bubbles: true}));
+    if(scanExts.length) scanSet("w_ext", String(scanExts.length));
+    scanClose(); return;
+  }
   if(r.serial) scanSet("c_routerSn", r.serial);
   if(r.wifi) scanSet("c_wifiname", r.wifi);
   if(r.pw) scanSet("c_wifikey", r.pw);
@@ -5154,8 +5253,10 @@ $("#scanRouter").addEventListener("click", () => scanOpen("router"));
 $("#scanExt").addEventListener("click", () => scanOpen("ext"));
 $("#scanClose").addEventListener("click", scanClose);
 $("#scanOv").addEventListener("click", e => {
+  const xr = e.target.closest("[data-xrm]");
+  if(xr){ scanExts.splice(+xr.dataset.xrm, 1); scanSeenAt = Date.now(); scanPaint(); return; }
   if(e.target.closest("#scanUse")) scanUse();
-  else if(e.target.closest("#scanAgain")){ scanFound = null; scanPaint(); scanTick(); }
+  else if(e.target.closest("#scanAgain")){ scanFound = null; scanSeenAt = Date.now(); scanPaint(); scanTick(); }
   else if(e.target.closest("#scanShut")) scanClose();
 });
 
@@ -5598,6 +5699,7 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   document.addEventListener("click", e => {
     const b = e.target.closest("[data-portal]"); if(!b) return;
     const json = build(), t = "FIBERFORMS:" + json;
+    try{ const a = composedAddress(); if(a) jobsAll().then(l => { const j = (l || []).filter(x => x.address === a).sort((x, y) => y.when - x.when)[0]; if(j){ j.portalAt = Date.now(); jobsPut(j); } }).catch(() => {}); }catch(e2){}
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => done(b, json), () => { legacy(t); done(b, json); });
     else { legacy(t); done(b, json); }
   });
@@ -5606,13 +5708,91 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
     const b = e.target.closest("[data-stp]"); if(!b) return;
     const p = b.dataset.stp.split(":"), el = document.getElementById(p[0]); if(!el) return;
     const cur = parseFloat(String(el.value).replace(/[^\d.]/g, "")) || 0;
-    const n = Math.max(0, Math.min(p[0] === "w_ft" ? 5000 : 99, cur + (+p[1])));
+    const n = Math.max(0, Math.min(/_ft$/.test(p[0]) ? 5000 : 99, cur + (+p[1])));
     el.value = n ? String(n) : "";
     el.dispatchEvent(new Event("input", {bubbles: true})); el.dispatchEvent(new Event("change", {bubbles: true}));
   });
   document.getElementById("tdPill").addEventListener("click", () => { const w = document.getElementById("tbWeek"); if(w) w.click(); });
   const sf = document.getElementById("set_fib");
   if(sf){ sf.value = recall("portalFib") || ""; sf.addEventListener("input", () => store("portalFib", sf.value.trim())); }
+})();
+
+/* ---- v131: Visit and Customer questions fold away once they are filled ---- */
+(function(){
+  const secs = Array.prototype.slice.call(document.querySelectorAll("#v-checklist .sec")).filter(x => /^(Visit|Customer questions)$/.test(x.textContent.trim()));
+  secs.forEach(sec => {
+    const t = sec.textContent.trim(), card = sec.nextElementSibling; if(!card) return;
+    sec.dataset.f = t === "Visit" ? "v" : "q"; sec.classList.add("fsec"); card.classList.add("fcard");
+    sec.innerHTML = '<span>' + t + '</span><small class="fsum"></small><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+    sec.addEventListener("click", () => sec.classList.toggle("open"));
+  });
+  function sum(){
+    secs.forEach(sec => {
+      let txt = "", need = false;
+      if(sec.dataset.f === "v"){
+        const a = (document.getElementById("c_tech").value || "").trim(), b = (document.getElementById("c_daytime").value || "").trim();
+        need = !a || !b; txt = [a, b].filter(Boolean).join(" \u00b7 ") || "to fill";
+      } else {
+        const rows = Array.prototype.slice.call(document.querySelectorAll("#qRows .qrow")), left = rows.filter(r => !r.querySelector(".chip.on")).length;
+        need = left > 0; txt = left ? left + " to answer" : "all answered";
+      }
+      sec.querySelector(".fsum").textContent = txt;
+      sec.classList.toggle("need", need); if(need) sec.classList.add("open");
+    });
+  }
+  window.foldSum = sum;
+  const host = document.getElementById("v-checklist");
+  ["input", "click", "change"].forEach(ev => host.addEventListener(ev, () => setTimeout(sum, 0)));
+  const sv0 = setView;
+  setView = function(v){ const r = sv0.apply(this, arguments); if(v === "checklist") try{ sum(); }catch(e){} return r; };
+  setTimeout(sum, 1200);
+})();
+
+/* ---- v132 ---- */
+(function(){
+  /* checklist: address folds away */
+  const st = document.getElementById("c_street"), card = st && st.closest(".card");
+  if(card){
+    const f1 = st.closest(".f"), r1 = document.getElementById("c_city").closest(".row"), f2 = document.getElementById("c_county").closest(".f");
+    [f1, r1, f2].forEach(x => x.classList.add("afold"));
+    const row = document.createElement("div"); row.className = "arow";
+    row.innerHTML = '<b>Address</b><small></small><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+    card.insertBefore(row, f1);
+    row.addEventListener("click", () => card.classList.toggle("afo"));
+    const upd = () => { const a = (typeof composedAddress === "function" ? composedAddress() : "") || ""; row.querySelector("small").textContent = a || "to fill"; };
+    const first = () => { card.classList.toggle("afo", !st.value.trim()); upd(); };
+    ["input", "change", "click"].forEach(ev => document.getElementById("v-checklist").addEventListener(ev, () => setTimeout(upd, 0)));
+    const sv = setView; setView = function(v){ const r = sv.apply(this, arguments); if(v === "checklist") try{ first(); }catch(e){} return r; };
+    setTimeout(first, 800);
+  }
+  /* signature: the Job card is automatic */
+  Array.prototype.forEach.call(document.querySelectorAll("#v-fcs2 .sec"), x => { if(x.textContent.trim() === "Job") x.classList.add("hid"); });
+  /* settings: Drive and Telegram fold to one line */
+  Array.prototype.forEach.call(document.querySelectorAll("#setOverlay .sgroup"), g => {
+    const h = g.querySelector(".sg-h"), t = h && h.textContent;
+    if(!t || !/Google Drive|Telegram/.test(t)) return;
+    g.classList.add("sfold");
+    h.insertAdjacentHTML("beforeend", '<svg class="sch" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>');
+    h.addEventListener("click", () => g.classList.toggle("open"));
+  });
+  const so = window.openSettings;
+  function autoOpen(){ Array.prototype.forEach.call(document.querySelectorAll("#setOverlay .sgroup.sfold"), g => { const h = g.querySelector(".sg-h"); const ok = /\u2713|Connected|Ready|On\b/.test(h.textContent); g.classList.toggle("open", !ok); }); }
+  if(typeof so === "function"){ window.openSettings = function(){ const r = so.apply(this, arguments); setTimeout(autoOpen, 50); return r; }; }
+  document.addEventListener("click", e => { if(e.target.closest("[data-settings],#setBtn,#tdSet")) setTimeout(autoOpen, 80); }, true);
+  /* today: the map takes the free space, so nothing is left empty below the list */
+  function fill(){
+    const m = document.getElementById("tdMap"), v = document.getElementById("v-today"), box = document.getElementById("tdMapBox"), sk = document.getElementById("tdSk");
+    if(!m || !v || v.style.display === "none" || !box || box.style.display === "none" || !sk) return;
+    m.style.height = "190px";
+    const bottom = sk.getBoundingClientRect().bottom + window.scrollY;
+    const free = window.innerHeight - 110 - bottom;
+    m.style.height = Math.max(190, Math.min(440, 190 + Math.floor(free))) + "px";
+  }
+  window.ffFill = fill;
+  if(window.ResizeObserver){ const ro = new ResizeObserver(() => setTimeout(fill, 0)); const sk = document.getElementById("tdSk"); if(sk) ro.observe(sk); }
+  window.addEventListener("resize", () => setTimeout(fill, 100));
+  const sv2 = setView; setView = function(v){ const r = sv2.apply(this, arguments); setTimeout(fill, 150); return r; };
+  setTimeout(fill, 1500);
 })();
 </script>
 </body>
