@@ -918,6 +918,60 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
 #qp .ft button.sv{width:100%;height:46px;border-radius:14px;border:none;background:#e6e8ec;color:#9aa0a8;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
 #qp .ft button.sv.on{background:var(--magenta);color:#fff}
 .swp:not(:last-child) .step{border-bottom:.5px solid var(--line)}
+
+/* ================= v130 skin ================= */
+:root{--bg:#f4f5f7;--muted:#5b606b;--r:24px}
+.btn{border-radius:18px;min-height:56px;font-weight:700}
+.btn-sm{min-height:44px;border-radius:999px;font-weight:600}
+.sec{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--muted)}
+.tdhead{align-items:flex-end}
+.tdhead h1{font-size:32px;font-weight:800;letter-spacing:-.02em}
+.tdhero{display:none}
+.tdhead > div{min-width:0;flex:1}
+.tdhead h1{font-size:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#newJobFab{bottom:calc(84px + env(safe-area-inset-bottom))}
+#tdPill{flex:none;border:none;background:#fff;border-radius:999px;padding:0 14px;min-height:44px;display:flex;align-items:center;gap:8px;font-family:inherit;font-size:15px;cursor:pointer}
+#tdPill b{color:var(--ok);font-weight:700}#tdPill span{color:var(--muted);font-weight:500}
+body.hm #tdPillAmt{filter:blur(6px)}
+.nowc{background:#fff;border-radius:28px;padding:20px;margin-top:14px;display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 2px rgba(20,22,26,.04),0 12px 32px rgba(20,22,26,.06)}
+.nwh{display:flex;justify-content:space-between;align-items:center}
+.nwh span{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--magenta)}
+.nwh small{font-size:13px;font-weight:600;color:var(--muted)}
+.nwt b{display:block;font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.2;overflow-wrap:anywhere}
+.nwt small{display:block;font-size:15px;color:var(--muted);margin-top:4px}
+.nwbars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.nwb{border:none;background:none;padding:6px 0;min-height:44px;font-family:inherit;text-align:left;display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.nwb i{display:block;height:6px;border-radius:3px;background:#e3e5ea}
+.nwb span{font-size:12px;font-weight:600;color:var(--muted)}
+.nwb.ok i{background:var(--ok)}.nwb.ok span{color:var(--ok)}
+.nwb.cur i{background:var(--magenta)}.nwb.cur span{color:var(--magenta);font-weight:700}
+.nwgo{width:100%;gap:8px}
+.nwacts{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px}
+.nwa{border:none;background:#f4f5f7;border-radius:16px;min-height:60px;padding:0;font-family:inherit;font-size:12px;font-weight:600;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-decoration:none;cursor:pointer}
+.nwa:active{background:#e6e8ec}.nwa svg{display:block}
+.wrow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:64px}
+.wrow + .wrow{border-top:1px solid var(--hair)}
+.wrow label{margin:0;font-size:16px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0}
+.stp{display:flex;align-items:center;gap:6px;flex:none}
+.stp button{width:44px;height:44px;flex:none;border-radius:50%;border:none;background:#f4f5f7;font-family:inherit;font-size:22px;font-weight:600;line-height:1;color:var(--ink);cursor:pointer;padding:0}
+.stp button:active{background:#e3e5ea}
+.stp input[type=text]{width:62px;height:44px;flex:none;text-align:center;font-size:20px;font-weight:800;background:transparent;border:none;padding:0;box-shadow:none}
+.wrow > input[type=text]{width:120px;height:44px;flex:none;text-align:center;font-size:16px;font-weight:700;border-radius:12px}
+.total{background:#14161a;border:none;color:#fff}
+.total small{color:#c9ccd3}.total b{color:#7be0a5}
+.total .pchips span{background:rgba(255,255,255,.12);color:#fff}.total .pchips span i{color:#c9ccd3}
+.sum{background:#14161a;color:#fff;padding:18px 0}
+.sum small{color:#c9ccd3}.sum b{color:#fff}.sum b.money{color:#7be0a5}
+.sum > div + div{border-left-color:rgba(255,255,255,.16)}
+.pcard{background:#fff;border-radius:24px;padding:18px;border:2px solid var(--magenta);display:flex;flex-direction:column;gap:14px;text-align:left}
+.pcard .h{display:flex;align-items:center;gap:12px}
+.pcard .h i{width:44px;height:44px;border-radius:14px;background:#fde8f2;display:flex;align-items:center;justify-content:center;flex:none}
+.pcard .h svg{width:22px;height:22px;stroke:#b8005c;fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.pcard .h b{display:block;font-size:17px;font-weight:800}.pcard .h small{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+#tabbar{left:50%;right:auto;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));background:#14161a;border:none;border-radius:999px;padding:6px;gap:4px;box-shadow:0 12px 28px rgba(20,22,26,.25)}
+#tabbar button{flex:none;flex-direction:row;min-height:48px;padding:0 22px;border-radius:999px;font-size:14px;font-weight:600;color:#d5d7dd}
+#tabbar button.on{background:#fff;color:#14161a;font-weight:700}
+#tabbar .ti{display:none}
 </style>
 </head>
 <body>
@@ -1090,6 +1144,7 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
 <div class="wrap view" id="v-today" style="display:none">
   <div class="tdhead">
     <div><small id="tdDate"></small><h1 id="tdHello"></h1></div>
+    <button id="tdPill" type="button" aria-label="Open week"><b id="tdPillAmt">$0</b><span id="tdPillN"></span></button>
   </div>
   <div class="tdhero" id="tdHero">
     <div class="top"><div><small>Earned today</small><b id="tdTotal">$0</b></div>
@@ -1131,8 +1186,9 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
       <div class="rv"><span>Earned</span><b id="clcPay" class="amtc"></b></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
-      <button class="portalWide" data-portal="1" type="button"><svg viewBox="0 0 24 24"><rect x="3.500" y="6" width="14.500" height="14.500" rx="3.500" fill="#f9c5de"/><path d="M13 11l7.500-7.500M14.500 3.500h6v6" fill="none" stroke="#d6006c" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></svg><span>CX-Portal</span></button>
-      <button class="btn btn-magenta" id="clcNext">Done</button>
+      <div class="pcard"><div class="h"><i><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></i><div><b>CX-Portal</b><small>Last step</small></div></div>
+        <button class="btn btn-magenta" data-portal="1" type="button"><span>Open and fill the portal</span></button></div>
+      <button class="btn" id="clcNext" style="background:#fff;color:var(--ink)">Done</button>
       <button class="btn btn-quiet" id="clcAgain">Fix and resend</button>
     </div>
   </div>
@@ -1152,18 +1208,14 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
 
   <div class="sec">Work done <button class="eye hmEye aside" aria-label="Show or hide amounts"><svg class="o" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="x" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.5A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
   <div class="card">
-    <div class="row">
-      <div class="f"><label for="w_ft">Line extension, ft</label>
-        <input type="text" id="w_ft" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-      <div class="f"><label for="w_ch">Chamber #</label>
-        <input type="text" id="w_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
-    </div>
-    <div class="row">
-      <div class="f"><label for="w_spl">Splices</label>
-        <input type="text" id="w_spl" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-      <div class="f"><label for="w_ext">Wi-Fi extenders</label>
-        <input type="text" id="w_ext" autocomplete="off" inputmode="numeric" placeholder="0"></div>
-    </div>
+    <div class="wrow"><label for="w_ft">Line extension, ft</label>
+      <div class="stp"><button type="button" data-stp="w_ft:-5" aria-label="Less feet">&minus;</button><input type="text" id="w_ft" autocomplete="off" inputmode="numeric" placeholder="0"><button type="button" data-stp="w_ft:5" aria-label="More feet">+</button></div></div>
+    <div class="wrow"><label for="w_spl">Splices</label>
+      <div class="stp"><button type="button" data-stp="w_spl:-1" aria-label="Fewer splices">&minus;</button><input type="text" id="w_spl" autocomplete="off" inputmode="numeric" placeholder="0"><button type="button" data-stp="w_spl:1" aria-label="More splices">+</button></div></div>
+    <div class="wrow"><label for="w_ext">Wi-Fi extenders</label>
+      <div class="stp"><button type="button" data-stp="w_ext:-1" aria-label="Fewer extenders">&minus;</button><input type="text" id="w_ext" autocomplete="off" inputmode="numeric" placeholder="0"><button type="button" data-stp="w_ext:1" aria-label="More extenders">+</button></div></div>
+    <div class="wrow"><label for="w_ch">Chamber #</label>
+      <input type="text" id="w_ch" autocomplete="off" inputmode="numeric" placeholder="CH-413"></div>
   </div>
   <div class="card">
     <div class="swrow">
@@ -1348,6 +1400,14 @@ body.qpo #qp{visibility:visible;transform:none;transition:transform .34s cubic-b
         </div>
         <p class="sg-note">Create a bot in @BotFather and paste its token. Add the bot to your group, send /start@botname there, then tap Find group.</p>
       </details>
+    </div>
+
+    <div class="sgroup">
+      <div class="sg-h"><span class="sic priv"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></span>
+        <div><b>CX-Portal</b></div></div>
+      <div class="f"><label for="set_fib">Fibre length, ft</label>
+        <input type="text" id="set_fib" inputmode="decimal" autocomplete="off" placeholder="e.g. 20"></div>
+      <p class="sg-note">Goes into Stage 2 by itself. Empty: the portal asks you.</p>
     </div>
 
     <div class="sgroup">
@@ -5303,23 +5363,21 @@ const PORTAL_WIDE = '<button class="portalWide" data-portal="1" type="button" st
 function tdActHtml(addr){
   if(!addr) return "";
   const tel = telDigits($("#c_phone") ? $("#c_phone").value : "");
-  return '<div class="xr tdact">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + ico("call", "#1b7f4a", "#7fd1a2", 18) + esc(fmtTel(tel)) + '</a>' : '<span></span>')
-    + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + ico("text", "#0a60d0", "#ffffff", 22) + '</a>' : '')
-    + '<button class="xb cp" data-cpa="1" type="button" aria-label="Copy address">' + ico("copy", "#d9731a", "#f6c590", 22) + '</button>'
-    + '<a class="xb" href="' + navUrl({addr: addr}) + '" aria-label="Navigate">' + ico("nav", "#14161a", "#ffffff", 22) + '</a></span></div>';
+  const t = (tag, attr, ic, lab) => '<' + tag + ' class="nwa" ' + attr + '>' + ic + '<span>' + lab + '</span></' + tag + '>';
+  return '<div class="nwacts">'
+    + (tel ? t("a", 'href="tel:' + tel + '"', ico("call", "#1b7f4a", "#7fd1a2", 22), "Call") + t("a", 'href="sms:' + tel + '"', ico("text", "#0a60d0", "#ffffff", 22), "Text") : "")
+    + t("button", 'data-cpa="1" type="button"', ico("copy", "#d9731a", "#f6c590", 22), "Copy")
+    + t("a", 'href="' + navUrl({addr: addr}) + '"', ico("nav", "#14161a", "#ffffff", 22), "Navigate") + '</div>';
 }
 function tdRouteHtml(rows, nxt, addr, name){
   const cur = nxt ? rows.indexOf(nxt) : -1;
-  const sub = [["Fill the address and details", "Filled"], ["Hand the phone to the customer", "Signed"], [photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") + " ready" : "Add photos and send", "Sent"]];
-  const dots = cur > 0 ? '<i class="tddot"></i><i class="tddot b"></i><i class="tddot c"></i>' : "";
-  const done = Math.max(0, cur < 0 ? 3 : cur);
-  const rowsH = rows.map((r, i) => {
-    const st = r.ok ? "done" : (i === cur ? "cur" : "later");
-    const o = r.ok ? '<span class="nd">' + TD_CHECK + '</span>' : (i === cur ? '<span class="nd c"><u></u><u class="b"></u><em>' + (i + 1) + '</em></span>' : '<span class="nd l">' + (i + 1) + '</span>');
-    return '<button class="tdr ' + st + '" data-go="' + r.go + '">' + o + '<span class="tx"><b>' + r.t + '</b><small>' + (r.ok ? sub[i][1] : sub[i][0]) + '</small></span>' + (i === cur ? '<svg class="tdnudge" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>' : "") + '</button>';
-  }).join("");
-  return '<div class="tdroute"><div class="hd"><b>' + esc(addr || name || "Current job") + '</b>' + (name && addr ? '<small>' + esc(name) + '</small>' : "") + '</div>' + tdActHtml(addr)
-    + '<div class="trk"><div class="ln"></div><div class="lg" style="height:' + (Math.min(done, 2) * 76) + 'px"></div>' + (cur > 0 ? '<div class="dts" style="top:' + (cur * 76) + 'px">' + dots + '</div>' : "") + rowsH + '</div></div>';
+  const bars = rows.map((r, i) => '<button class="nwb ' + (r.ok ? "ok" : (i === cur ? "cur" : "")) + '" data-go="' + r.go + '" type="button"><i></i><span>' + r.t + '</span></button>').join("");
+  const lab = nxt ? ["Fill the details", "Get the signature", "Add photos and finish"][cur] : "Finish the job";
+  return '<div class="nowc"><div class="nwh"><span>NOW</span>' + (photos.length ? '<small>' + photos.length + (photos.length === 1 ? " photo" : " photos") + '</small>' : "") + '</div>'
+    + '<div class="nwt"><b>' + esc(addr || name || "Current job") + '</b>' + (name && addr ? '<small>' + esc(name) + '</small>' : "") + '</div>'
+    + '<div class="nwbars">' + bars + '</div>'
+    + '<button class="btn btn-magenta nwgo" data-go="' + (nxt ? nxt.go : "close") + '" type="button">' + lab + '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>'
+    + tdActHtml(addr) + '</div>';
 }
 function tdActiveHtml(rows, okN, nxt, has, addr, name){
   let h = "";
@@ -5361,6 +5419,7 @@ function paintToday(){
     const today = list.filter(j => new Date(j.when).toDateString() === key);
     const tot = today.reduce((t, j) => t + (j.total || 0), 0);
     $("#tdTotal").textContent = "$" + tot;
+    $("#tdPillAmt").textContent = "$" + tot; $("#tdPillN").textContent = today.length + (today.length === 1 ? " job" : " jobs");
     $("#tdCount").textContent = today.length + (today.length === 1 ? " job" : " jobs") + " today";
     { const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)).getTime();
       const wkJobs = all.filter(j => j.when >= mon);
@@ -5501,44 +5560,59 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   });
 }
 
-/* ---- v129: copy the job for the ArcLink helper script and open the portal ---- */
+/* ---- v130: send the job to the ArcLink helper script (in the link, clipboard as a spare) and open the portal ---- */
 (function(){
-
   const v = id => { const e = document.getElementById(id); return e ? String(e.value || "").trim() : ""; };
   const r3 = n => Math.round(n * 1000) / 1000;
   function build(){
-    return "FIBERFORMS:" + JSON.stringify({
+    return JSON.stringify({
       street: v("c_street"), city: v("c_city"), customer: v("c_customer"),
       ont: v("f_ontSerial") || v("c_routerSn"), mac: v("c_routerMac"),
-      ft: v("w_ft"), spl: v("w_spl"), ext: v("w_ext"),
+      ft: v("w_ft"), spl: v("w_spl"), ext: v("w_ext"), fib: (recall("portalFib") || "").trim(),
       sig: (state.strokes || []).map(st => st.filter((_, i) => i % 2 === 0 || i === st.length - 1).map(p => [r3(p[0]), r3(p[1])])),
       sw: Math.round(state.padW || 0), sh: Math.round(state.padH || 0)
     });
   }
   const PORTAL = "https://arclink.portal.arianhapus.com/booked-appointments/calendar";
-  function openPortal(){
+  const b64 = t => btoa(unescape(encodeURIComponent(t))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  function portalUrl(json){ return PORTAL + "#ff=" + b64(json); }
+  window.ffPortalUrl = () => portalUrl(build());
+  function openPortal(json){
+    const u = portalUrl(json);
     setTimeout(() => {
       try{
-        if(/Android/i.test(navigator.userAgent)) location.href = "intent://" + PORTAL.replace("https://", "") + "#Intent;scheme=https;package=org.mozilla.firefox;S.browser_fallback_url=" + encodeURIComponent(PORTAL) + ";end";
-        else window.open(PORTAL, "_blank");
+        if(/Android/i.test(navigator.userAgent)) location.href = "intent://" + u.replace("https://", "") + "#Intent;scheme=https;package=org.mozilla.firefox;S.browser_fallback_url=" + encodeURIComponent(u) + ";end";
+        else window.open(u, "_blank");
       }catch(e){}
     }, 250);
   }
   function legacy(t){
     try{ const x = document.createElement("textarea"); x.value = t; x.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(x); x.select(); const ok = document.execCommand("copy"); x.remove(); return ok; }catch(e){ return false; }
   }
-  function done(ok, b){
-    const lab = b.querySelector("span");
-    b.classList.toggle("ok", !!ok); lab.textContent = ok ? "Copied" : "Failed";
-    setTimeout(() => { lab.textContent = "CX-Portal"; b.classList.remove("ok"); }, 1600);
-    if(ok) openPortal();
+  function done(b, json){
+    const lab = b.querySelector("span"), was = b.dataset.lab || (b.dataset.lab = lab.textContent);
+    b.classList.add("ok"); lab.textContent = "Opening";
+    setTimeout(() => { lab.textContent = was; b.classList.remove("ok"); }, 1600);
+    openPortal(json);
   }
   document.addEventListener("click", e => {
     const b = e.target.closest("[data-portal]"); if(!b) return;
-    const t = build();
-    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => done(true, b), () => done(legacy(t), b));
-    else done(legacy(t), b);
+    const json = build(), t = "FIBERFORMS:" + json;
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => done(b, json), () => { legacy(t); done(b, json); });
+    else { legacy(t); done(b, json); }
   });
+  /* Finish: - / + next to feet, splices, extenders */
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-stp]"); if(!b) return;
+    const p = b.dataset.stp.split(":"), el = document.getElementById(p[0]); if(!el) return;
+    const cur = parseFloat(String(el.value).replace(/[^\d.]/g, "")) || 0;
+    const n = Math.max(0, Math.min(p[0] === "w_ft" ? 5000 : 99, cur + (+p[1])));
+    el.value = n ? String(n) : "";
+    el.dispatchEvent(new Event("input", {bubbles: true})); el.dispatchEvent(new Event("change", {bubbles: true}));
+  });
+  document.getElementById("tdPill").addEventListener("click", () => { const w = document.getElementById("tbWeek"); if(w) w.click(); });
+  const sf = document.getElementById("set_fib");
+  if(sf){ sf.value = recall("portalFib") || ""; sf.addEventListener("input", () => store("portalFib", sf.value.trim())); }
 })();
 </script>
 </body>
