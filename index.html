@@ -3399,19 +3399,26 @@ function splitAddrName(t){
   if(e + 2 < w.length && /^([NSEW]{1,2}|[A-Z]\d{0,3})$/.test(w[e + 1])) e++;
   return [w.slice(0, e + 1).join(" "), w.slice(e + 1).join(" ")];
 }
+/* the boss's sheet has a Coordinates column like "34.56233 - 118.036713" (west longitude without its minus) */
+const COORD_RE = /(\d{2}\.\d+)\s*[-\u2013,]\s*-?\s*(\d{2,3}\.\d+)/;
+function parseLL(t){
+  const m = COORD_RE.exec(String(t || "")); if(!m) return null;
+  const la = +m[1], lo = -Math.abs(+m[2]);
+  return (la > 24 && la < 50 && lo < -66 && lo > -125) ? [+la.toFixed(6), +lo.toFixed(6)] : null;
+}
 function parseSheet(txt){
   const out = []; out.skipped = 0;
   const me = ($("#c_tech").value || "").trim().split(/\s+/)[0].toLowerCase();
   String(txt).split(/\r?\n/).forEach(ln => {
     const dm = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/.exec(ln);
     if(!dm) return;
-    let addr = "", name = "", job = "", fc = "", ch = "", tech = "", tel = "";
+    let addr = "", name = "", job = "", fc = "", ch = "", tech = "", tel = "", ll = null;
     const city = /^\s*([A-Za-z .'-]{3,30}),\s*([A-Z]{2})\b/.exec(ln);
     if(ln.indexOf("\t") >= 0){
       const c = ln.split("\t").map(x => x.trim());
       const fi = c.findIndex(x => /^FC-\d+$/i.test(x));
       if(fi < 0 || !c[fi + 1]) return;
-      fc = c[fi]; addr = c[fi + 1]; name = c[fi + 2] || "";
+      fc = c[fi]; addr = c[fi + 1]; ll = parseLL(c[fi + 2]); name = c[fi + (ll ? 3 : 2)] || "";
       for(let q = fi + 2; q < c.length; q++){ const t = telDigits(c[q]); if(t && /^[\d\s().+-]+$/.test(c[q])){ tel = t; break; } }
       const ci = c.findIndex(x => /^USQPL-CH-\d+$/i.test(x)); if(ci >= 0) ch = c[ci];
       const ji = c.findIndex(x => /^JOB-\d+$/i.test(x)); if(ji >= 0){ job = c[ji].slice(4); tech = (c[ji + 1] || "").split(/\s+/)[0]; }
@@ -3419,7 +3426,7 @@ function parseSheet(txt){
       const after = ln.slice(dm.index + dm[0].length), fm = /\bFC-\d+\b/i.exec(after);
       if(!fm) return;
       fc = fm[0];
-      let rest = after.slice(fm.index + fm[0].length);
+      let rest = after.slice(fm.index + fm[0].length); ll = parseLL(rest); rest = rest.replace(new RegExp(COORD_RE.source, "g"), " ");
       const pm = /\s(?:\(\d{3}\)\s?\d{3}[\s.-]?\d{4}|\d{3}[\s.-]\d{3}[\s.-]\d{4}|\d{10,11})(?!\d)/.exec(rest);
       const sp = splitAddrName(pm ? rest.slice(0, pm.index) : rest.replace(/\s+USQPL-CH-.*$/i, ""));
       addr = sp[0]; name = sp[1]; if(pm) tel = telDigits(pm[0]);
@@ -3430,7 +3437,7 @@ function parseSheet(txt){
     if(me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0){ out.skipped++; return; }
     const start = new Date(+dm[3], +dm[1] - 1, +dm[2], +dm[4], +dm[5]).getTime();
     const place = city ? city[1].trim() + ", " + city[2] : "Palmdale, CA";
-    out.push({uid: fc || job, ref: "", start: start, end: start + 3600000, addr: addr + ", " + place, sum: "", name: name, tel: tel, ch: ch ? "CH-" + ch.replace(/\D/g, "") : "", job: job});
+    out.push({uid: fc || job, ref: "", start: start, end: start + 3600000, addr: addr + ", " + place, sum: "", name: name, tel: tel, ch: ch ? "CH-" + ch.replace(/\D/g, "") : "", job: job, ll: ll || undefined});
   });
   return out;
 }
@@ -3576,7 +3583,7 @@ function scheduleFromRows(rows){
     const other = me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0;
     if(other) out.skipped++;
     const city = g("fibercity"), cm = /^(.+?),\s*([A-Z]{2})\b/.exec(city), ch = /CH-(\d+)/i.exec(g("chamber/ring")), job = /(\d+)/.exec(g("job order"));
-    (other ? out.others : out).push({who: other ? tech : undefined, orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : ""});
+    (other ? out.others : out).push({who: other ? tech : undefined, orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : "", ll: parseLL(g("coordinates")) || undefined});
   });
   return out;
 }
@@ -3887,7 +3894,18 @@ function mpFit(){
 function geoKey(a){ return String(a || "").toLowerCase().replace(/\s+/g, " ").trim(); }
 function geoAll(){ try{ return JSON.parse(recall("geoC2") || "{}") || {}; }catch(e){ return {}; } }
 function geoSet(a, v){ const c = geoAll(), ks = Object.keys(c); if(ks.length > 400) ks.slice(0, 150).forEach(k => delete c[k]); c[geoKey(a)] = v; store("geoC2", JSON.stringify(c)); }
-function geoLL(a){ const v = geoAll()[geoKey(a)]; return Array.isArray(v) ? v : null; }
+/* exact coordinates from the boss's sheet beat any guess: map pins and navigation use them */
+let _sl = {raw: null, map: {}};
+function sheetLL(a){
+  let raw = ""; try{ raw = recall("skPaste") || ""; }catch(e){}
+  if(raw !== _sl.raw){
+    _sl = {raw: raw, map: {}};
+    pasteCache().forEach(e => { if(e.ll && e.ll.length === 2) _sl.map[String(e.addr).split(",")[0].trim().toLowerCase()] = e.ll; });
+  }
+  const l = _sl.map[String(a || "").split(",")[0].trim().toLowerCase()];
+  return l ? [l[0], l[1], 0, ""] : null;
+}
+function geoLL(a){ const x = sheetLL(a); if(x) return x; const v = geoAll()[geoKey(a)]; return Array.isArray(v) ? v : null; }
 function geoAsk(q){
   const num = (/^\s*(\d+[\w-]*)\s/.exec(q) || [])[1];
   return fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&addressdetails=1&countrycodes=us&q=" + encodeURIComponent(q))
@@ -3902,6 +3920,7 @@ function geoAsk(q){
 }
 let geoQ = [], geoBusy = false, geoCur = "";
 function geoWant(a){
+  if(sheetLL(a)) return;
   const v = geoAll()[geoKey(a)];
   if(Array.isArray(v) || (v && v.f && Date.now() - v.f < 3 * 60 * 1000)) return;
   if(geoQ.indexOf(a) < 0 && geoCur !== a) geoQ.push(a);
