@@ -884,7 +884,7 @@ body.pmo #skMenuBd,body.pmo #skMenu{display:block}
 .xi2{display:flex;gap:8px}
 .xb{width:38px;height:38px;border-radius:12px;background:#f1f2f5;color:var(--ink);display:flex;align-items:center;justify-content:center;text-decoration:none}
 .xb.tx{background:#e8f0fc;color:#0a60d0}
-.xb.cp{background:#fff1e0}
+.xb.cp{background:#fff1e0}.xb.cx{background:#fdeaf4}#tdSk .swp .step,#tdActive .nwt,#tdDone .step,#jvBody .jvh{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .xb{border:none;font-family:inherit;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .xb:focus,.xb:focus-visible{outline:none}
 #toastMsg button{background:none;border:none;color:#ff7ab8;font:inherit;font-weight:700;margin-left:16px;padding:0;cursor:pointer}
@@ -3401,9 +3401,12 @@ function splitAddrName(t){
 }
 /* the boss's sheet has a Coordinates column like "34.56233 - 118.036713" (west longitude without its minus) */
 const COORD_RE = /(\d{2}\.\d+)\s*[-\u2013,]\s*-?\s*(\d{2,3}\.\d+)/;
-function parseLL(t){
-  const m = COORD_RE.exec(String(t || "")); if(!m) return null;
-  const la = +m[1], lo = -Math.abs(+m[2]);
+const COORD_RE2 = /(\d{2}\.\d+)\s+(-\s*\d{2,3}\.\d+)/;
+function parseLL(t, t2){
+  t = String(t || "");
+  if(t2 !== undefined && /^\s*-?\d{2,3}\.\d+\s*$/.test(t) && /^\s*-?\d{2,3}\.\d+\s*$/.test(String(t2))){ t = Math.abs(parseFloat(t)) + " - " + Math.abs(parseFloat(t2)); }
+  const m = COORD_RE.exec(t) || COORD_RE2.exec(t); if(!m) return null;
+  const la = +m[1], lo = -Math.abs(+String(m[2]).replace(/\s/g, ""));
   return (la > 24 && la < 50 && lo < -66 && lo > -125) ? [+la.toFixed(6), +lo.toFixed(6)] : null;
 }
 function parseSheet(txt){
@@ -3415,13 +3418,25 @@ function parseSheet(txt){
     let addr = "", name = "", job = "", fc = "", ch = "", tech = "", tel = "", ll = null;
     const city = /^\s*([A-Za-z .'-]{3,30}),\s*([A-Z]{2})\b/.exec(ln);
     if(ln.indexOf("\t") >= 0){
-      const c = ln.split("\t").map(x => x.trim());
-      const fi = c.findIndex(x => /^FC-\d+$/i.test(x));
-      if(fi < 0 || !c[fi + 1]) return;
-      fc = c[fi]; addr = c[fi + 1]; ll = parseLL(c[fi + 2]); name = c[fi + (ll ? 3 : 2)] || "";
-      for(let q = fi + 2; q < c.length; q++){ const t = telDigits(c[q]); if(t && /^[\d\s().+-]+$/.test(c[q])){ tel = t; break; } }
-      const ci = c.findIndex(x => /^USQPL-CH-\d+$/i.test(x)); if(ci >= 0) ch = c[ci];
-      const ji = c.findIndex(x => /^JOB-\d+$/i.test(x)); if(ji >= 0){ job = c[ji].slice(4); tech = (c[ji + 1] || "").split(/\s+/)[0]; }
+      /* cells are recognised by what they look like, so the column order does not matter */
+      const c = ln.split("\t").map(x => x.trim()), used = {};
+      c.forEach((x, q) => {
+        if(!x) return;
+        if(/^FC-\d+$/i.test(x) && !fc){ fc = x; used[q] = 1; }
+        else if(/^USQPL-CH-\d+$/i.test(x) && !ch){ ch = x; used[q] = 1; }
+        else if(/^JOB-\d+$/i.test(x) && !job){ job = x.slice(4); tech = (c[q + 1] || "").split(/\s+/)[0]; used[q] = 1; used[q + 1] = 1; }
+        else if(!ll && parseLL(x)){ ll = parseLL(x); used[q] = 1; }
+        else if(!tel && /^[\d\s().+-]+$/.test(x) && telDigits(x)){ tel = telDigits(x); used[q] = 1; }
+      });
+      let ai = -1;
+      c.forEach((x, q) => { if(ai >= 0 || used[q] || !x) return; if(/^\d+[\w-]*\s+\S/.test(x) && /[A-Za-z]/.test(x) && !/^\d{1,2}\/\d{1,2}\/\d{4}/.test(x) && !/^\d{4}-\d{2}-\d{2}/.test(x)){ ai = q; addr = x; used[q] = 1; } });
+      if(ai < 0) return;
+      const nc = [];
+      c.forEach((x, q) => { if(used[q] || !x) return; if(/^[A-Za-z][A-Za-z .'\u2019-]{2,40}$/.test(x) && !/^(Y|N|Yes|No)$/i.test(x) && !/,\s*[A-Z]{2}$/.test(x)) nc.push([q, x]); });
+      /* the name is the text cell nearest to the address, a two-word one first */
+      const dist = z => Math.abs(z[0] - ai) + (z[0] < ai ? 0.5 : 0);
+      nc.sort((x, y) => (/\s/.test(y[1]) ? 1 : 0) - (/\s/.test(x[1]) ? 1 : 0) || dist(x) - dist(y));
+      if(nc.length) name = nc[0][1];
     } else {
       const after = ln.slice(dm.index + dm[0].length), fm = /\bFC-\d+\b/i.exec(after);
       if(!fm) return;
@@ -3444,8 +3459,10 @@ function parseSheet(txt){
 /* a new Paste adds to the list; the same street on the same day is replaced by the newer row */
 function skKey(e){ return String(e.addr).split(",")[0].trim().toLowerCase() + "|" + new Date(e.start).toDateString(); }
 function pasteMerge(old, add){
-  const seen = {}, out = [];
-  add.concat(old).forEach(e => { const k = skKey(e); if(seen[k]) return; seen[k] = 1; out.push(e); });
+  const seen = {}, out = [], lls = {};
+  const sk0 = e => String(e.addr).split(",")[0].trim().toLowerCase();
+  old.concat(add).forEach(e => { if(e.ll) lls[sk0(e)] = e.ll; });   /* coordinates once known stay with the street when a newer sheet has none */
+  add.concat(old).forEach(e => { const k = skKey(e); if(seen[k]) return; seen[k] = 1; if(!e.ll && lls[sk0(e)]) e = Object.assign({}, e, {ll: lls[sk0(e)]}); out.push(e); });
   return out.sort((a, b) => a.start - b.start || (a.who ? 1 : 0) - (b.who ? 1 : 0));
 }
 function skUnhide(arr){ const h = skHideAll(); arr.forEach(e => { delete h[skKey(e)]; }); store("skHide", JSON.stringify(h)); }
@@ -3556,6 +3573,12 @@ function xlsxRows(buf, allSheets){
   });
 }
 /* the boss's workbook: one tab per day, columns FiberCity, DATE, IssueKey, Address, Name, Phone, Chamber/Ring, ... JOB ORDER, TECHNICIAN */
+function sheetLL2(r, g){
+  let ll = parseLL(g("coordinates")) || parseLL(g("coordinate")) || parseLL(g("latlong")) || parseLL(g("latlon")) || parseLL(g("gps")) || parseLL(g("location"));
+  if(!ll) ll = parseLL(g("latitude") || g("lat"), g("longitude") || g("long") || g("lon") || g("lng"));
+  if(!ll) (r || []).some(v => { if(v === undefined || v === null) return false; const t = String(v); if(t.length > 40) return false; ll = parseLL(t); return !!ll; });
+  return ll || undefined;
+}
 function scheduleFromRows(rows){
   const me = ($("#c_tech").value || "").trim().split(/\s+/)[0].toLowerCase();
   const out = []; out.skipped = 0; out.others = []; let H = null, tab = 0;
@@ -3564,10 +3587,11 @@ function scheduleFromRows(rows){
     /* each tab starts with a title like "11/4/2026 Scheduled Installs": that is the day the rows are meant for */
     const tm = /^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+Scheduled/i.exec(String((r && r[0]) || ""));
     if(tm){ tab = new Date(+tm[3], +tm[1] - 1, +tm[2]).getTime(); H = null; return; }
-    const low = (r || []).map(v => String(v === undefined ? "" : v).trim().toLowerCase());
-    if(low.indexOf("issuekey") >= 0 && low.indexOf("address") >= 0 && low.indexOf("technician") >= 0){ H = {}; low.forEach((v, j) => { if(v) H[v] = j; }); return; }
+    /* header names are compared without spaces: "Issue Key", "IssueKey" and "JOB ORDER" all work */
+    const low = (r || []).map(v => String(v === undefined || v === null ? "" : v).toLowerCase().replace(/[\s_'\u2019]+/g, ""));
+    if(low.indexOf("address") >= 0 && (low.indexOf("issuekey") >= 0 || low.indexOf("technician") >= 0 || low.indexOf("joborder") >= 0 || low.indexOf("name") >= 0)){ H = {}; low.forEach((v, j) => { if(v) H[v] = j; }); return; }
     if(!H) return;
-    const g = k => (H[k] === undefined || r[H[k]] === undefined ? "" : String(r[H[k]]).trim());
+    const g = k => { const q = k.replace(/\s+/g, ""); return (H[q] === undefined || r[H[q]] === undefined || r[H[q]] === null ? "" : String(r[H[q]]).trim()); };
     const addr = g("address"), dv = g("date"); if(!addr || !/^\d/.test(addr) || !dv) return;
     let start = 0;
     if(/^\d+(\.\d+)?$/.test(dv)){ const u = new Date(Math.round((+dv - 25569) * 86400000)); start = new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes()).getTime(); }
@@ -3583,7 +3607,7 @@ function scheduleFromRows(rows){
     const other = me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0;
     if(other) out.skipped++;
     const city = g("fibercity"), cm = /^(.+?),\s*([A-Z]{2})\b/.exec(city), ch = /CH-(\d+)/i.exec(g("chamber/ring")), job = /(\d+)/.exec(g("job order"));
-    (other ? out.others : out).push({who: other ? tech : undefined, orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : "", ll: parseLL(g("coordinates")) || undefined});
+    (other ? out.others : out).push({who: other ? tech : undefined, orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : "", ll: sheetLL2(r, g)});
   });
   return out;
 }
@@ -3680,7 +3704,7 @@ function qpPaint(){
   const row = (k, lab, sub, val, ch) => '<div class="st"><div><b>' + lab + '</b><small class="' + (ch ? "ch" : "") + '">' + sub + '</small></div><div class="sp"><button type="button" data-d="' + k + ':-1">\u2212</button><output>' + val + '</output><button type="button" class="pl" data-d="' + k + ':1">+</button></div></div>';
   $("#qp").innerHTML = '<div class="gr"></div><div class="hd"><div><div class="ad">' + esc(String(j.address || "").split(",")[0]) + '</div><div class="cu">' + (j.customer ? esc(j.customer) + " \u00b7 " : "") + (j.uploaded ? "sent " : "saved ") + tm + '</div></div><div class="tt' + (chg ? " ch" : "") + '">$' + f.total + (chg ? '<small>was $' + QP.was + '</small>' : "") + '</div></div>'
     + '<div class="ac">' + (QP.tel ? '<a href="tel:' + QP.tel + '"><i style="background:#e8f5ee">' + ico("call", "#1b7f4a", "#7fd1a2", 22) + '</i>CALL</a><a href="' + qpSmsUrl(j, QP.tel) + '"><i style="background:#e8f0fc">' + ico("text", "#0a60d0", "#ffffff", 22) + '</i>TEXT</a>' : "")
-    + '<a href="' + navUrl({addr: j.address}) + '"><i style="background:#f1f2f5">' + ico("nav", "#14161a", "#ffffff", 22) + '</i>GO</a></div>'
+    + '<a href="' + navUrl({addr: j.address}) + '"><i style="background:#f1f2f5">' + ico("nav", "#14161a", "#ffffff", 22) + '</i>GO</a><a href="#" data-cxq="1"><i style="background:#fdeaf4"><svg viewBox="0 0 24 24" width="22" height="22"><rect x="3.5" y="6" width="14.5" height="14.5" rx="3.5" fill="#f9c5de"/><path d="M13 11l7.5-7.5M14.5 3.5h6v6" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>CX</a></div>'
     + (j.isSecond ? "" : '<div>' + row("ft", "Line extension", "30 ft = $" + PAY.per30ft, QP.ft + " ft", QP.ft !== (j.ft || 0)) + row("spl", "Splices", "$" + PAY.splice + " each", QP.spl, QP.spl !== (j.splices || 0)) + row("ext", "Extenders", "$" + PAY.extender + " each", QP.ext, QP.ext !== (j.extenders || 0)) + '</div>')
     + '<div class="ft"><button type="button" class="sv' + (chg ? " on" : "") + '" data-s="1">' + (chg ? "Save" : "Done") + '</button></div>';
 }
@@ -3808,6 +3832,7 @@ function paintSk(){
     all0.forEach(e => { e._n = 0; });
     dayAll.forEach((e, i) => { e._n = i + 1; e._s = stOf(e); });
     { let nn = dayAll.length; list.forEach(e => { if(!e._n) e._n = ++nn; }); }
+    const CXI = '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="3.5" y="6" width="14.5" height="14.5" rx="3.5" fill="#f9c5de"/><path d="M13 11l7.5-7.5M14.5 3.5h6v6" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const IC = {call: ico("call", "#1b7f4a", "#7fd1a2", 18), text: ico("text", "#0a60d0", "#ffffff", 22), nav: ico("nav", "#14161a", "#ffffff", 22), copy: ico("copy", "#d9731a", "#f6c590", 22), play: ico("play", "#ffffff", "#ffffff", 13)};
     if(SK_OPEN && !list.some(e => skKey(e) === SK_OPEN)){ SK_OPEN = ""; MP.sel = 0; }
     const rows = list.map((e, i) => {
@@ -3815,7 +3840,7 @@ function paintSk(){
       const k = skKey(e), tel = telDigits(e.tel), info = e.name || "";
       const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button">' + IC.play + 'Start</button></div>'
         + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
-        + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<button class="xb cp" data-cp="' + i + '" type="button" aria-label="Copy address">' + IC.copy + '</button><a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
+        + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<button class="xb cx" data-cx="' + i + '" type="button" aria-label="CX-Portal">' + CXI + '</button><a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
       return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb' + (e.who ? ' oth' : '') + '">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span>' + (e.who ? '<span class="tg2">' + esc(e.who) + '</span>' : '') + '<span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
     });
     window.skShown = list;
@@ -4094,6 +4119,8 @@ $("#tdSk").addEventListener("click", e => {
     paintSk(); swFlag(); toastMsg("Removed");
     return;
   }
+  const cx = e.target.closest("[data-cx]");
+  if(cx){ const j = (window.skShown || [])[+cx.dataset.cx]; if(j && window.ffPortalFor) window.ffPortalFor({addr: j.addr, customer: j.name, so: 1}); return; }
   const cp = e.target.closest("[data-cp]");
   if(cp){ const j = (window.skShown || [])[+cp.dataset.cp]; if(j) copyText(String(j.addr || ""), "Address copied"); return; }
   const go = e.target.closest("[data-go]");
@@ -4749,7 +4776,7 @@ function openJobView(id){
     let h = '<div class="jvh"><small>' + esc(fmtLong(d)) + '</small><b>' + esc(j.address || "") + '</b></div>';
     h += '<div class="card jvc"><div class="jvn"><b>' + esc(j.customer || "Customer") + '</b>' + (tel ? '<small>' + esc(fmtTel(tel)) + '</small>' : "") + '</div><div class="jva">'
       + (tel ? '<a class="xb" style="background:#e8f5ee" href="tel:' + tel + '" aria-label="Call">' + ico("call", "#1b7f4a", "#7fd1a2", 20) + '</a>' : "")
-      + '<button class="xb cp" data-jcp="1" type="button" aria-label="Copy address">' + ico("copy", "#d9731a", "#f6c590", 22) + '</button>'
+      + '<button class="xb cx" data-jcx="1" type="button" aria-label="CX-Portal"><svg viewBox="0 0 24 24" width="22" height="22"><rect x="3.5" y="6" width="14.5" height="14.5" rx="3.5" fill="#f9c5de"/><path d="M13 11l7.5-7.5M14.5 3.5h6v6" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
       + '<a class="xb" href="' + navUrl({addr: j.address || ""}) + '" aria-label="Navigate">' + ico("nav", "#14161a", "#ffffff", 22) + '</a></div></div>';
     h += '<div class="card">' + jvRow("Line extension", (j.ft || 0) + " ft") + jvRow("Splices", String(j.splices || 0)) + jvRow("Wi-Fi extenders", String(j.extenders || 0))
       + jvRow("Chamber", esc(j.ch || "")) + jvRow("ONT serial", esc(j.sn || "")) + jvRow("Extender serial", esc(j.exts || "")) + jvRow("Speed", esc(j.speed || "")) + jvRow("Service", esc(j.svc || ""))
@@ -4764,7 +4791,7 @@ function openJobView(id){
 }
 $("#jvBack").addEventListener("click", () => { $("#jobOverlay").classList.remove("on"); jvId = null; });
 $("#jvEdit").addEventListener("click", () => { if(jvId != null) openEdit(jvId); });
-$("#jvBody").addEventListener("click", e => { if(e.target.closest("[data-jcp]")) copyText($("#jvBody").dataset.addr || "", "Address copied"); });
+$("#jvBody").addEventListener("click", e => { if(e.target.closest("[data-jcx]") && jvId != null) jobsGet(jvId).then(j => { if(j && window.ffPortalFor) window.ffPortalFor({rec: j}); }); });
 
 /* --- edit a saved job --- */
 let editJob = null, editNotesTouched = false, editSecond = false, editNox = false;
@@ -5486,7 +5513,7 @@ function tdActHtml(addr){
   const t = (tag, attr, ic, lab) => '<' + tag + ' class="nwa" ' + attr + '>' + ic + '<span>' + lab + '</span></' + tag + '>';
   return '<div class="nwacts">'
     + (tel ? t("a", 'href="tel:' + tel + '"', ico("call", "#1b7f4a", "#7fd1a2", 22), "Call") + t("a", 'href="sms:' + tel + '"', ico("text", "#0a60d0", "#ffffff", 22), "Text") : "")
-    + t("button", 'data-cpa="1" type="button"', ico("copy", "#d9731a", "#f6c590", 22), "Copy")
+    + t("button", 'data-portal="1" type="button"', '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="3.5" y="6" width="14.5" height="14.5" rx="3.5" fill="#f9c5de"/><path d="M13 11l7.5-7.5M14.5 3.5h6v6" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', "CX-Portal")
     + t("a", 'href="' + navUrl({addr: addr}) + '"', ico("nav", "#14161a", "#ffffff", 22), "Navigate") + '</div>';
 }
 function tdRouteHtml(rows, nxt, addr, name){
@@ -5697,6 +5724,20 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   const b64 = t => btoa(unescape(encodeURIComponent(t))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   function portalUrl(json){ return PORTAL + "#ff=" + b64(json); }
   window.ffPortalUrl = () => portalUrl(build());
+  /* a job from the list (search only) or a saved job (everything known about it); no signature: the customer signs on the portal */
+  window.ffPortalFor = o => {
+    let json;
+    if(o.rec){
+      const j = o.rec, a = String(j.address || "").split(",").map(x => x.trim());
+      json = JSON.stringify({street: a[0] || "", city: a[1] || "", customer: j.customer || "", ont: j.sn || "", ft: String(j.ft || ""), spl: String(j.splices || ""), ext: String(j.extenders || ""), fib: (recall("portalFib") || "").trim(), sig: [], sw: 0, sh: 0});
+      try{ j.portalAt = Date.now(); jobsPut(j); }catch(e){}
+    } else {
+      const a = String(o.addr || "").split(",").map(x => x.trim());
+      json = JSON.stringify({street: a[0] || "", city: a[1] || "", customer: o.customer || "", so: 1});
+    }
+    toastMsg("Opening CX-Portal");
+    openPortal(json);
+  };
   function openPortal(json){
     const u = portalUrl(json);
     setTimeout(() => {
@@ -5721,6 +5762,10 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
     try{ const a = composedAddress(); if(a) jobsAll().then(l => { const j = (l || []).filter(x => x.address === a).sort((x, y) => y.when - x.when)[0]; if(j){ j.portalAt = Date.now(); jobsPut(j); } }).catch(() => {}); }catch(e2){}
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => done(b, json), () => { legacy(t); done(b, json); });
     else { legacy(t); done(b, json); }
+  });
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-cxq]"); if(!b) return; e.preventDefault();
+    if(typeof QP !== "undefined" && QP && QP.j) window.ffPortalFor({rec: QP.j});
   });
   /* Finish: - / + next to feet, splices, extenders */
   document.addEventListener("click", e => {
@@ -5812,6 +5857,27 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   window.addEventListener("resize", () => setTimeout(fill, 100));
   const sv2 = setView; setView = function(v){ const r = sv2.apply(this, arguments); setTimeout(fill, 150); return r; };
   setTimeout(fill, 1500);
+})();
+
+/* ---- v135: long press on an address copies the street ("3213 Tourmaline Ln"), the form the CX search understands ---- */
+(function(){
+  let t = null, x0 = 0, y0 = 0, fired = false;
+  const target = e => e.target.closest("#tdSk .swp .step, #tdActive .nwt, #tdDone .step, #jvBody .jvh");
+  function street(el){
+    const sw = el.closest(".swp");
+    if(sw){ const j = (window.skShown || []).filter(z => skKey(z) === sw.dataset.k)[0]; if(j) return String(j.addr || "").split(",")[0].trim(); }
+    const b = el.querySelector("b"); const txt = (b ? b.textContent : el.querySelector(".t") ? el.querySelector(".t").firstChild.textContent : el.textContent) || "";
+    return String(txt).split(",")[0].trim();
+  }
+  document.addEventListener("pointerdown", e => {
+    const el = target(e); if(!el) return;
+    x0 = e.clientX; y0 = e.clientY; clearTimeout(t); fired = false;
+    t = setTimeout(() => { const s = street(el); if(s){ fired = true; copyText(s, "Copied: " + s); try{ navigator.vibrate && navigator.vibrate(20); }catch(z){} } }, 550);
+  }, true);
+  document.addEventListener("pointermove", e => { if(t && (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10)){ clearTimeout(t); t = null; } }, true);
+  ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, () => { clearTimeout(t); t = null; }, true));
+  document.addEventListener("click", e => { if(fired && target(e)){ fired = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  document.addEventListener("contextmenu", e => { if(target(e)) e.preventDefault(); }, true);
 })();
 </script>
 </body>
