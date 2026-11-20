@@ -1439,7 +1439,7 @@ body.hm #tdPillAmt{filter:blur(6px)}
     <div class="sgroup">
       <div class="sg-h"><span class="sic priv"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></span>
         <div><b>CX-Portal</b></div></div>
-      <div class="f"><label for="set_fib">Fibre length, ft</label>
+      <div class="f"><label for="set_fib">Duct length, ft</label>
         <input type="text" id="set_fib" inputmode="decimal" autocomplete="off" placeholder="e.g. 20"></div>
       <p class="sg-note">Goes into Stage 2 by itself. Empty: the portal asks you.</p>
     </div>
@@ -5513,7 +5513,7 @@ function tdActHtml(addr){
   const t = (tag, attr, ic, lab) => '<' + tag + ' class="nwa" ' + attr + '>' + ic + '<span>' + lab + '</span></' + tag + '>';
   return '<div class="nwacts">'
     + (tel ? t("a", 'href="tel:' + tel + '"', ico("call", "#1b7f4a", "#7fd1a2", 22), "Call") + t("a", 'href="sms:' + tel + '"', ico("text", "#0a60d0", "#ffffff", 22), "Text") : "")
-    + t("button", 'data-portal="1" type="button"', '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="3.5" y="6" width="14.5" height="14.5" rx="3.5" fill="#f9c5de"/><path d="M13 11l7.5-7.5M14.5 3.5h6v6" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', "CX-Portal")
+    + t("button", 'data-cxn="1" type="button"', '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="3.5" y="6" width="14.5" height="14.5" rx="3.5" fill="#f9c5de"/><path d="M13 11l7.5-7.5M14.5 3.5h6v6" fill="none" stroke="#d6006c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>', "CX-Portal")
     + t("a", 'href="' + navUrl({addr: addr}) + '"', ico("nav", "#14161a", "#ffffff", 22), "Navigate") + '</div>';
 }
 function tdRouteHtml(rows, nxt, addr, name){
@@ -5762,6 +5762,10 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
     try{ const a = composedAddress(); if(a) jobsAll().then(l => { const j = (l || []).filter(x => x.address === a).sort((x, y) => y.when - x.when)[0]; if(j){ j.portalAt = Date.now(); jobsPut(j); } }).catch(() => {}); }catch(e2){}
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => done(b, json), () => { legacy(t); done(b, json); });
     else { legacy(t); done(b, json); }
+  });
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-cxn]"); if(!b) return;
+    window.ffPortalFor({addr: (typeof composedAddress === "function" ? composedAddress() : "") || v("c_street") + ", " + v("c_city"), customer: v("c_customer"), so: 1});
   });
   document.addEventListener("click", e => {
     const b = e.target.closest("[data-cxq]"); if(!b) return; e.preventDefault();
