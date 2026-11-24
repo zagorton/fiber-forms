@@ -841,6 +841,7 @@ body.stepsnav #jobBar{flex-basis:100%}
 .cA .tx{flex:1;font-size:16px;font-weight:600;min-width:0}.cA .tx small{font-size:14px;font-weight:500;color:#6b7280;margin-left:6px}
 .cA .ad{border:none;background:#fde7f2;color:#d6006e;font:700 15px inherit;font-family:inherit;border-radius:999px;padding:8px 16px;cursor:pointer}
 .cA .xx{border:none;background:none;color:#9aa0a8;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer}
+.swp .tg2.rv{background:#fff1e0;color:#b45309}
 .swp .tg2{flex:none;font-size:12px;font-weight:600;color:#6b7280;background:#eef0f4;border-radius:8px;padding:2px 8px;margin-right:8px}
 #noteSheet .nx{position:absolute;right:16px;top:14px;width:32px;height:32px;border-radius:50%;border:none;background:#eef0f4;color:#4b5563;font-size:18px;font-weight:700;line-height:1;display:none;cursor:pointer}
 #noteSheet.cl .nx{display:block}
@@ -1251,7 +1252,7 @@ body.hm #tdPillAmt{filter:blur(6px)}
   </div>
   <div class="card">
     <div class="swrow">
-      <div class="t">2nd visit<small>$50 instead of the install</small></div>
+      <div class="t">2nd visit<small>$50 instead of the install, cable still counts</small></div>
       <div class="chips swbox"><div class="chip sw" data-group="w_second" data-v="yes"></div></div>
     </div>
   </div>
@@ -1375,12 +1376,11 @@ body.hm #tdPillAmt{filter:blur(6px)}
     </div>
     <div class="card">
       <div class="swrow" data-e="second">
-        <div class="t">2nd visit<small>$50 instead of the install</small></div>
+        <div class="t">2nd visit<small>$50 instead of the install, cable still counts</small></div>
         <div class="chips swbox"><div class="chip sw" id="e_second"></div></div>
       </div>
     </div>
-    <div class="sec">Notes</div>
-    <div class="card" style="padding:4px"><textarea id="e_notes" rows="6" style="background:#fff"></textarea></div>
+    <div style="display:none"><textarea id="e_notes" rows="6"></textarea></div>
     <div class="card" id="e_tgCard" style="display:none"><div class="swrow" id="e_tgRow"><div class="t">Post correction to Telegram<small>When feet, splices or extenders change</small></div><div class="chips swbox"><div class="chip sw on" id="e_tg"></div></div></div></div>
     <div class="card" id="e_retCard"><div class="swrow" id="e_ret"><div class="t">Return visit<small>Put this address back on Today</small></div></div></div>
     <p class="foot-note">Updates history and Excel. Files already on Drive stay as they are.</p>
@@ -1698,6 +1698,7 @@ const ST = {"alabama":"AL","alaska":"AK","arizona":"AZ","arkansas":"AR","califor
 const ST_CODES = {};
 Object.keys(ST).forEach(k => { ST_CODES[ST[k]] = 1; });
 
+const KNOWN_CITIES = ["quartz hill", "lake los angeles", "california city", "santa clarita", "apple valley", "palmdale", "lancaster", "littlerock", "pearblossom", "rosamond", "victorville", "hesperia", "adelanto", "bakersfield", "tehachapi", "mojave", "acton", "llano"];
 function parseAddress(raw){
   let s = String(raw || "").replace(/[\r\n]+/g, ", ").replace(/\s+/g, " ").trim();
   if(!s) return null;
@@ -1736,7 +1737,12 @@ function parseAddress(raw){
     const words = one.split(" ");
     if((state || zip) && words.length <= 3 && !/^\d/.test(one)) city = one;
     else street = one;
+    if(street && !city){
+      const low = street.toLowerCase();
+      for(const c of KNOWN_CITIES){ if(low.length > c.length + 4 && low.slice(-c.length - 1) === " " + c){ city = street.slice(street.length - c.length); street = street.slice(0, street.length - c.length - 1).trim(); break; } }
+    }
   }
+  if(street && city && street.toLowerCase().slice(-city.length - 1) === " " + city.toLowerCase()) street = street.slice(0, street.length - city.length - 1).trim();
   if(!city && !state && !zip) return null;
   return { street: street, city: city, state: state, zip: zip };
 }
@@ -2307,10 +2313,15 @@ function stampLines(when){
 
 /* "38056 Trilport Ave, Palmdale, CA 93552" - matches the Drive folder naming */
 function composedAddress(){
-  const st = ($("#c_street").value || "").trim();
+  let st = ($("#c_street").value || "").trim();
   const ci = ($("#c_city").value   || "").trim();
   const s2 = ($("#c_state").value  || "").trim().toUpperCase();
-  const zp = ($("#c_zip").value    || "").trim();
+  let zp = ($("#c_zip").value    || "").trim();
+  /* the street field sometimes arrives with city, state and zip already in it: keep each once */
+  { const zm = /[,\s]+(\d{5})(?:-\d{4})?$/.exec(st); if(zm){ if(!zp) zp = zm[1]; st = st.slice(0, zm.index); }
+    const sm = /[,\s]+([A-Za-z]{2})$/.exec(st); if(sm && ST_CODES[sm[1].toUpperCase()] && (!s2 || s2 === sm[1].toUpperCase())) st = st.slice(0, sm.index);
+    if(ci && st.toLowerCase().slice(-ci.length - 1) === " " + ci.toLowerCase()) st = st.slice(0, st.length - ci.length - 1);
+    st = st.replace(/[,\s]+$/, ""); }
   let v = st;
   if(ci) v += (v ? ", " : "") + ci;
   if(s2) v += (v ? ", " : "") + s2;
@@ -3405,6 +3416,11 @@ const COORD_RE2 = /(\d{2}\.\d+)\s+(-\s*\d{2,3}\.\d+)/;
 function parseLL(t, t2){
   t = String(t || "");
   if(t2 !== undefined && /^\s*-?\d{2,3}\.\d+\s*$/.test(t) && /^\s*-?\d{2,3}\.\d+\s*$/.test(String(t2))){ t = Math.abs(parseFloat(t)) + " - " + Math.abs(parseFloat(t2)); }
+  /* labelled cell: "Latitude 34.56 Longitude -118.08", on one line or several */
+  const lb = /lat\w*\W*(-?\d{2}\.\d+)[\s\S]*?lon\w*\W*(-?\d{2,3}\.\d+)/i.exec(t);
+  if(lb) t = Math.abs(parseFloat(lb[1])) + " - " + Math.abs(parseFloat(lb[2]));
+  const nw = /(\d{2}\.\d+)\s*\u00b0?\s*N\b[\s,;]*(\d{2,3}\.\d+)\s*\u00b0?\s*W\b/i.exec(t); if(nw) t = nw[1] + " - " + nw[2];
+  const un = /[@=](-?\d{2}\.\d+),\s*(-?\d{2,3}\.\d+)/.exec(t); if(un) t = Math.abs(parseFloat(un[1])) + " - " + Math.abs(parseFloat(un[2]));
   const m = COORD_RE.exec(t) || COORD_RE2.exec(t); if(!m) return null;
   const la = +m[1], lo = -Math.abs(+String(m[2]).replace(/\s/g, ""));
   return (la > 24 && la < 50 && lo < -66 && lo > -125) ? [+la.toFixed(6), +lo.toFixed(6)] : null;
@@ -3482,15 +3498,17 @@ function addJobs2(all, hist){
     const k = skKey(e); if(seenK[k]) return false; seenK[k] = 1;
     if(e.orig || e.start < day0.getTime()){
       const key = String(e.addr).split(",")[0].trim().toLowerCase(), day = new Date(e.orig || e.start).toDateString();
-      if(hist.some(x => String(x.address || "").toLowerCase().indexOf(key) === 0 && new Date(x.when).toDateString() === day)) return false;
+      if(hist.some(x => String(x.address || "").toLowerCase().indexOf(key) === 0 && new Date(x.when).toDateString() === day)) e.rev = 1;
     }
     return true;
   };
   all = all.filter(clean);
   oth = oth.filter(clean);
   all.skipped = sk; const hadRows = n0 > 0;
-  const list = all.filter(e => e.start >= day0.getTime()).sort((a, b) => a.start - b.start);
-  const past = all.filter(e => e.start < day0.getTime());
+  const past = all.filter(e => e.start < day0.getTime() && !e.rev);
+  /* done on its own day before: a repeat visit, goes to today at once with a mark */
+  const revs = all.filter(e => e.start < day0.getTime() && e.rev).map(e => { const d = new Date(e.start), t = new Date(); t.setHours(d.getHours(), d.getMinutes(), 0, 0); const dur = (e.end || e.start + 3600000) - e.start; return Object.assign({}, e, {start: t.getTime(), end: t.getTime() + dur, orig: 0, rev: 1}); });
+  const list = all.filter(e => e.start >= day0.getTime()).concat(revs).sort((a, b) => a.start - b.start);
   /* a repeat visit still carries the date of the first appointment: offer to put those jobs on today */
   const addPast = () => {
     const moved = past.map(e => { const d = new Date(e.start), t = new Date(); t.setHours(d.getHours(), d.getMinutes(), 0, 0); const dur = (e.end || e.start + 3600000) - e.start; return Object.assign({}, e, {start: t.getTime(), end: t.getTime() + dur, orig: e.start}); });
@@ -3576,38 +3594,123 @@ function xlsxRows(buf, allSheets){
 function sheetLL2(r, g){
   let ll = parseLL(g("coordinates")) || parseLL(g("coordinate")) || parseLL(g("latlong")) || parseLL(g("latlon")) || parseLL(g("gps")) || parseLL(g("location"));
   if(!ll) ll = parseLL(g("latitude") || g("lat"), g("longitude") || g("long") || g("lon") || g("lng"));
-  if(!ll) (r || []).some(v => { if(v === undefined || v === null) return false; const t = String(v); if(t.length > 40) return false; ll = parseLL(t); return !!ll; });
+  if(!ll) (r || []).some(v => { if(v === undefined || v === null) return false; const t = String(v); if(t.length > 90) return false; ll = parseLL(t); return !!ll; });
   return ll || undefined;
+}
+/* Reads any schedule table the office sends. Columns are found by their header names (many spellings) and, where a header is missing or different, by what the cell looks like. */
+const SCH_H = {
+  addr: ["address", "serviceaddress", "installaddress", "installationaddress", "jobaddress", "customeraddress", "street", "siteaddress"],
+  date: ["date", "datetime", "appointment", "appointmentdate", "appointmenttime", "scheduled", "scheduleddate", "scheduledtime", "start", "starttime", "when", "day", "installdate"],
+  time: ["time", "arrival", "arrivaltime", "window", "slot", "timeslot"],
+  tech: ["technician", "tech", "techname", "installer", "assignedto", "assigned", "resource", "crew", "assignee"],
+  name: ["name", "customer", "customername", "client", "clientname", "contactname", "resident", "subscriber"],
+  phone: ["phone", "phonenumber", "mobile", "cell", "tel", "telephone", "contactphone", "customerphone", "contactnumber"],
+  key: ["issuekey", "key", "issue", "ticket", "fcid", "issueid", "ticketid"],
+  job: ["joborder", "job", "jobnumber", "jobno", "jobid", "fsmjob", "fsmjobnumber", "joborderno"],
+  ch: ["chamber/ring", "chamberring", "chamber", "ring", "ch"],
+  city: ["fibercity", "city", "market", "town"],
+  ll: ["coordinates", "coordinate", "coords", "gps", "latlong", "latlon", "latitudelongitude", "geo", "geolocation", "location", "mapcoordinates", "latlng"],
+  lat: ["latitude", "lat"], lng: ["longitude", "long", "lon", "lng"]
+};
+function schNorm(v){ return String(v === undefined || v === null ? "" : v).toLowerCase().replace(/[^a-z0-9\/]/g, ""); }
+function schHeader(r){
+  const low = (r || []).map(schNorm), H = {}; let n = 0;
+  Object.keys(SCH_H).forEach(k => { for(let q = 0; q < low.length; q++){ if(low[q] && SCH_H[k].indexOf(low[q]) >= 0 && H[k] === undefined){ H[k] = q; n++; break; } } });
+  return (H.addr !== undefined && n >= 3) ? H : null;
+}
+/* one cell -> milliseconds of a date (with time if it has one), 0 if it is not a date */
+function schDate(v){
+  v = String(v === undefined || v === null ? "" : v).trim(); if(!v) return 0;
+  if(/^\d{5}(\.\d+)?$/.test(v) && +v > 30000 && +v < 80000){ const u = new Date(Math.round((+v - 25569) * 1440) * 60000); return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes()).getTime(); }
+  let m = /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})(?:[ T,]+(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?)?$/i.exec(v);
+  if(m){ let y = +m[3]; if(y < 100) y += 2000; let h = m[4] ? +m[4] : 0; if(m[6]){ const pm = /pm/i.test(m[6]); if(pm && h < 12) h += 12; if(!pm && h === 12) h = 0; } return new Date(y, +m[1] - 1, +m[2], h, m[5] ? +m[5] : 0).getTime(); }
+  m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/.exec(v);
+  if(m) return new Date(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : 0, m[5] ? +m[5] : 0).getTime();
+  return 0;
+}
+/* a time of day in minutes: "8:00 AM", "13:00", or a spreadsheet fraction; -1 if not a time */
+function schTime(v){
+  v = String(v === undefined || v === null ? "" : v).trim(); if(!v) return -1;
+  if(/^0?\.\d+$/.test(v) && +v < 1) return Math.round(+v * 1440);
+  const m = /^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?$/i.exec(v); if(!m) return -1;
+  let h = +m[1]; if(m[3]){ const pm = /pm/i.test(m[3]); if(pm && h < 12) h += 12; if(!pm && h === 12) h = 0; }
+  return h < 24 ? h * 60 + +m[2] : -1;
 }
 function scheduleFromRows(rows){
   const me = ($("#c_tech").value || "").trim().split(/\s+/)[0].toLowerCase();
   const out = []; out.skipped = 0; out.others = []; let H = null, tab = 0;
   const day0 = new Date().setHours(0, 0, 0, 0);
-  rows.forEach(r => {
-    /* each tab starts with a title like "11/4/2026 Scheduled Installs": that is the day the rows are meant for */
-    const tm = /^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+Scheduled/i.exec(String((r && r[0]) || ""));
-    if(tm){ tab = new Date(+tm[3], +tm[1] - 1, +tm[2]).getTime(); H = null; return; }
-    /* header names are compared without spaces: "Issue Key", "IssueKey" and "JOB ORDER" all work */
-    const low = (r || []).map(v => String(v === undefined || v === null ? "" : v).toLowerCase().replace(/[\s_'\u2019]+/g, ""));
-    if(low.indexOf("address") >= 0 && (low.indexOf("issuekey") >= 0 || low.indexOf("technician") >= 0 || low.indexOf("joborder") >= 0 || low.indexOf("name") >= 0)){ H = {}; low.forEach((v, j) => { if(v) H[v] = j; }); return; }
-    if(!H) return;
-    const g = k => { const q = k.replace(/\s+/g, ""); return (H[q] === undefined || r[H[q]] === undefined || r[H[q]] === null ? "" : String(r[H[q]]).trim()); };
-    const addr = g("address"), dv = g("date"); if(!addr || !/^\d/.test(addr) || !dv) return;
-    let start = 0;
-    if(/^\d+(\.\d+)?$/.test(dv)){ const u = new Date(Math.round((+dv - 25569) * 86400000)); start = new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes()).getTime(); }
-    else start = new Date(dv).getTime() || 0;
+  const seenRow = {};
+  (rows || []).forEach(r => {
+    if(!r) return;
+    const cells = r.map(v => String(v === undefined || v === null ? "" : v).trim());
+    if(!cells.some(Boolean)) return;
+    /* a title like "11/4/2026 Scheduled Installs" is the day the rows below are meant for */
+    let tm = null; cells.some(c => { tm = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s+Scheduled/i.exec(c) || /Scheduled[^\d]*(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(c); return !!tm; });
+    if(tm && cells.filter(Boolean).length <= 2){ tab = new Date(+tm[3], +tm[1] - 1, +tm[2]).getTime(); H = null; return; }
+    const hh = schHeader(cells); if(hh){ H = hh; return; }
+    const hv = k => (H && H[k] !== undefined) ? cells[H[k]] || "" : "";
+    const used = {};
+    /* address: the header column, else the first cell that looks like "123 Some St" */
+    let ai = (H && H.addr !== undefined && /^\d/.test(cells[H.addr])) ? H.addr : -1;
+    if(ai < 0) cells.forEach((x, q) => { if(ai >= 0 || !x) return; if(/^\d+[\w-]*\s+\S/.test(x) && /[A-Za-z]{2}/.test(x) && x.length < 110 && !schDate(x) && !/^\d{10,}/.test(x) && !/^(lat|long)/i.test(x) && !/^\d+\.\d+\s/.test(x)) ai = q; });
+    if(ai < 0) return;
+    used[ai] = 1; const addr = cells[ai];
+    /* date (+ separate time) */
+    let start = 0, di = -1;
+    if(H && H.date !== undefined){ start = schDate(cells[H.date]); if(start) di = H.date; }
+    if(!start) cells.some((x, q) => { if(q === ai) return false; const d = schDate(x); if(d && !(H && (H.lat === q || H.lng === q))){ start = d; di = q; return true; } return false; });
+    let tmin = -1;
+    if(H && H.time !== undefined && H.time !== di) tmin = schTime(cells[H.time]);
+    if(tmin < 0) cells.some((x, q) => { if(q === di || q === ai) return false; const t = schTime(x); if(t >= 0 && /[:]/.test(x)){ tmin = t; return true; } return false; });
+    if(!start && tab) start = tab;
     if(!start) return;
+    { const d = new Date(start); const hasT = d.getHours() || d.getMinutes();
+      if(tmin >= 0 && !hasT) start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), Math.floor(tmin / 60), tmin % 60).getTime();
+      else if(!hasT && !(tmin >= 0)) start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 8, 0).getTime(); }
+    if(di >= 0) used[di] = 1;
+    /* coordinates: header, separate lat/long columns, or any cell that holds a pair */
+    let ll = null;
+    if(H && H.ll !== undefined) ll = parseLL(cells[H.ll]);
+    if(!ll && H && H.lat !== undefined && H.lng !== undefined) ll = parseLL(cells[H.lat], cells[H.lng]);
+    if(!ll) cells.some((x, q) => { if(!x || x.length > 120 || q === ai) return false; const l = parseLL(x); if(l){ ll = l; used[q] = 1; return true; } return false; });
+    if(!ll) for(let q = 0; q + 1 < cells.length && !ll; q++){ if(/^\d{2}\.\d{3,}$/.test(cells[q]) && /^-?\d{2,3}\.\d{3,}$/.test(cells[q + 1])){ ll = parseLL(cells[q], cells[q + 1]); } }
+    /* phone */
+    let tel = "";
+    if(H && H.phone !== undefined) tel = telDigits(cells[H.phone]);
+    if(!tel) cells.some((x, q) => { if(!x || used[q]) return false; if(/^[\d\s().+-]+$/.test(x) && telDigits(x) && telDigits(x).length >= 10 && !schDate(x) && !/^\d{2}\.\d+/.test(x)){ tel = telDigits(x); used[q] = 1; return true; } return false; });
+    /* keys */
+    let uid = hv("key"); if(!/\S/.test(uid)) { const c = cells.filter(x => /^FC-\d+$/i.test(x))[0]; uid = c || ""; }
+    let jobS = hv("job"); { const c = cells.filter(x => /^JOB-\d+$/i.test(x))[0]; if(!/\d/.test(jobS) && c) jobS = c; }
+    const job = /(\d+)/.exec(jobS);
+    let chS = hv("ch"); { const c = cells.filter(x => /CH-\d+/i.test(x))[0]; if(!/CH-\d+/i.test(chS) && c) chS = c; }
+    const ch = /CH-(\d+)/i.exec(chS);
+    /* technician */
+    let techCell = hv("tech");
+    if(!techCell){ const jq = cells.findIndex(x => /^JOB-\d+$/i.test(x)); if(jq >= 0 && /^[A-Za-z][A-Za-z .'-]{1,30}$/.test(cells[jq + 1] || "")) techCell = cells[jq + 1]; }
+    const tech = techCell.split(/[\s\/,&]+/)[0];
+    const other = !!(me && techCell && /[A-Za-z]{3,}/.test(techCell) && techCell.toLowerCase().indexOf(me) < 0);
+    if(other) out.skipped++;
+    /* customer name */
+    let name = hv("name");
+    if(!name){
+      const nc = [];
+      cells.forEach((x, q) => { if(used[q] || !x || q === ai) return; if(/^[A-Za-z][A-Za-z .'’-]{2,40}$/.test(x) && !/^(Y|N|Yes|No|N\/A)$/i.test(x) && !/,\s*[A-Z]{2}$/.test(x) && x !== techCell && !/^(ready|fiber|tray|customer|wi-?fi|lat|long)/i.test(x) && !/^(USQPL|JOB|FC)-/i.test(x)) nc.push([q, x]); });
+      const dist = z => Math.abs(z[0] - ai) + (z[0] < ai ? 0.5 : 0);
+      nc.sort((x, y) => (/\s/.test(y[1]) ? 1 : 0) - (/\s/.test(x[1]) ? 1 : 0) || dist(x) - dist(y));
+      if(nc.length) name = nc[0][1];
+    }
+    /* city: already in the address, else the City column, else the table's own city, else Palmdale */
+    const cityC = hv("city") || (cells.filter(x => /^[A-Za-z .'-]{3,30},\s*[A-Z]{2}$/.test(x))[0] || ""), cm = /^(.+?),\s*([A-Z]{2})\b/.exec(cityC);
+    const full = (/,\s*[A-Za-z .'-]{3,30},\s*[A-Z]{2}\b/.test(addr) || /\b[A-Z]{2}\s+\d{5}(-\d{4})?\s*$/.test(addr)) ? addr : addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA");
     let orig = 0;
     if(tab){
-      if(tab < day0) return;                                   /* a tab of a past day */
+      if(tab < day0) return;
       const sd = new Date(start).setHours(0, 0, 0, 0);
-      if(sd < tab){ orig = start; const t = new Date(start); start = new Date(tab).setHours(t.getHours(), t.getMinutes(), 0, 0); }   /* carried over to this tab's day */
+      if(sd < tab){ orig = start; const t = new Date(start); start = new Date(tab).setHours(t.getHours(), t.getMinutes(), 0, 0); }
     }
-    const tech = g("technician").split(/\s+/)[0];
-    const other = me && /^[A-Za-z]{3,}$/.test(tech) && tech.toLowerCase().indexOf(me) !== 0;
-    if(other) out.skipped++;
-    const city = g("fibercity"), cm = /^(.+?),\s*([A-Z]{2})\b/.exec(city), ch = /CH-(\d+)/i.exec(g("chamber/ring")), job = /(\d+)/.exec(g("job order"));
-    (other ? out.others : out).push({who: other ? tech : undefined, orig: orig || undefined, uid: g("issuekey") || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: addr + ", " + (cm ? cm[1].trim() + ", " + cm[2] : "Palmdale, CA"), sum: "", name: niceName(g("name")), tel: telDigits(g("phone")), ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : "", ll: sheetLL2(r, g)});
+    const rk = (uid || addr.toLowerCase()) + "|" + start; if(seenRow[rk]) return; seenRow[rk] = 1;
+    (other ? out.others : out).push({who: other ? tech : undefined, orig: orig || undefined, uid: uid || (job ? job[1] : ""), ref: "", start: start, end: start + 3600000, addr: full, sum: "", name: niceName(name), tel: tel, ch: ch ? "CH-" + ch[1] : "", job: job ? job[1] : "", ll: ll || undefined});
   });
   return out;
 }
@@ -3666,10 +3769,28 @@ const ICG={
  copy:(a,b)=>`<rect x="3.500" y="3.500" width="12" height="12" rx="3.200" fill="${b}" stroke="none"/><rect x="8.500" y="8.500" width="12" height="12" rx="3.200" fill="${a}" stroke="none"/><path d="M12 14.500h5M14.500 12v5" stroke="${b}" stroke-width="0" fill="none"/>`,
  plus:(a,b)=>`<path d="M12 5v14M5 12h14" stroke="${a}" stroke-width="2.600" stroke-linecap="round"/>`
 };
-function copyText(t, msg){
+function copyText(t, msg, sheet){
   const ok = () => toastMsg(msg || "Copied");
-  const old = () => { try{ const x = document.createElement("textarea"); x.value = t; x.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(x); x.select(); const r = document.execCommand("copy"); x.remove(); if(r) ok(); }catch(e){} };
+  const fail = () => { if(sheet) copySheet(t); };
+  const old = () => { try{ const x = document.createElement("textarea"); x.value = t; x.style.cssText = "position:fixed;opacity:0;font-size:16px"; document.body.appendChild(x); x.focus(); x.select(); x.setSelectionRange(0, 99999); const r = document.execCommand("copy"); x.remove(); if(r) ok(); else fail(); }catch(e){ fail(); } };
   if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, old); else old();
+}
+/* iPhone refuses a copy that is not made by a tap: a long press falls back to a sheet with one big Copy button */
+function copySheet(t){
+  let o = document.getElementById("cpSheet");
+  if(!o){
+    o = document.createElement("div"); o.id = "cpSheet";
+    o.style.cssText = "position:fixed;left:0;right:0;bottom:0;top:0;z-index:99999;background:rgba(0,0,0,.35);display:flex;align-items:flex-end";
+    o.innerHTML = '<div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-sizing:border-box"><div id="cpT" style="font-size:20px;font-weight:700;margin-bottom:14px;word-break:break-word"></div><button id="cpB" type="button" style="width:100%;height:52px;border:none;border-radius:14px;background:#e20074;color:#fff;font-size:18px;font-weight:700">Copy</button></div>';
+    document.body.appendChild(o);
+    o.addEventListener("click", e => { if(e.target === o) o.remove(); });
+    o.querySelector("#cpB").addEventListener("click", () => {
+      const v = o.dataset.t, done = () => { toastMsg("Copied"); o.remove(); };
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, () => {});
+      else { const x = document.createElement("textarea"); x.value = v; x.style.cssText = "position:fixed;opacity:0;font-size:16px"; document.body.appendChild(x); x.select(); x.setSelectionRange(0, 99999); try{ document.execCommand("copy"); }catch(e){} x.remove(); done(); }
+    });
+  }
+  o.dataset.t = t; o.querySelector("#cpT").textContent = t; o.style.display = "flex";
 }
 function ico(k, a, b, n){ return '<svg viewBox="0 0 24 24" width="' + (n || 20) + '" height="' + (n || 20) + '">' + ICG[k](a, b || a) + '</svg>'; }
 let SK_OPEN = "";
@@ -3761,8 +3882,8 @@ function telDigits(t){
   let d = t.replace(/\D/g, ""); if(d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d : ""; }
 function fmtTel(t){ const d = telDigits(t); return d ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : String(t || ""); }
 function navUrl(e){
-  /* coordinates only when the house number was really found; a street-level guess would be re-labelled by the map app as a neighbouring house, so then the typed address goes as text */
-  const g = geoLL(e.addr), ll = g && !g[2] ? g : null, txt = encodeURIComponent(e.addr + (g && g[3] && !/\b\d{5}(-\d{4})?\s*$/.test(e.addr) ? " " + g[3] : "")), ua = navigator.userAgent;
+  /* a full address with zip goes as text (the map app finds the house itself; the boss's GPS can sit a few houses away); coordinates only when the house number was really found; a street-level guess would be re-labelled by the map app as a neighbouring house, so then the typed address goes as text */
+  const g = geoLL(e.addr), ll = g && !g[2] && !/\b\d{5}(-\d{4})?\s*$/.test(String(e.addr || "").trim()) ? g : null, txt = encodeURIComponent(e.addr + (g && g[3] && !/\b\d{5}(-\d{4})?\s*$/.test(e.addr) ? " " + g[3] : "")), ua = navigator.userAgent;
   const dest = ll ? ll[0] + "," + ll[1] : txt;
   if(/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "https://maps.apple.com/?dirflg=d&daddr=" + dest;
   /* Android: geo: link opens the system chooser with every map app on the phone */
@@ -3807,9 +3928,10 @@ function paintSk(){
   const now = Date.now();
   const day0 = new Date(); day0.setHours(0, 0, 0, 0);
   jobsAll().then(all => {
-    const recent = (all || []).filter(j => j.when >= day0.getTime() - 3 * 86400000).map(j => ({a: String(j.address || "").toLowerCase(), d: new Date(j.when).toDateString()}));
+    const recent = (all || []).filter(j => j.when >= day0.getTime() - 3 * 86400000).map(j => ({a: String(j.address || "").toLowerCase().replace(/\s+/g, " "), d: new Date(j.when).toDateString(), t: new Date(new Date(j.when).setHours(0, 0, 0, 0)).getTime()}));
     /* a job counts as done only if it was saved on the same day it is scheduled: a second visit on a later day stays open */
-    const doneFor = (e, key) => recent.some(h => h.a.indexOf(key) === 0 && h.d === new Date(e.start).toDateString());
+    const dd = e => { const d = new Date(e.start); d.setHours(0, 0, 0, 0); return d.getTime(); };
+    const doneFor = (e, key) => recent.some(h => h.a.indexOf(key) === 0 && (h.d === new Date(e.start).toDateString() || (!e.rev && dd(e) - h.t <= 86400000 && dd(e) >= h.t)));
     const cur = (composedAddress() || "").toLowerCase();
     const all0 = skAll();
     const list = all0.filter(e => {
@@ -3841,7 +3963,7 @@ function paintSk(){
       const xp = '<div class="xp"><div class="xh"><span class="xn">' + esc(info) + '</span><button class="xs" data-go="' + i + '" type="button">' + IC.play + 'Start</button></div>'
         + '<div class="xr">' + (tel ? '<a class="xc" href="tel:' + tel + '">' + IC.call + esc(fmtTel(tel)) + '</a>' : '<span></span>')
         + '<span class="xi2">' + (tel ? '<a class="xb tx" href="sms:' + tel + '" aria-label="Text">' + IC.text + '</a>' : '') + '<button class="xb cx" data-cx="' + i + '" type="button" aria-label="CX-Portal">' + CXI + '</button><a class="xb" href="' + navUrl(e) + '" aria-label="Navigate">' + IC.nav + '</a></span></div></div>';
-      return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb' + (e.who ? ' oth' : '') + '">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span>' + (e.who ? '<span class="tg2">' + esc(e.who) + '</span>' : '') + '<span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
+      return '<div class="swp' + (k === SK_OPEN ? ' xo' : '') + '" data-k="' + esc(k) + '"><button class="rm" data-rm="' + i + '" type="button">Remove</button><button class="step" data-sk="' + i + '">' + (e._n ? '<span class="nb' + (e.who ? ' oth' : '') + '">' + e._n + '</span>' : '') + '<span class="t">' + esc(String(e.addr).split(",")[0] || e.sum || "Job") + '</span>' + (e.who ? '<span class="tg2">' + esc(e.who) + '</span>' : e.rev ? '<span class="tg2 rv">2nd visit</span>' : '') + '<span class="v">' + (e.orig ? new Intl.DateTimeFormat("en-US", {month: "short", day: "numeric"}).format(new Date(e.orig)) + " \u00b7 " : same ? "" : dfmt.format(d) + " ") + fmt.format(d) + '</span></button>' + xp + '</div>';
     });
     window.skShown = list;
     document.body.classList.toggle("xop", !!SK_OPEN);
@@ -3900,7 +4022,13 @@ function mpDraw(){
 }
 function mpFit(){
   if(!MP.w){ MP.needFit = true; return; }
-  const pts = MP.jobs.filter(j => j.ll).map(j => mpMerc(j.ll[0], j.ll[1]));
+  let pts = MP.jobs.filter(j => j.ll).map(j => mpMerc(j.ll[0], j.ll[1]));
+  /* a pin far from the others (a wrong geocode) must not zoom the whole map out to the state */
+  if(pts.length > 2){
+    const xs = pts.map(q => q[0]).sort((u, v) => u - v), ys = pts.map(q => q[1]).sort((u, v) => u - v), mx = xs[xs.length >> 1], my = ys[ys.length >> 1];
+    const near = pts.filter(q => Math.hypot(q[0] - mx, q[1] - my) < .0035);
+    if(near.length >= 2) pts = near;
+  }
   if(!pts.length && MP.me) pts.push(mpMerc(MP.me[0], MP.me[1]));
   if(!pts.length) return;
   let a = 1, b = 1, c = 0, d = 0;
@@ -3911,7 +4039,7 @@ function mpFit(){
     if(m[0] > a - .004 && m[0] < c + .004 && m[1] > b - .004 && m[1] < d + .004) grow(m);
   }
   const pad = 64, dx = Math.max(c - a, 1e-7), dy = Math.max(d - b, 1e-7);
-  MP.z = Math.max(3, Math.min(16, Math.log2(Math.min((MP.w - 2 * pad) / (256 * dx), (MP.h - 2 * 84) / (256 * dy)))));
+  MP.z = Math.max(8, Math.min(16, Math.log2(Math.min((MP.w - 2 * pad) / (256 * dx), (MP.h - 2 * 84) / (256 * dy)))));
   MP.mx = (a + c) / 2; MP.my = (b + d) / 2;
   mpDraw();
 }
@@ -3967,7 +4095,8 @@ function geoFind(a){
   return (GD.apiKey ? geoGoogle(a) : Promise.resolve(null))
     .then(r => r || geoAsk(a))
     .then(r => r || (loose !== a ? pause().then(() => geoAsk(loose)).then(apx) : null))
-    .then(r => r || (zc && zc !== loose ? pause().then(() => geoAsk(zc)).then(apx) : null));
+    .then(r => r || (zc && zc !== loose ? pause().then(() => geoAsk(zc)).then(apx) : null))
+    .then(r => r || (!zc ? pause().then(() => geoAsk(a + ", Antelope Valley, CA")).then(apx) : null));
 }
 function geoRun(){
   if(geoBusy) return; geoBusy = true;
@@ -3986,6 +4115,7 @@ function mapUpdate(list){
   box.style.display = "";
   const d = new Date(MP.list[0].start), nd = MP.list.filter(e => e._s === "done").length;
   $("#mpDay").textContent = (d.toDateString() === new Date().toDateString() ? "Today" : new Intl.DateTimeFormat("en-US", {weekday: "short"}).format(d)) + (nd ? " \u00b7 " + nd + " of " + MP.list.length + " done" : "");
+  { const miss = MP.list.filter(e => !geoLL(e.addr)).length; if(miss) $("#mpDay").textContent += " \u00b7 " + (MP.list.length - miss) + " of " + MP.list.length + " on map"; }
   MP.list.forEach(e => { if(e.addr) geoWant(e.addr); });
   mpRefresh(); mpGo();
 }
@@ -4151,6 +4281,7 @@ function startEntry(j, silent){
   if(j.name && !($("#c_customer").value || "").trim()) fillCustomer({name: j.name});
   if(j.tel){ const el = $("#c_phone"); if(el && !(el.value || "").trim()){ el.value = fmtTel(j.tel); el.dispatchEvent(new Event("input", {bubbles: true})); } }
   if(j.ch && !($("#w_ch").value || "").trim()){ const el = $("#w_ch"); el.value = j.ch; el.dispatchEvent(new Event("input", {bubbles: true})); }
+  if(j.rev) setCheck("w_second", "yes");
   startJob();
   lastStart = j; startSnap = jobSig();
 }
@@ -4505,7 +4636,7 @@ function jobFigures(){
   const ft  = Math.min(num("w_ft"), 5000), spl = Math.min(Math.floor(num("w_spl")), 99), ext = Math.min(Math.floor(num("w_ext")), 99);
   const f = {
     install:  second ? 0 : PAY.install,
-    line:     second ? 0 : Math.ceil(ft / 30) * PAY.per30ft,
+    line:     Math.ceil(ft / 30) * PAY.per30ft,
     extender: ext * PAY.extender,
     splice:   spl * PAY.splice,
     second:   second ? PAY.secondVisit : 0
@@ -4784,7 +4915,6 @@ function openJobView(id){
     h += '<div class="total" style="margin-top:12px"><small>Earned</small><b>$' + (j.total || 0) + '</b><div class="pchips">' + pay.map(x => '<span>' + x + '</span>').join("") + '</div></div>';
     h += '<div class="card" style="margin-top:12px">' + jvRow("Google Drive", j.uploaded ? (j.files || 0) + " files" : "not uploaded")
       + ((j.portalAt || j.v >= 131) ? jvRow("CX-Portal", j.portalAt ? "opened " + new Date(j.portalAt).toLocaleDateString("en-US", {month: "short", day: "numeric"}) : "not opened") : "") + '</div>';
-    if((j.notes || "").trim()) h += '<div class="sec">Notes</div><div class="card" style="white-space:pre-wrap;font-size:15px">' + esc(j.notes.trim()) + '</div>';
     const body = $("#jvBody"); body.innerHTML = h; body.dataset.addr = j.address || "";
     $("#jobOverlay").classList.add("on");
   });
@@ -4801,7 +4931,7 @@ function editFigures(){
   const ft = Math.min(enumv("e_ft"), 5000), spl = Math.min(Math.floor(enumv("e_spl")), 99), ext = Math.min(Math.floor(enumv("e_ext")), 99);
   const f = {
     install: editSecond ? 0 : PAY.install,
-    line: editSecond ? 0 : Math.ceil(ft / 30) * PAY.per30ft,
+    line: Math.ceil(ft / 30) * PAY.per30ft,
     extender: ext * PAY.extender, splice: spl * PAY.splice,
     second: editSecond ? PAY.secondVisit : 0
   };
@@ -5854,7 +5984,7 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
     m.style.height = "190px";
     const bottom = sk.getBoundingClientRect().bottom + window.scrollY;
     const free = window.innerHeight - 110 - bottom;
-    m.style.height = Math.max(190, Math.min(440, 190 + Math.floor(free))) + "px";
+    m.style.height = Math.max(190, Math.min(300, 190 + Math.floor(free))) + "px";
   }
   window.ffFill = fill;
   if(window.ResizeObserver){ const ro = new ResizeObserver(() => setTimeout(fill, 0)); const sk = document.getElementById("tdSk"); if(sk) ro.observe(sk); }
@@ -5876,7 +6006,7 @@ if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   document.addEventListener("pointerdown", e => {
     const el = target(e); if(!el) return;
     x0 = e.clientX; y0 = e.clientY; clearTimeout(t); fired = false;
-    t = setTimeout(() => { const s = street(el); if(s){ fired = true; copyText(s, "Copied: " + s); try{ navigator.vibrate && navigator.vibrate(20); }catch(z){} } }, 550);
+    t = setTimeout(() => { const s = street(el); if(s){ fired = true; copyText(s, "Copied: " + s, true); try{ navigator.vibrate && navigator.vibrate(20); }catch(z){} } }, 550);
   }, true);
   document.addEventListener("pointermove", e => { if(t && (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10)){ clearTimeout(t); t = null; } }, true);
   ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, () => { clearTimeout(t); t = null; }, true));
